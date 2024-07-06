@@ -1,6 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Auth from "./pages/Auth.tsx";
+import UserManagment from "./pages/UserManagment.tsx";
+import SitesManagment from "./pages/SitesManagment.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -8,6 +11,18 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Auth />,
+  },
+  {
+    path: "/users",
+    element: <UserManagment />,
+  },
+  {
+    path: "/sites",
+    element: <SitesManagment />,
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />,
   },
 ]);
 
