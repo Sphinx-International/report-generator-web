@@ -36,6 +36,8 @@ const UserManagment = () => {
 
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
+  console.log(selectedUsers);
+
   const handleUserSelection = (userId: string) => {
     setSelectedUsers((prevSelectedUsers) => {
       if (prevSelectedUsers.includes(userId)) {
@@ -48,6 +50,9 @@ const UserManagment = () => {
     });
   };
 
+  const handleCheckboxChange = (userId: string) => {
+    handleUserSelection(userId);
+  };
   const handleAddUserButtonClick = () => {
     const dialog = userDialogRef.current;
     if (dialog) {
@@ -309,7 +314,7 @@ const UserManagment = () => {
                       htmlFor={userId}
                       className="relative flex items-center w-full h-[54px] border-b-[1px] hover:bg-n200 cursor-pointer group"
                       onClick={(e) => {
-                        e.preventDefault(); // Prevent default label click behavior
+                        e.preventDefault();
                         handleUserSelection(userId);
                       }}
                     >
@@ -365,6 +370,10 @@ const UserManagment = () => {
                         checked={isSelected}
                         readOnly
                         className="absolute left-2 top-1/2 transform -translate-y-1/2 checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCheckboxChange(userId);
+                        }}
                       />
                     </label>
                   );
