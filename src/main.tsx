@@ -5,6 +5,7 @@ import UserManagment from "./pages/UserManagment.tsx";
 import SitesManagment from "./pages/SitesManagment.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Missions from "./pages/Missions.tsx";
+import MissionDetails from "./pages/MissionDetails.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
   {
     path: "/missions",
     element: <Missions />,
+  },
+  {
+    path: "/missions/1",
+    element: <MissionDetails />,
   },
 ]);
 

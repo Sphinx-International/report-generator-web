@@ -117,7 +117,7 @@ const UserManagment = () => {
     <div className="w-full flex h-[100vh]">
       <SideBar />
       <div className="lg:pl-[33px] md:pt-[60px] pt-[20px] lg:pr-[56px] sm:px-[30px] px-[15px] md:pb-[38px] flex flex-col gap-[32px] w-full h-full overflow-auto">
-        <Header pageName="users" />
+        <Header pageSentence="Here are information about all users" searchBar={true}/>
         <Main
           flitration={["All", "Engineers", "Coordinators", "Clients"]}
           functionalties={{

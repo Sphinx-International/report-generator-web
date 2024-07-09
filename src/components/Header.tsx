@@ -1,21 +1,26 @@
 interface headerProps {
-  pageName: string;
+  pageSentence: string;
+  searchBar: boolean;
 }
 
 const Header: React.FC<headerProps> = (props) => {
   return (
     <div className="flex flex-col gap-[18px]">
-       <img src="/logo.png" alt="logo" className="sm:w-[100px] w-[86px] md:hidden"/>
+      <img
+        src="/logo.png"
+        alt="logo"
+        className="sm:w-[100px] w-[86px] md:hidden"
+      />
       <div className="pl-[7px] flex flex-col-reverse md:flex-row items-start gap-[10px] md:gap-0 justify-between w-full">
         <div className="flex flex-col md:gap-[4px] items-start">
           <h1 className="text-n800 lg:text-[28px] md:text-[25px] sm:text-[21px] leading-[42px] font-semibold">
             Welcome Back, Meriem
           </h1>
           <span className="text-n500 md:text-[16px] sm:text-[14px] text-[12px]">
-            Here are information about all {props.pageName}
+            {props.pageSentence}
           </span>
         </div>
-        <div className="flex items-center md:gap-[32px] md:justify-end justify-between md:w-fit w-full">
+        <div className="flex items-center md:gap-[32px] justify-end  md:w-fit w-full">
           <svg
             className="hidden md:inline-block"
             xmlns="http://www.w3.org/2000/svg"
@@ -33,44 +38,6 @@ const Header: React.FC<headerProps> = (props) => {
             <path
               d="M24 2C24 3.10457 23.1046 4 22 4C20.8954 4 20 3.10457 20 2C20 0.895431 20.8954 0 22 0C23.1046 0 24 0.895431 24 2Z"
               fill="#FF3B30"
-            />
-          </svg>
-
-          <svg
-            className="md:hidden inline-block"
-            xmlns="http://www.w3.org/2000/svg"
-            width="39"
-            height="39"
-            viewBox="0 0 39 39"
-            fill="none"
-          >
-            <rect
-              opacity="0.8"
-              x="0.5"
-              y="0.5"
-              width="38"
-              height="38"
-              rx="19"
-              fill="white"
-              stroke="#8E92BC"
-            />
-            <path
-              d="M11.5226 15.0684H27.4772"
-              stroke="#8E92BC"
-              stroke-width="1.5"
-              stroke-linecap="round"
-            />
-            <path
-              d="M11.5226 19.5H27.4772"
-              stroke="#8E92BC"
-              stroke-width="1.5"
-              stroke-linecap="round"
-            />
-            <path
-              d="M11.5226 23.9321H27.4772"
-              stroke="#8E92BC"
-              stroke-width="1.5"
-              stroke-linecap="round"
             />
           </svg>
 
@@ -96,38 +63,41 @@ const Header: React.FC<headerProps> = (props) => {
           </div>
         </div>
       </div>
-      <div className="md:pr-[16px] relative">
-        <input
-          type="search"
-          name=""
-          id=""
-          className="w-full h-[52px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[16px] text-[13px]"
-          placeholder="Search"
-        />
-        <svg
-          className="absolute left-[20px] top-[13px]"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <path
-            d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
-            stroke="#6F6C8F"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+
+      {props.searchBar && (
+        <div className="md:pr-[16px] relative">
+          <input
+            type="search"
+            name=""
+            id=""
+            className="w-full h-[52px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[16px] text-[13px]"
+            placeholder="Search"
           />
-          <path
-            d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
-            stroke="#6F6C8F"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </div>
+          <svg
+            className="absolute left-[20px] top-[13px]"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
+              stroke="#6F6C8F"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
+              stroke="#6F6C8F"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      )}
     </div>
   );
 };

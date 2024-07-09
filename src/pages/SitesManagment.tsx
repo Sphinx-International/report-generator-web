@@ -7,7 +7,7 @@ const SitesManagment = () => {
     <div className='w-full flex h-[100vh]'>
         <SideBar/>
         <div className="pl-[33px] pt-[60px] pr-[56px] pb-[38px] flex flex-col gap-[32px] w-full h-full overflow-auto">
-          <Header pageName='sites'/>
+          <Header pageSentence='Here are information about alls sites' searchBar={true}/>
 
         </div>
     </div>
