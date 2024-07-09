@@ -1,4 +1,4 @@
-import { useState, forwardRef } from "react";
+import { forwardRef } from "react";
 
 const DeletePopup = forwardRef<HTMLDialogElement>((_, ref) => {
   return (

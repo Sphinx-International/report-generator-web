@@ -1,8 +1,8 @@
 import { sideBarTab } from "../assets/sidebarData";
-import { Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 const SideBar = () => {
   return (
-    <div className="flex flex-col items-start justify-between h-[100vh] py-[60px] pl-[56px]">
+    <div className="flex flex-col items-start justify-between h-[100vh] py-[60px] pl-[56px] md:relative md:left-0 fixed bg-white z-50 -left-80 ">
       <div className="flex flex-col items-start ">
         <img src="/logo.png" alt="logo" className="w-[117px]" />
         <div className="flex flex-col items-start gap-[28px] pt-[34%] pb-[65%] border-r-[1px] border-r-[#E6EDFF]">
@@ -20,7 +20,7 @@ const SideBar = () => {
                     <div
                       className={`flex items-center gap-[15px] ${
                         isActive ? "text-primary" : "text-[#6F6C90]"
-                      }  font-medium w-[228px]`}
+                      }  font-medium w-[190px] xl:w-[228px]`}
                     >
                       <div dangerouslySetInnerHTML={{ __html: isActive? item.activeSvg:item.svg }}/>
                       {item.title}
