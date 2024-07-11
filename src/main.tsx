@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { store } from "./Redux/store.ts"; 
 import Auth from "./pages/Auth.tsx";
 import UserManagment from "./pages/UserManagment.tsx";
 import SitesManagment from "./pages/SitesManagment.tsx";
@@ -37,7 +39,9 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />{" "}
-  </React.StrictMode>
+  <Provider store={store}>
+    <React.StrictMode>
+      <RouterProvider router={router} />{" "}
+    </React.StrictMode>
+  </Provider>
 );

@@ -1,9 +1,16 @@
+import { useDispatch } from "react-redux";
+import { openSidebar} from "../Redux/slices/sideBarSlice";
+import { AppDispatch } from "../Redux/store";
+
+
 interface headerProps {
   pageSentence: string;
   searchBar: boolean;
 }
 
 const Header: React.FC<headerProps> = (props) => {
+  const dispatch = useDispatch<AppDispatch>();
+
   return (
     <div className="flex flex-col gap-[18px]">
       <img
@@ -20,7 +27,7 @@ const Header: React.FC<headerProps> = (props) => {
             {props.pageSentence}
           </span>
         </div>
-        <div className="flex items-center md:gap-[32px] justify-end  md:w-fit w-full">
+        <div className="flex items-center md:gap-[32px] md:justify-end justify-between md:w-fit w-full">
           <svg
             className="hidden md:inline-block"
             xmlns="http://www.w3.org/2000/svg"
@@ -40,6 +47,49 @@ const Header: React.FC<headerProps> = (props) => {
               fill="#FF3B30"
             />
           </svg>
+
+
+          <svg
+        onClick={() => {
+         dispatch(openSidebar());
+        }}
+        className="md:hidden inline-block relative"
+        xmlns="http://www.w3.org/2000/svg"
+        width="39"
+        height="39"
+        viewBox="0 0 39 39"
+        fill="none"
+      >
+        <rect
+          opacity="0.8"
+          x="0.5"
+          y="0.5"
+          width="38"
+          height="38"
+          rx="19"
+          fill="white"
+          stroke="#8E92BC"
+        />
+        <path
+          d="M11.5226 15.0684H27.4772"
+          stroke="#8E92BC"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+        <path
+          d="M11.5226 19.5H27.4772"
+          stroke="#8E92BC"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+        <path
+          d="M11.5226 23.9321H27.4772"
+          stroke="#8E92BC"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </svg>
+
 
           <div className="flex items-center gap-[12px]">
             <img src="/avatar.png" alt="avatar" className="w-[40px]" />

@@ -117,7 +117,10 @@ const UserManagment = () => {
     <div className="w-full flex h-[100vh]">
       <SideBar />
       <div className="lg:pl-[33px] md:pt-[60px] pt-[20px] lg:pr-[56px] sm:px-[30px] px-[15px] md:pb-[38px] flex flex-col gap-[32px] w-full h-full overflow-auto">
-        <Header pageSentence="Here are information about all users" searchBar={true}/>
+        <Header
+          pageSentence="Here are information about all users"
+          searchBar={true}
+        />
         <Main
           flitration={["All", "Engineers", "Coordinators", "Clients"]}
           functionalties={{
@@ -133,8 +136,12 @@ const UserManagment = () => {
                   Users
                 </h3>
                 <div className="relative lg:hidden">
-                  <h3 className="text-[20px] font-medium leading-[30px] text-primary flex items-center gap-[5px]"
-                  onClick={() => { setIsOpen(!isOpen) }}>
+                  <h3
+                    className="text-[20px] font-medium leading-[30px] text-primary flex items-center gap-[5px]"
+                    onClick={() => {
+                      setIsOpen(!isOpen);
+                    }}
+                  >
                     {selectedRole}
                     <svg
                       className="w-[11px] h-[7px]  md:w-[15px] md:h-[10px]"
@@ -153,25 +160,22 @@ const UserManagment = () => {
 
                   {isOpen && (
                     <ul className="absolute sm:w-[300px] w-[190px] bg-white rounded-[30px] shadow-lg mt-2 z-10">
-                      {[
-                        "All",
-                        "Engineers",
-                        "Coordinators",
-                        "Clients",
-                      ].map((option) => (
-                        <li
-                          key={option}
-                          className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
-                            option === selectedRole ? "bg-gray-100" : ""
-                          }`}
-                          onClick={() => {
-                            setSelectedRole(option);
-                            setIsOpen(false);
-                          }}
-                        >
-                          {option}
-                        </li>
-                      ))}
+                      {["All", "Engineers", "Coordinators", "Clients"].map(
+                        (option) => (
+                          <li
+                            key={option}
+                            className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
+                              option === selectedRole ? "bg-gray-100" : ""
+                            }`}
+                            onClick={() => {
+                              setSelectedRole(option);
+                              setIsOpen(false);
+                            }}
+                          >
+                            {option}
+                          </li>
+                        )
+                      )}
                     </ul>
                   )}
                 </div>
@@ -231,14 +235,9 @@ const UserManagment = () => {
                   const isSelected = selectedUsers.includes(userId);
 
                   return (
-                    <label
+                    <div
                       key={index}
-                      htmlFor={userId}
                       className="relative flex  items-center w-full h-[54px] border-b-[1px] hover:bg-n200 cursor-pointer group"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleUserSelection(userId);
-                      }}
                     >
                       <div className="w-[13%] flex items-center justify-center">
                         <img
@@ -300,7 +299,7 @@ const UserManagment = () => {
                           handleCheckboxChange(userId);
                         }}
                       />
-                    </label>
+                    </div>
                   );
                 })}{" "}
                 <div className="flex w-full h-[54px] border-b-[1px]">
@@ -320,17 +319,23 @@ const UserManagment = () => {
 
               <div className="lg:hidden flex flex-wrap w-full gap-[11px] ">
                 {Array.from({ length: 10 }).map((_, index) => {
+                  const userId = `user-${index}`;
+                  const isSelected = selectedUsers.includes(userId);
                   return (
                     <div
                       key={index}
-                      className="relative p-[9px] flex items-center gap-[9px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow"
+                      className={`relative p-[9px] flex items-center gap-[9px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow ${isSelected ? "bg-primary": ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCheckboxChange(userId);
+                      }}
                     >
                       <img
                         src="/avatar.png"
                         alt="avatar"
                         className="w-[52.5px] rounded-[11px]"
                       />
-                      <span className="text-n600 text-[12px] leading-[18px]">
+                      <span className={` text-[12px] leading-[18px] ${isSelected ? "text-white": "text-n600"}`}>
                         Boukennouche Mariem <br /> mboukennouche@gmail.com{" "}
                         <br /> 10-09-2002 <br /> Engineer
                       </span>

@@ -1,63 +1,29 @@
 import { sideBarTab } from "../assets/sidebarData";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { closeSidebar} from "../Redux/slices/sideBarSlice";
+import { RootState } from "../Redux/store";
+import { AppDispatch } from "../Redux/store";
 
 const SideBar = () => {
-  const [visibleSideBar, setVisibleSideBar] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const isSidebarOpen = useSelector((state: RootState) => state.sidebar.isOpen);
+
   return (
     <div
       className={`absolute md:relative sidebar h-[100vh] ${
-        visibleSideBar ? "w-full bg-n700 bg-opacity-10 z-50" : ""
+        isSidebarOpen ? "w-full bg-n700 bg-opacity-10 z-50" : ""
       }`}
     >
-      <svg
-        onClick={() => {
-          setVisibleSideBar(true);
-        }}
-        className="md:hidden inline-block absolute top-16 sm:left-[30px] left-[15px]"
-        xmlns="http://www.w3.org/2000/svg"
-        width="39"
-        height="39"
-        viewBox="0 0 39 39"
-        fill="none"
-      >
-        <rect
-          opacity="0.8"
-          x="0.5"
-          y="0.5"
-          width="38"
-          height="38"
-          rx="19"
-          fill="white"
-          stroke="#8E92BC"
-        />
-        <path
-          d="M11.5226 15.0684H27.4772"
-          stroke="#8E92BC"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
-        <path
-          d="M11.5226 19.5H27.4772"
-          stroke="#8E92BC"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
-        <path
-          d="M11.5226 23.9321H27.4772"
-          stroke="#8E92BC"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
-      </svg>
+
 
       <div
         className={`flex flex-col items-start justify-between h-[100vh] py-[60px] pl-[56px] md:relative md:left-0 fixed bg-white z-50 ${
-          visibleSideBar ? "-left-0" : "-left-80"
+          isSidebarOpen ? "left-0" : "-left-80"
         } transition-all duration-[500ms] `}
       >
         <svg
-        onClick={() => { setVisibleSideBar(false) }}
+        onClick={() => { dispatch(closeSidebar()) }}
          className="flex md:hidden absolute top-[18px] right-[18px]"
           xmlns="http://www.w3.org/2000/svg"
           fill="#6F6C90"
@@ -77,6 +43,7 @@ const SideBar = () => {
                 <NavLink
                   to={item.link}
                   key={index}
+                  onClick={() => { dispatch(closeSidebar()) }}
                   className={({ isActive, isPending }) =>
                     `${isPending ? "pending" : isActive ? "active" : ""}`
                   }

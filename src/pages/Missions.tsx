@@ -1,13 +1,18 @@
-import { useRef,useState } from "react";
+import { useRef,useState,useEffect } from "react";
 import SideBar from "../components/SideBar";
 import Header from "../components/Header";
 import Main from "../components/Main";
 import Pagination from "../components/Pagination";
 import MissionPopup from "../components/MissionPopup";
+import SuccessPopup from "../components/SuccessPopup";
+import { useSelector } from 'react-redux';
+import { RootState } from "../Redux/store";
 const Missions = () => {
   const missionDialogRef = useRef<HTMLDialogElement>(null);
+  const submitMissionDialogRef = useRef<HTMLDialogElement>(null);
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [isOpen, setIsOpen] = useState(false);
+  const isDialogOpen = useSelector((state: RootState) => state.dialog.isOpen);
 
   const handladdMissionButtonClick = () => {
     const dialog = missionDialogRef.current;
@@ -16,6 +21,14 @@ const Missions = () => {
       missionDialogRef.current?.showModal();
     }
   };
+
+  useEffect(() => {
+    const dialog = submitMissionDialogRef.current;
+    if (dialog && isDialogOpen) {
+      dialog.style.display = 'flex';
+      dialog.showModal();
+    }
+  }, [isDialogOpen]);
 
 
   return (
@@ -91,11 +104,11 @@ const Missions = () => {
                   key={index}
                   className="relative flex flex-col items-start gap-[9px] rounded-[20px] border-[1px] flex-grow border-n400 pl-[23px] pr-[35px] py-[16px] w-[48%] lg:w-[31%]"
                 >
-                  <h2 className="text-[20.5px] text-primary font-semibold">
+                  <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap">
                     Mission title
                   </h2>
                   <p
-                    className="text-[14px] leading-[21px] text-n500 overflow-hidden text-ellipsis "
+                    className="sm:text-[14px] text-[12px] leading-[21px] text-n500 overflow-hidden text-ellipsis "
                     style={{
                       display: "-webkit-box",
                       WebkitLineClamp: "3",
@@ -106,8 +119,8 @@ const Missions = () => {
                     why wife our Sigh view view view . . .
                   </p>
                   <div className="flex items-center gap-[5px]">
-                    <img src="/avatar1.png" alt="avatar" className="w-[29px]" />
-                    <span className="text-[14px] leading-[21px] text-n600">
+                    <img src="/avatar1.png" alt="avatar" className="sm:w-[29px] w-[26px]" />
+                    <span className="sm:text-[14px] text-[12px] leading-[21px] text-n600">
                       Mariem Boukennouche
                     </span>
                   </div>
@@ -138,7 +151,8 @@ const Missions = () => {
           />
         </Main>
       </div>
-      <MissionPopup ref={missionDialogRef} />
+      <MissionPopup ref={missionDialogRef} title={true}  textAreaTitle="Description" textAreaPlaceholder="Description"/>
+      <SuccessPopup ref={submitMissionDialogRef} />
     </div>
   );
 };

@@ -12,6 +12,7 @@ module.exports = {
         n400: "#D9DBE9",
         n300: "#EFF0F6",
         n200: "#F7F7FB",
+        550: "#797C93"
       },
     },
   },
