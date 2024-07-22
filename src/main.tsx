@@ -3,45 +3,51 @@ import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { store } from "./Redux/store.ts"; 
 import Auth from "./pages/Auth.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import UserManagment from "./pages/UserManagment.tsx";
 import SitesManagment from "./pages/SitesManagment.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Missions from "./pages/Missions.tsx";
 import MissionDetails from "./pages/MissionDetails.tsx";
+import ProtectedRoute from "./ProtectedRoute.tsx"; // Import the ProtectedRoute component
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/login",
     element: <Auth />,
   },
   {
+    path: "/reset-pass",
+    element: <ResetPassword />,
+  },
+  {
     path: "/users",
-    element: <UserManagment />,
+    element: <ProtectedRoute element={<UserManagment />} allowedRoles={[0]}/>,
   },
   {
     path: "/sites",
-    element: <SitesManagment />,
+    element: <ProtectedRoute element={<SitesManagment />} allowedRoles={[0, 1, 2]}/>,
   },
   {
     path: "/dashboard",
-    element: <Dashboard />,
+    element: <ProtectedRoute element={<Dashboard />} allowedRoles={[0]}/>,
   },
   {
     path: "/missions",
-    element: <Missions />,
+    element: <ProtectedRoute element={<Missions />} allowedRoles={[0, 1, 2]}/>,
   },
   {
-    path: "/missions/1",
-    element: <MissionDetails />,
+    path: "/missions/:id",
+    element: <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]}/>,
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
     <React.StrictMode>
-      <RouterProvider router={router} />{" "}
+      <RouterProvider router={router} />
     </React.StrictMode>
   </Provider>
 );

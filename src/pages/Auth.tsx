@@ -1,10 +1,97 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { isValidEmail, isValidPassword } from "../func/authValidation";
+import { ThreeDots } from "react-loader-spinner";
+
 const Auth = () => {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [emailErr, setEmailErr] = useState(false);
+  const [emailErrMsg, setEmailErrMsg] = useState("");
+
+  const [passwordErr, setPasswordErr] = useState(false);
+  const [passwordErrMsg, setPasswordErrMsg] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const [mobilePopUpPosition, setMobilePopUpPosition] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+  const check_email_and_password = (
+    email: string,
+    password: string,
+    e: React.FormEvent
+  ) => {
+    e.preventDefault();
+    if (isValidEmail(email)) {
+      setEmailErr(false);
+      if (isValidPassword(password)) {
+        setPasswordErr(false);
+        handleSubmit(e);
+      } else {
+        setPasswordErr(true);
+        setPasswordErrMsg("Please enter a valid password");
+      }
+    } else {
+      setEmailErr(true);
+      setEmailErrMsg("Please enter a valid email");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await fetch("/account/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response) {
+        const data = await response.json();
+        console.log("Form submitted successfully", data);
+
+        if (response.status === 200) {
+          localStorage.setItem("token", data.token);
+
+          if (data.account.role === 0) {
+            navigate("/users");
+            localStorage.setItem('role', data.account.role.toString());
+          } else {
+            navigate("/missions");
+            localStorage.setItem('role', data.account.role.toString());
+          }
+        } else if (response.status === 401) {
+          setPasswordErr(true);
+          setPasswordErrMsg("Wrong password");
+        } else if (response.status === 404) {
+          setEmailErr(true);
+          setEmailErrMsg("email not found");
+        } else {
+          console.error("Unexpected error", response.statusText);
+        }
+
+        /* setEmail("");
+        setPassword(""); */
+      } else {
+        console.error("Error submitting form");
+      }
+    } catch (err) {
+      console.error("Error submitting form", err);
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -15,22 +102,32 @@ const Auth = () => {
           background: "linear-gradient(to bottom, #D7DFFF, #F0E4FF)",
         }}
       >
-        <img src="/logo.png" alt="logo" className="w-[200px] h-[55px] lg:w-[289px] lg:h-[73px]" />
+        <img
+          src="/logo.png"
+          alt="logo"
+          className="w-[200px] h-[55px] lg:w-[289px] lg:h-[73px]"
+        />
         <div className="flex flex-col items-center justify-center gap-[53px]">
-          <img src="/astro.png" alt="astro vector" className="w-[180px] lg:w-[221px]" />
+          <img
+            src="/astro.png"
+            alt="astro vector"
+            className="w-[180px] lg:w-[221px]"
+          />
           <div className="flex flex-col items-center lg:gap-0 gap-[10px]">
             <h1 className="hidden md:inline-block lg:text-[32px] text-[29px] font-bold leading-[34px] text-n800 text-center">
               Hi , Get Started With Us !
             </h1>
             <h1 className="md:hidden inline-block text-[22px] sm:text-[26px] font-bold leading-[34px] text-n800 text-center">
-            Hi , Welcome Back !
+              Hi , Welcome Back !
             </h1>
             <span className="text-[14px] sm:text-[17px] font-semibold leading-[34px] text-primary text-center">
               just a couple of clicks and we start
             </span>
           </div>
           <button
-          onClick={() => { setMobilePopUpPosition(true) }}
+            onClick={() => {
+              setMobilePopUpPosition(true);
+            }}
             type="submit"
             className="inline-block md:hidden py-[20px] w-full text-white rounded-[86px] font-semibold bg-primary"
           >
@@ -49,8 +146,8 @@ const Auth = () => {
           action="post"
           className="px-[30px] py-[38px] flex flex-col gap-[30px] items-start justify-center w-full"
         >
-          <div className="flex flex-col items-start justify-center gap-[35px] w-full ">
-            <div className="flex flex-col items-start justify-center gap-[15px] w-full">
+          <div className="flex flex-col items-start justify-center gap-[30px] w-full ">
+            <div className="flex flex-col items-start justify-center gap-[11px] w-full">
               <label
                 htmlFor="email"
                 className="text-[18px] leading-[20px] text-n700 ml-[4px] font-medium"
@@ -63,10 +160,18 @@ const Auth = () => {
                 id="email"
                 placeholder="Email address"
                 className="w-full h-[60px] rounded-[46px] shadow-md px-[21px] text-n600"
+                onChange={(eo) => {
+                  setEmail(eo.target.value);
+                }}
               />
+              {emailErr && (
+                <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                  {emailErrMsg}
+                </span>
+              )}
             </div>
 
-            <div className="flex flex-col items-start justify-center gap-[15px] w-full">
+            <div className="flex flex-col items-start justify-center gap-[11px] w-full">
               <label
                 htmlFor="password"
                 className="text-[18px] leading-[20px] text-n700 ml-[4px] font-medium"
@@ -80,6 +185,9 @@ const Auth = () => {
                   id="password"
                   placeholder="Password"
                   className="w-full h-[60px] rounded-[46px] shadow-md px-[21px] text-n600 pr-[45px]"
+                  onChange={(eo) => {
+                    setPassword(eo.target.value);
+                  }}
                 />
                 <div
                   className="absolute inset-y-0 right-2 pr-3 flex items-center cursor-pointer"
@@ -136,6 +244,11 @@ const Auth = () => {
                   )}
                 </div>
               </div>
+              {passwordErr && (
+                <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                  {passwordErrMsg}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center justify-between w-full">
@@ -150,21 +263,35 @@ const Auth = () => {
                 Remember me
               </span>
             </div>
-            <span className="text-primary text-[14px] leading-[20px] cursor-pointer font-medium">
-              Forgot password ?
-            </span>
+            <Link to="/reset-pass">
+              <span className="text-primary text-[14px] leading-[20px] cursor-pointer font-medium">
+                Forgot password ?
+              </span>
+            </Link>
           </div>
           <button
             type="submit"
-            className="py-[20px] w-full text-white rounded-[86px] font-semibold bg-primary"
+            className={`${
+              isLoading ? "py-[12px]" : "py-[15px]"
+            } w-full text-white rounded-[86px] font-semibold bg-primary flex items-center justify-center`}
+            onClick={(eo) => {
+              check_email_and_password(email, password, eo);
+            }}
           >
-            Log in
+            {isLoading ? (
+              <ThreeDots color="#fff" width="50" height="30" />
+            ) : (
+              "Log in"
+            )}
           </button>
         </form>
       </div>
 
-
-      <div className={`fixed ${mobilePopUpPosition ? "bottom-0": "-bottom-[90vh]"}  bg-white rounded-[33px] flex md:hidden flex-col items-center gap-[12px] sm:px-[30px] px-[18px] w-[100%] transition-all duration-[1700ms]`}>
+      <div
+        className={`fixed ${
+          mobilePopUpPosition ? "bottom-0" : "-bottom-[90vh]"
+        }  bg-white rounded-[33px] flex md:hidden flex-col items-center gap-[12px] sm:px-[30px] px-[18px] w-[100%] transition-all duration-[1700ms]`}
+      >
         <h1 className="text-[28px] font-bold leading-[52.5px] text-n800 mt-3">
           Welcome !
         </h1>
@@ -181,7 +308,7 @@ const Auth = () => {
                 htmlFor="email"
                 className="text-[15px] leading-[20px] text-n700 ml-[4px] font-medium"
               >
-                Email 
+                Email
               </label>
               <input
                 type="email"
@@ -282,9 +409,16 @@ const Auth = () => {
           </div>
           <button
             type="submit"
-            className="py-[13px] w-full text-white rounded-[86px] font-semibold bg-primary"
+            className="py-[13px] w-full text-white rounded-[86px] font-semibold bg-primary flex items-center justify-center"
+            onClick={(eo) => {
+              check_email_and_password(email, password, eo);
+            }}
           >
-            Log in
+            {isLoading ? (
+              <ThreeDots color="#fff" width="30" height="20" />
+            ) : (
+              "Log in"
+            )}
           </button>
         </form>
       </div>

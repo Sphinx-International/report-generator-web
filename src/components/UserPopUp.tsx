@@ -1,20 +1,68 @@
-import { useState, forwardRef, ChangeEvent } from "react";
+import {
+  useState,
+  forwardRef,
+  MouseEvent,
+  ChangeEvent,
+  useEffect,
+} from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
+import { User } from "../assets/types/User";
+import { ThreeDots } from "react-loader-spinner";
 
-type For = "add" | "edit";
+type Request = "Post" | "Put";
 
-interface User {
-  userIndex?: number;
-  for: For;
+interface Userprops {
+  userInfo?: User;
+  req: Request;
 }
-const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
+const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>("Select a role");
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [viewPassword, setViewPassword] = useState<boolean>(false);
+  const [visibleEmailErr, setVisibleEmailErr] = useState<boolean>(false);
+  const [EmailErr, setEmailErr] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  type User = {
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+    role: null | 1 | 2;
+  };
+
+  const [formData, setFormData] = useState<User>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    role: null,
+  });
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const closeDialog = (eo: MouseEvent<HTMLButtonElement> | React.FormEvent) => {
+    eo.preventDefault();
+    setFormData({
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: "",
+      role: null,
+    });
+    setSelectedOption("Select a role");
+    if (ref && typeof ref !== "function" && ref.current) {
+      ref.current.close();
+      ref.current.style.display = "none";
+    }
+  };
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -35,6 +83,72 @@ const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
     setIsOpen(false);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await fetch("/account/create-account", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response) {
+        const data = await response.json();
+        console.log("Form submitted successfully", data);
+
+        switch (response.status) {
+          case 201:
+            closeDialog(e);
+            break;
+          case 409:
+            setVisibleEmailErr(true);
+            setEmailErr("account with this email already exists.");
+            break;
+          case 400:
+            setVisibleEmailErr(true);
+            setEmailErr("Your are missing information, verify your inputs");
+            break;
+          case 403:
+            setVisibleEmailErr(true);
+            setEmailErr("only admin can create accounts");
+            break;
+
+          default:
+            console.log("error");
+            break;
+        }
+        setIsLoading(false);
+
+        /* setEmail("");
+        setPassword(""); */
+      }
+    } catch (err) {
+      console.error("Error submitting form", err);
+    }
+  };
+
+  useEffect(() => {
+    if (props.userInfo !== undefined) {
+      setFormData({
+        first_name: props.userInfo.first_name,
+        last_name: props.userInfo.last_name,
+        email: props.userInfo.email,
+        password: "", // Keep password empty for security reasons
+        role: props.userInfo.role,
+      });
+    }
+  }, [props.userInfo]);
+
   return (
     <dialog
       ref={ref}
@@ -53,6 +167,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
             type="file"
             name="profilePic"
             id="profilePic"
+            accept="image/*"
             className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
             onChange={handleImageChange}
           />
@@ -92,39 +207,54 @@ const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
           <div className="flex items-center flew-wrap gap-[22px] w-full sm:flex-row flex-col">
             <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-[100%]">
               <label
-                htmlFor="firstName"
+                htmlFor="first_name"
                 className="text-n700 sm:text-[17px] text-[13px] leading-[20px] font-medium pl-[9px]"
               >
                 First name
               </label>
               <input
                 defaultValue={
-                  props.userIndex !== undefined ? `User ${props.userIndex}` : ""
+                  props.userInfo !== undefined
+                    ? `${props.userInfo.first_name}`
+                    : ""
                 }
+                value={formData.first_name}
                 placeholder="Enter first name"
                 type="text"
-                name="firstName"
-                id="firstName"
+                name="first_name"
+                id="first_name"
                 className="px-[18px] w-full sm:h-[48px] sm:text-[16px] text-[14px] h-[44px] rounded-[46px] shadow-lg"
+                onChange={(e) => {
+                  handleChange(e);
+                }}
               />
             </div>
             <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-[100%]">
               <label
-                htmlFor="lastName"
+                htmlFor="last_name"
                 className="text-n700 sm:text-[17px] text-[13px] leading-[20px] font-medium pl-[9px]"
               >
                 Last name
               </label>
               <input
+                defaultValue={
+                  props.userInfo !== undefined
+                    ? `${props.userInfo.last_name}`
+                    : ""
+                }
+                value={formData.last_name}
                 placeholder="Enter last name"
                 type="text"
-                name="lastName"
-                id="lastName"
+                name="last_name"
+                id="last_name"
                 className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
+                onChange={(e) => {
+                  handleChange(e);
+                }}
               />
             </div>
           </div>
-          <div className="flex items-center lg:flex-row flex-col-reverse gap-[22px] w-full">
+          <div className="flex items-start lg:flex-row flex-col-reverse gap-[22px] w-full">
             <div className="flex flex-col items-start gap-[8px] lg:w-[50%] w-[100%]">
               <label
                 htmlFor="email"
@@ -133,11 +263,18 @@ const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
                 Email
               </label>
               <input
+                defaultValue={
+                  props.userInfo !== undefined ? `${props.userInfo.email}` : ""
+                }
+                value={formData.email}
                 placeholder="Enter email"
                 type="email"
                 name="email"
                 id="email"
                 className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
+                onChange={(e) => {
+                  handleChange(e);
+                }}
               />
             </div>
             <div className="flex flex-col items-start gap-[8px] lg:w-[50%] w-[100%]">
@@ -191,13 +328,24 @@ const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
                 </button>
                 {isOpen && (
                   <ul className="absolute w-full bg-white rounded-[30px] shadow-lg mt-2 z-10">
-                    {["Engineer", "Coordinator", "Client"].map((option) => (
+                    {["Engineer", "Coordinator"].map((option) => (
                       <li
                         key={option}
                         className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
                           option === selectedOption ? "bg-gray-100" : ""
                         }`}
-                        onClick={() => handleOptionClick(option)}
+                        onClick={() => {
+                          handleOptionClick(option);
+                          setFormData((prev) => ({
+                            ...prev,
+                            role:
+                              option === "Engineer"
+                                ? 2
+                                : option === "Coordinator"
+                                ? 1
+                                : null,
+                          }));
+                        }}
                       >
                         {option}
                       </li>
@@ -216,18 +364,17 @@ const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
               </label>
               <div className="relative w-full">
                 <input
-                  defaultValue={
-                    props.userIndex !== undefined
-                      ? `User ${props.userIndex}`
-                      : ""
-                  }
                   placeholder="Generate a password"
+                  value={formData.password}
                   type={viewPassword ? "text" : "password"}
                   name="password"
                   id="password"
                   className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
+                  onChange={(e) => {
+                    handleChange(e);
+                  }}
                 />
-                {props.for === "add" ? (
+                {props.req === "Post" ? (
                   <svg
                     className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
                     xmlns="http://www.w3.org/2000/svg"
@@ -298,22 +445,31 @@ const UserPopUp = forwardRef<HTMLDialogElement, User>((props, ref) => {
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-center sm:justify-end gap-[5px] sm:flex-row flex-row-reverse sm:relative sticky bottom-0 bg-white sm:w-fit w-full py-[13px] sm:py-0">
-          <button className="bg-primary rounded-[86px] px-[26.5px] py-[8.5px] font-semibold text-[14px] leading-[20px] text-white">
-            Add user
-          </button>
-          <button
-            className="bg-n300 rounded-[86px] px-[26.5px] py-[8.5px] font-semibold text-[14px] leading-[20px] text-n600 border-[1px] border-n400"
-            onClick={(eo) => {
-              eo.preventDefault();
-              if (ref && typeof ref !== "function" && ref.current) {
-                ref.current.close();
-                ref.current.style.display = "none";
-              }
-            }}
-          >
-            Cancel
-          </button>
+        <div className="w-full flex sm:flex-row-reverse flex-col-reverse sm:gap-0 gap-[14px] items-center justify-between sm:relative sticky bottom-0 bg-white py-[13px] sm:py-0">
+          <div className="flex items-center gap-[5px] flex-row-reverse">
+            <button
+              className="bg-primary rounded-[86px] px-[26.5px] py-[8.5px] font-semibold text-[14px] leading-[20px] text-white"
+              onClick={(eo) => {
+                handleSubmit(eo);
+              }}
+            >
+              {props.req === "Post" ?  isLoading ? <ThreeDots color="#fff" width="30" height="20"/> : "Add user" : "Update user"}
+            </button>
+            <button
+              className="bg-n300 rounded-[86px] px-[26.5px] py-[8.5px] font-semibold text-[14px] leading-[20px] text-n600 border-[1px] border-n400"
+              onClick={(eo) => {
+                closeDialog(eo);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+
+          {visibleEmailErr && (
+            <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+              {EmailErr}
+            </span>
+          )}
         </div>
       </form>
     </dialog>

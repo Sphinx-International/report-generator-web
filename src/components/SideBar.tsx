@@ -1,7 +1,7 @@
 import { sideBarTab } from "../assets/sidebarData";
 import { NavLink } from "react-router-dom";
-import { useDispatch,useSelector } from "react-redux";
-import { closeSidebar} from "../Redux/slices/sideBarSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { closeSidebar } from "../Redux/slices/sideBarSlice";
 import { RootState } from "../Redux/store";
 import { AppDispatch } from "../Redux/store";
 
@@ -15,16 +15,16 @@ const SideBar = () => {
         isSidebarOpen ? "w-full bg-n700 bg-opacity-10 z-50" : ""
       }`}
     >
-
-
       <div
         className={`flex flex-col items-start justify-between h-[100vh] py-[60px] pl-[56px] md:relative md:left-0 fixed bg-white z-50 ${
           isSidebarOpen ? "left-0" : "-left-80"
         } transition-all duration-[500ms] `}
       >
         <svg
-        onClick={() => { dispatch(closeSidebar()) }}
-         className="flex md:hidden absolute top-[18px] right-[18px]"
+          onClick={() => {
+            dispatch(closeSidebar());
+          }}
+          className="flex md:hidden absolute top-[18px] right-[18px]"
           xmlns="http://www.w3.org/2000/svg"
           fill="#6F6C90"
           height="20px"
@@ -39,36 +39,73 @@ const SideBar = () => {
           <img src="/logo.png" alt="logo" className="w-[117px]" />
           <div className="flex flex-col items-start gap-[28px] pt-[34%] pb-[65%] border-r-[1px] border-r-[#E6EDFF]">
             {sideBarTab.map((item, index) => {
-              return (
-                <NavLink
-                  to={item.link}
-                  key={index}
-                  onClick={() => { dispatch(closeSidebar()) }}
-                  className={({ isActive, isPending }) =>
-                    `${isPending ? "pending" : isActive ? "active" : ""}`
-                  }
-                >
-                  {({ isActive }) => (
-                    <div className="flex items-center justify-between cursor-pointer">
-                      <div
-                        className={`flex items-center gap-[15px] ${
-                          isActive ? "text-primary" : "text-[#6F6C90]"
-                        }  font-medium w-[190px] xl:w-[228px]`}
-                      >
+              if (localStorage.getItem("role") === "0") {
+                return (
+                  <NavLink
+                    to={item.link}
+                    key={index}
+                    onClick={() => {
+                      dispatch(closeSidebar());
+                    }}
+                    className={({ isActive, isPending }) =>
+                      `${isPending ? "pending" : isActive ? "active" : ""}`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <div className="flex items-center justify-between cursor-pointer">
                         <div
-                          dangerouslySetInnerHTML={{
-                            __html: isActive ? item.activeSvg : item.svg,
-                          }}
-                        />
-                        {item.title}
+                          className={`flex items-center gap-[15px] ${
+                            isActive ? "text-primary" : "text-[#6F6C90]"
+                          }  font-medium w-[190px] xl:w-[228px]`}
+                        >
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: isActive ? item.activeSvg : item.svg,
+                            }}
+                          />
+                          {item.title}
+                        </div>
+                        {isActive && (
+                          <span className="w-[4px] h-[24px] bg-primary rounded-tl-[3px] rounded-bl-[3px]"></span>
+                        )}
                       </div>
-                      {isActive && (
-                        <span className="w-[4px] h-[24px] bg-primary rounded-tl-[3px] rounded-bl-[3px]"></span>
-                      )}
-                    </div>
-                  )}
-                </NavLink>
-              );
+                    )}
+                  </NavLink>
+                );
+              }else if(item.access === "all") {
+                return (
+                  <NavLink
+                    to={item.link}
+                    key={index}
+                    onClick={() => {
+                      dispatch(closeSidebar());
+                    }}
+                    className={({ isActive, isPending }) =>
+                      `${isPending ? "pending" : isActive ? "active" : ""}`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <div className="flex items-center justify-between cursor-pointer">
+                        <div
+                          className={`flex items-center gap-[15px] ${
+                            isActive ? "text-primary" : "text-[#6F6C90]"
+                          }  font-medium w-[190px] xl:w-[228px]`}
+                        >
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: isActive ? item.activeSvg : item.svg,
+                            }}
+                          />
+                          {item.title}
+                        </div>
+                        {isActive && (
+                          <span className="w-[4px] h-[24px] bg-primary rounded-tl-[3px] rounded-bl-[3px]"></span>
+                        )}
+                      </div>
+                    )}
+                  </NavLink>
+                );
+              }
             })}
           </div>
         </div>
