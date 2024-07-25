@@ -154,7 +154,7 @@ const UserManagment = () => {
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
-      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] md:pb-[20px] flex flex-col gap-[32px] w-full h-full overflow-auto">
+      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] flex flex-col gap-[24px] w-full h-[100vh] overflow">
         <Header
           pageSentence="Here are information about all users"
           searchBar={true}
@@ -170,8 +170,8 @@ const UserManagment = () => {
           }}
           handleAddPrimaryButtonClick={handleAddUserButtonClick}
         >
-          <div className="flex flex-col gap-[25px] items-center w-full">
-            <div className=" w-full sm:px-[20px] sm:py-[12px] p-[14px] flex flex-col gap-[8px] rounded-[20px] border-[1px] border-n300">
+          <div className="flex flex-col gap-[15px] items-center w-full h-[90%]">
+            <div className=" w-full h-[50vh] sm:px-[20px] sm:py-[12px] p-[14px] flex flex-col gap-[8px] rounded-[20px] border-[1px] border-n300">
               <div className="flex items-center lg:justify-between justify-end sm:pr-[28px] w-full">
                 <h3 className="text-[18px] font-semibold leading-[30px] text-n800 lg:inline-block hidden">
                   Users
@@ -204,7 +204,7 @@ const UserManagment = () => {
                   </svg>
                 </span>
               </div>
-              <div className="lg:flex lg:flex-col hidden w-full">
+              <div className="lg:flex lg:flex-col hidden w-full h-[84%]">
                 <div className="flex w-full h-[44px] border-b-[1px]">
                   {titlesRow.map((item, index) => {
                     return (
@@ -220,16 +220,18 @@ const UserManagment = () => {
                 </div>
                 {isloading ? (
                   <div className="w-full flex items-center justify-center py-[40px]">
-                  <RotatingLines strokeWidth="4" strokeColor="#4A3AFF"/>
+                  <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60"/>
 
                   </div>
                 ) : Users !== null ? (
-                  Users.map((user: User, index) => {
+                 <div className="flex flex-col h-[100%] overflow-y-scroll">
+                  {                  Users.map((user: User, index) => {
                     const isSelected = selectedUsers.includes(user.email);
                     return (
+                      
                       <div
                         key={index}
-                        className="relative flex  items-center w-full h-[50px] border-b-[1px] hover:bg-n200 cursor-pointer group"
+                        className="relative flex  items-center w-full h-[50px] border-b-[1px] hover:bg-n200 cursor-pointer group py-[6px]"
                       >
                         <div className="w-[13%] flex items-center justify-center">
                           <img
@@ -293,7 +295,8 @@ const UserManagment = () => {
                         />
                       </div>
                     );
-                  })
+                  })}
+                 </div>
                 ) : null}
               </div>
 

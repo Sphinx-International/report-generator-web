@@ -101,7 +101,7 @@ const Missions = () => {
   return (
     <div className="flex w-full h-[100vh]">
       <SideBar />
-      <div className="lg:pl-[33px] md:pt-[60px] pt-[20px] lg:pr-[56px] sm:px-[30px] px-[15px] md:pb-[38px] flex flex-col gap-[32px] w-full h-full overflow-auto">
+      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] flex flex-col gap-[24px] w-full h-[100vh] overflow-hidden">
         <Header
           pageSentence="Here are information about all missions"
           searchBar={true}
