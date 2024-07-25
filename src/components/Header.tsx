@@ -20,10 +20,10 @@ const Header: React.FC<headerProps> = (props) => {
       />
       <div className="pl-[7px] flex flex-col-reverse md:flex-row items-start gap-[10px] md:gap-0 justify-between w-full">
         <div className="flex flex-col md:gap-[4px] items-start">
-          <h1 className="text-n800 lg:text-[28px] md:text-[25px] sm:text-[21px] leading-[42px] font-semibold">
+          <h1 className="text-n800 lg:text-[25px] md:text-[24px] sm:text-[20px] leading-[34px] font-semibold">
             Welcome Back, Meriem
           </h1>
-          <span className="text-n500 md:text-[16px] sm:text-[14px] text-[12px]">
+          <span className="text-n500 md:text-[14px] sm:text-[13px] text-[11px]">
             {props.pageSentence}
           </span>
         </div>
@@ -31,8 +31,8 @@ const Header: React.FC<headerProps> = (props) => {
           <svg
             className="hidden md:inline-block"
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="22"
+            height="22"
             viewBox="0 0 24 24"
             fill="none"
           >
@@ -92,8 +92,8 @@ const Header: React.FC<headerProps> = (props) => {
 
 
           <div className="flex items-center gap-[12px]">
-            <img src="/avatar.png" alt="avatar" className="w-[40px]" />
-            <div className="lg:flex items-center gap-[8px] text-n800 hidden">
+            <img src="/avatar.png" alt="avatar" className="w-[35px] rounded-[50%]" />
+            <div className="lg:flex items-center gap-[6px] text-n800 hidden text-[14px]">
               Mariem Boukennouche
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -120,14 +120,14 @@ const Header: React.FC<headerProps> = (props) => {
             type="search"
             name=""
             id=""
-            className="w-full h-[52px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[16px] text-[13px]"
+            className="w-full h-[44px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[14px] text-[12px]"
             placeholder="Search"
           />
           <svg
-            className="absolute left-[20px] top-[13px]"
+            className="absolute left-[20px] top-[50%] translate-y-[-50%]"
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
           >

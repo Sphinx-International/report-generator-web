@@ -43,7 +43,7 @@ const SideBar = () => {
       }`}
     >
       <div
-        className={`flex flex-col items-start justify-between h-[100vh] py-[60px] pl-[56px] md:relative md:left-0 fixed bg-white z-50 ${
+        className={`flex flex-col items-start justify-between h-[100vh] py-[32px] pl-[45px] md:relative md:left-0 fixed bg-white z-50 ${
           isSidebarOpen ? "left-0" : "-left-80"
         } transition-all duration-[500ms] `}
       >
@@ -62,9 +62,9 @@ const SideBar = () => {
         >
           <path d="M1082.2,896.6l410.2-410c51.5-51.5,51.5-134.6,0-186.1s-134.6-51.5-186.1,0l-410.2,410L486,300.4  c-51.5-51.5-134.6-51.5-186.1,0s-51.5,134.6,0,186.1l410.2,410l-410.2,410c-51.5,51.5-51.5,134.6,0,186.1  c51.6,51.5,135,51.5,186.1,0l410.2-410l410.2,410c51.5,51.5,134.6,51.5,186.1,0c51.1-51.5,51.1-134.6-0.5-186.2L1082.2,896.6z" />
         </svg>
-        <div className="flex flex-col items-start ">
-          <img src="/logo.png" alt="logo" className="w-[117px]" />
-          <div className="flex flex-col items-start gap-[28px] pt-[34%] pb-[65%] border-r-[1px] border-r-[#E6EDFF]">
+        <div className="flex flex-col items-start gap-[10px]">
+          <img src="/logo.png" alt="logo" className="w-[110px]" />
+          <div className="flex flex-col items-start gap-[28px] pt-[32%] pb-[80%] border-r-[1px] border-r-[#E6EDFF]">
             {sideBarTab.map((item, index) => {
               if (localStorage.getItem("role") === "0") {
                 return (
@@ -83,7 +83,7 @@ const SideBar = () => {
                         <div
                           className={`flex items-center gap-[15px] ${
                             isActive ? "text-primary" : "text-[#6F6C90]"
-                          }  font-medium w-[190px] xl:w-[228px]`}
+                          }  font-medium w-[150px] xl:w-[190px] text-[14px]`}
                         >
                           <div
                             dangerouslySetInnerHTML={{
@@ -136,7 +136,7 @@ const SideBar = () => {
             })}
           </div>
         </div>
-        <button className="flex flex-row-reverse items-center gap-[15px] text-[#6F6C90] font-medium"
+        <button className="flex flex-row-reverse items-center gap-[15px] text-[#6F6C90] font-medium text-[14px]"
          onClick={handleLogout}
         >
           Log out{" "}

@@ -27,7 +27,7 @@ export interface ResMission {
 }
 type ResFile ={
     id:number,
-    file: string,
+    file_name: string,
     uploaded_at:Date,
     workorder: number,
 }

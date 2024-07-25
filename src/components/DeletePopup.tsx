@@ -2,11 +2,13 @@ import { forwardRef, useState, MouseEvent } from "react";
 import { useDispatch } from "react-redux";
 import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
 import { AppDispatch } from "../Redux/store";
+import { RotatingLines } from "react-loader-spinner";
 
 interface DeletePopUpProps {
   deleteItems: string[];
   deleteUrl: string
   jsonTitle:string
+  fetchUsers?: () => void;
 }
 
 const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
@@ -39,7 +41,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         [props.jsonTitle]: props.deleteItems,
       }))
       try {
-          fetch(`${props.deleteUrl}`, {
+        const response = await fetch(`${props.deleteUrl}`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
@@ -51,8 +53,9 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
 
             
           })
-        
-        console.log("Users deleted successfully");
+         if (response.status && props.fetchUsers) {
+          props.fetchUsers()
+         }
       } catch (error) {
         console.error("Error deleting users:", error);
         alert("Failed to delete users");
@@ -88,12 +91,13 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         </div>
         <div className="flex items-center gap-[6px]">
           <button
-            className="text-white px-[56px] py-[12.5px] rounded-[86px] bg-[#FF3B30] text-[14px]"
+            className="text-white px-[56px] py-[12.5px] rounded-[86px] bg-[#FF3B30] text-[14px] flex items-center"
             onClick={(e) => {
               handleDeleteItems(e);
             }}
           >
-            Yes{" "}
+            {isLoading ? <RotatingLines strokeColor="white" width="20"/> : "Yes"}
+            
           </button>
           <button
             className="text-n600 px-[56px] py-[12.5px] rounded-[86px] bg-n300 text-[14px] border-[1px] border-n400"

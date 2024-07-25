@@ -30,9 +30,9 @@ const Main: React.FC<HeaderProps> = (props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <main className="flex items-center flex-col gap-[20px] lg:pr-[16px] w-full">
+    <main className="flex items-center flex-col gap-[10px] lg:pr-[16px] w-full">
       <div className="pl-[24px] lg:flex items-center justify-between w-full hidden ">
-        <div className="flex items-center xl:gap-[30px] gap-[16px]">
+        <div className="flex items-center xl:gap-[27px] gap-[15px]">
           {props.flitration.map((item, index) => {
             return (
               <span
@@ -41,7 +41,7 @@ const Main: React.FC<HeaderProps> = (props) => {
                   selectedFilter === item
                     ? "text-primary border-b-[2px] border-primary"
                     : "text-n600"
-                } leading-[46px] cursor-pointer`}
+                } leading-[36px] cursor-pointer text-[15px]`}
                 onClick={() => {
                   setSelectedFilter(item);
                 }}
@@ -57,7 +57,7 @@ const Main: React.FC<HeaderProps> = (props) => {
               ? props.functionalties.secondaryFuncs.map((button) => {
                   return (
                     <button
-                      className={`flex items-center gap-[3px] font-semibold leading-[21px] xl:px-[20px] px-[16px] xl:py-[9.5px] py-[7px]  border-[1.3px] rounded-[21px] ${selectedWorkorders.length === 0
+                      className={`flex items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${selectedWorkorders.length === 0
                          ?"text-n600 border-n400" : button.name === "Delete" ?"cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]" :"text-n600 border-n400"}`}
                       aria-disabled={
                         selectedWorkorders.length === 0 &&
@@ -77,7 +77,7 @@ const Main: React.FC<HeaderProps> = (props) => {
               : null}
 
             <button
-              className="flex items-center gap-[3px] leading-[21px] font-semibold xl:px-[20px] px-[16px] xl:py-[9.5px] py-[7px] text-white rounded-[21px] bg-primary"
+              className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
               onClick={props.handleAddPrimaryButtonClick}
             >
               {props.functionalties.primaryFunc.name}

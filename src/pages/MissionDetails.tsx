@@ -220,12 +220,7 @@ const MissionDetails = () => {
     }
   };
 
-  const getFileExtension = (filePath: string | undefined) => {
-    if (filePath) {
-      const parts = filePath.split(".");
-      return parts.length > 1 ? parts[parts.length - 1] : "";
-    }
-  };
+
 
 
 
@@ -240,7 +235,6 @@ const MissionDetails = () => {
       console.error("No token found");
       return;
     }
-    const ext = getFileExtension(fileName)
     try {
       const response = await fetch(`/workorder/${path}/${attachmentId}`, {
         method: "GET",
@@ -259,7 +253,7 @@ const MissionDetails = () => {
       const a = document.createElement("a");
       a.style.display = "none";
       a.href = url;
-      a.download = `filename.${ext}`; // You can set the filename here
+      a.download = `${fileName}`; // You can set the filename here
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -650,7 +644,7 @@ const MissionDetails = () => {
                   <div className="w-full flex flex-col gap-[12px]">
                     {workorder.attachments.length > 0
                       ? workorder.attachments.map((attach, index) => {
-                          return (
+                        return (
                             <div
                               key={index}
                               className="cursor-pointer w-[50%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]"
@@ -658,7 +652,7 @@ const MissionDetails = () => {
                                 downloadFile(
                                   attach.id,
                                   "download-workorder-attachment",
-                                  attach.file
+                                  attach.file_name
                                 );
                               }}
                             >
@@ -682,7 +676,7 @@ const MissionDetails = () => {
                                 </svg>
                                 <div className="flex flex-col items-start">
                                   <span className="text-[13px] font-medium leading-[20px] text-n600">
-                                    {attach.file.split("/").pop()}
+                                    {attach.file_name}
                                   </span>
                                   <span className="text-[12px] leading-[20px] text-n600">
                                     {"22.5 mb"}
@@ -690,7 +684,7 @@ const MissionDetails = () => {
                                 </div>
                               </div>
                             </div>
-                          );
+                          );  
                         })
                       : null}
                   </div>
@@ -712,7 +706,7 @@ const MissionDetails = () => {
                             downloadFile(
                               workorder.report?.id,
                               "download-workorder-report",
-                              workorder.report?.file
+                              workorder.report?.file_name
                             );
                           }}
                         >
@@ -736,7 +730,7 @@ const MissionDetails = () => {
                             </svg>
                             <div className="flex flex-col items-start">
                               <span className="text-[13px] font-medium leading-[20px] text-n600">
-                                {workorder.report.file.split("/").pop()}
+                                {workorder.report.file_name}
                               </span>
                               <span className="text-[12px] leading-[20px] text-n600">
                                 2 mb
@@ -832,7 +826,7 @@ const MissionDetails = () => {
                                 downloadFile(
                                   workorder.acceptance_certificate?.id,
                                   "download-workorder-acceptance-certificate",
-                                  workorder.acceptance_certificate?.file
+                                  workorder.acceptance_certificate?.file_name
                                 );
                               }}
                             >
@@ -856,9 +850,7 @@ const MissionDetails = () => {
                                 </svg>
                                 <div className="flex flex-col items-start">
                                   <span className="text-[13px] font-medium leading-[20px] text-n600">
-                                    {workorder.acceptance_certificate.file
-                                      .split("/")
-                                      .pop()}
+                                    {workorder.acceptance_certificate.file_name}
                                   </span>
                                   <span className="text-[12px] leading-[20px] text-n600">
                                     2 mb

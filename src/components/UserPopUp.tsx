@@ -16,6 +16,8 @@ type Request = "Post" | "Put";
 interface Userprops {
   userInfo?: User;
   req: Request;
+  fetchUsers?: () => void;
+
 }
 const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -134,6 +136,11 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       }
     } catch (err) {
       console.error("Error submitting form", err);
+    } finally{
+      if (props.fetchUsers) {
+        props.fetchUsers()
+      }
+
     }
   };
 
