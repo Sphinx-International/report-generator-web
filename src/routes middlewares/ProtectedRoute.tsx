@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { getRole } from './func/getUserRole';
+import { getRole } from '../func/getUserRole';
 
 interface ProtectedRouteProps {
   element: JSX.Element;

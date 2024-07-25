@@ -9,11 +9,16 @@ import SitesManagment from "./pages/SitesManagment.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Missions from "./pages/Missions.tsx";
 import MissionDetails from "./pages/MissionDetails.tsx";
-import ProtectedRoute from "./ProtectedRoute.tsx"; // Import the ProtectedRoute component
+import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx"; 
+import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RedirectBasedOnRole />,
+  },
   {
     path: "/login",
     element: <Auth />,

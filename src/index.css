@@ -45,3 +45,16 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+
+
+
+/* Hide the default appearance of the eye icon */
+input[type="password"]::-ms-reveal {
+  display: none;
+}
+
+/* Optional: Hide the default appearance of the password input on all browsers */
+input[type="password"]::-webkit-password-field {
+  appearance: none;
+}
