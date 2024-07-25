@@ -1,5 +1,5 @@
 import { sideBarTab } from "../assets/sidebarData";
-import { NavLink } from "react-router-dom";
+import { NavLink,useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { closeSidebar } from "../Redux/slices/sideBarSlice";
 import { RootState } from "../Redux/store";
@@ -8,6 +8,33 @@ import { AppDispatch } from "../Redux/store";
 const SideBar = () => {
   const dispatch = useDispatch<AppDispatch>();
   const isSidebarOpen = useSelector((state: RootState) => state.sidebar.isOpen);
+  const navigate = useNavigate();
+
+
+  const handleLogout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    try {
+    const response =  fetch(`/account/logout`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+      if ((await response).status === 200) {
+        navigate("/login")
+         localStorage.clear()
+      }
+    } catch (error) {
+      console.error("Error deleting users:", error);
+      alert("Failed to delete users");
+    }
+  };
 
   return (
     <div
@@ -72,7 +99,7 @@ const SideBar = () => {
                     )}
                   </NavLink>
                 );
-              }else if(item.access === "all") {
+              } else if (item.access === "all") {
                 return (
                   <NavLink
                     to={item.link}
@@ -109,7 +136,9 @@ const SideBar = () => {
             })}
           </div>
         </div>
-        <button className="flex flex-row-reverse items-center gap-[15px] text-[#6F6C90] font-medium">
+        <button className="flex flex-row-reverse items-center gap-[15px] text-[#6F6C90] font-medium"
+         onClick={handleLogout}
+        >
           Log out{" "}
           <svg
             xmlns="http://www.w3.org/2000/svg"

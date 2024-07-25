@@ -12,7 +12,7 @@ interface WorkOrderStatusProps {
 const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({ status,styles }) => {
     return (
         <span
-        className={`px-[${styles.px}px] py-[${styles.py}px] rounded-[100px] text-[${styles.fontSize}px] font-medium leading-[15px] ${
+        className={`rounded-[100px] text-[${styles.fontSize}px] font-medium leading-[15px] ${
           status === 0
             ? "bg-[#F6FFF9] text-[#48C1B5]"
             : status === 1
@@ -25,6 +25,7 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({ status,styles }) => {
             ? "bg-[#F6FFF9] text-[#48C1B5]"
             : "bg-primary text-white"
         } `}
+        style={{padding: `${styles.py}px ${styles.px}px `}}
       >
         {status === 0
           ? "created"

@@ -6,7 +6,7 @@ export interface ReqMission {
   require_acceptence: boolean; // False by default | Not required
   assigned_to?: string;
   accounts: string[],
-  attachments?:string[]
+  attachments:File[]
 }
 
 export interface ResMission {
@@ -25,12 +25,13 @@ export interface ResMission {
     workorder: number,
     account:string
 }
-type Attachments ={
+type ResFile ={
     id:number,
     file: string,
     uploaded_at:Date,
     workorder: number,
 }
+
 
 
 export interface ResOfOneMission {
@@ -47,5 +48,7 @@ export interface ResOfOneMission {
     assigned_to: string | null;
   };
   mail_to: MailTo[],
-  attachments: Attachments[]
+  attachments: ResFile[]
+  report?:ResFile
+  acceptance_certificate?:ResFile
 }

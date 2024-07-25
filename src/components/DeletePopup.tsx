@@ -4,7 +4,9 @@ import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
 import { AppDispatch } from "../Redux/store";
 
 interface DeletePopUpProps {
-  deleteUsers: string[];
+  deleteItems: string[];
+  deleteUrl: string
+  jsonTitle:string
 }
 
 const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
@@ -24,7 +26,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
       }
     };
 
-    const handleDeleteUsers = async (e: React.FormEvent) => {
+    const handleDeleteItems = async (e: React.FormEvent) => {
       e.preventDefault();
 
       const token = localStorage.getItem("token");
@@ -33,18 +35,23 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         return;
       }
       setIsLoading(true);
+      console.log(JSON.stringify({
+        [props.jsonTitle]: props.deleteItems,
+      }))
       try {
-        const deletePromises = props.deleteUsers.map((userId) =>
-          fetch(`/account/delete-account/${userId}`, {
+          fetch(`${props.deleteUrl}`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Token ${token}`,
             },
-          })
-        );
+            body: JSON.stringify({
+              [props.jsonTitle]: props.deleteItems,
+            }),
 
-        await Promise.all(deletePromises);
+            
+          })
+        
         console.log("Users deleted successfully");
       } catch (error) {
         console.error("Error deleting users:", error);
@@ -76,14 +83,14 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
             />
           </svg>
           <p className="text-[18px] font-semibold text-center text-[#25282B]">
-            Are you sure you want to delete this user?
+            Are you sure you want to delete this {props.jsonTitle}?
           </p>
         </div>
         <div className="flex items-center gap-[6px]">
           <button
             className="text-white px-[56px] py-[12.5px] rounded-[86px] bg-[#FF3B30] text-[14px]"
             onClick={(e) => {
-              handleDeleteUsers(e);
+              handleDeleteItems(e);
             }}
           >
             Yes{" "}

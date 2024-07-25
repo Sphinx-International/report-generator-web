@@ -7,7 +7,7 @@ import Main from "../components/Main";
 import Pagination from "../components/Pagination";
 import { User } from "../assets/types/User";
 import { useDispatch } from "react-redux";
-import { toggleUserInTab } from "../Redux/slices//selectedUsersSlice";
+import { toggleUserInTab } from "../Redux/slices/selectedUsersSlice";
 import { AppDispatch } from "../Redux/store";
 import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
@@ -158,8 +158,8 @@ const UserManagment = () => {
         <Main
           flitration={["All", "Engineers", "Coordinators", "Clients"]}
           functionalties={{
-            primaryFunc: "Add User +",
-            secondaryFuncs: ["CSV", "Upload"],
+            primaryFunc: {name:"Add User +"},
+            secondaryFuncs:[{name:"CSV",iconPath:"/icons/downloadIcon.png"},{name:"Upload",iconPath:"/icons/uploadIcon.png"}],
           }}
           handleAddPrimaryButtonClick={handleAddUserButtonClick}
         >
@@ -363,7 +363,7 @@ const UserManagment = () => {
 
       <UserPopUp userInfo={editUser} ref={editUserDialogRef} req="Put" />
       <UserPopUp ref={addUserDialogRef} req="Post" />
-      <DeletePopup ref={deleteDialogRef} deleteUsers={selectedUsers} />
+      <DeletePopup ref={deleteDialogRef} deleteItems={selectedUsers} deleteUrl="/account/delete-accounts" jsonTitle="accounts"/>
     </div>
   );
 };
