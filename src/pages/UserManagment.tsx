@@ -119,9 +119,10 @@ const UserManagment = () => {
       if (!response.ok) {
         const errorText = await response.text(); // Read the response body as text
         console.error("Error response text: ", errorText);
+        localStorage.clear()
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+         console.log(response.status)
       const data = await response.json();
       // console.log("Response data: ", data); // Log the data for debugging
       setUsers(data.data);

@@ -5,7 +5,7 @@ import { store } from "./Redux/store.ts";
 import Auth from "./pages/Auth.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import UserManagment from "./pages/UserManagment.tsx";
-import SitesManagment from "./pages/SitesManagment.tsx";
+import Account from "./pages/Account.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Missions from "./pages/Missions.tsx";
 import MissionDetails from "./pages/MissionDetails.tsx";
@@ -32,8 +32,8 @@ const router = createBrowserRouter([
     element: <ProtectedRoute element={<UserManagment />} allowedRoles={[0]}/>,
   },
   {
-    path: "/sites",
-    element: <ProtectedRoute element={<SitesManagment />} allowedRoles={[0, 1, 2]}/>,
+    path: "/account",
+    element: <ProtectedRoute element={<Account />} allowedRoles={[0, 1, 2]}/>,
   },
   {
     path: "/dashboard",

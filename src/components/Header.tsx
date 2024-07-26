@@ -12,7 +12,7 @@ const Header: React.FC<headerProps> = (props) => {
   const dispatch = useDispatch<AppDispatch>();
 
   return (
-    <div className="flex flex-col gap-[18px] lg:h-[20%]">
+    <div className="flex flex-col gap-[18px]">
       <img
         src="/logo.png"
         alt="logo"

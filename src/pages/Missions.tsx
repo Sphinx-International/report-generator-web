@@ -78,6 +78,7 @@ const Missions = () => {
       if (!response.ok) {
         const errorText = await response.text(); // Read the response body as text
         console.error("Error response text: ", errorText);
+        localStorage.clear()
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
