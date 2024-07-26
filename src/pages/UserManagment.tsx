@@ -152,9 +152,9 @@ const UserManagment = () => {
   };
 
   return (
-    <div className="w-full flex h-[100vh]">
+    <div className="w-full flex md:h-[100vh]">
       <SideBar />
-      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] flex flex-col gap-[24px] w-full h-[100vh] overflow">
+      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header
           pageSentence="Here are information about all users"
           searchBar={true}
@@ -171,7 +171,7 @@ const UserManagment = () => {
           handleAddPrimaryButtonClick={handleAddUserButtonClick}
         >
           <div className="flex flex-col gap-[15px] items-center w-full h-[90%]">
-            <div className=" w-full h-[50vh] sm:px-[20px] sm:py-[12px] p-[14px] flex flex-col gap-[8px] rounded-[20px] border-[1px] border-n300">
+            <div className=" w-full lg:h-[50vh] sm:px-[20px] sm:py-[12px] p-[14px] flex flex-col gap-[8px] rounded-[20px] border-[1px] border-n300">
               <div className="flex items-center lg:justify-between justify-end sm:pr-[28px] w-full">
                 <h3 className="text-[18px] font-semibold leading-[30px] text-n800 lg:inline-block hidden">
                   Users
@@ -224,7 +224,7 @@ const UserManagment = () => {
 
                   </div>
                 ) : Users !== null ? (
-                 <div className="flex flex-col h-[100%] overflow-y-scroll">
+                 <div className="flex flex-col h-[100%] overflow-y-auto">
                   {                  Users.map((user: User, index) => {
                     const isSelected = selectedUsers.includes(user.email);
                     return (

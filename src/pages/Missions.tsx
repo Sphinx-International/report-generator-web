@@ -99,9 +99,9 @@ const Missions = () => {
   }, [isDialogOpen, workorders]);
 
   return (
-    <div className="flex w-full h-[100vh]">
+    <div className="flex w-full md:h-[100vh]">
       <SideBar />
-      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] flex flex-col gap-[24px] w-full h-[100vh] overflow-hidden">
+      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header
           pageSentence="Here are information about all missions"
           searchBar={true}
@@ -133,7 +133,7 @@ const Missions = () => {
                   return (
                     <div
                       key={workorder.id}
-                      className="group relative flex flex-col items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
+                      className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
                     >
                       <div
                         className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"

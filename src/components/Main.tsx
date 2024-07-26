@@ -30,7 +30,7 @@ const Main: React.FC<HeaderProps> = (props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <main className="flex items-center flex-col h-[80%] gap-[10px] lg:pr-[16px] w-full">
+    <main className="flex items-center flex-col  gap-[10px] lg:pr-[16px] w-full">
       <div className="pl-[24px] lg:flex items-center justify-between w-full hidden ">
         <div className="flex items-center xl:gap-[27px] gap-[15px]">
           {props.flitration.map((item, index) => {
