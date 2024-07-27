@@ -65,14 +65,7 @@ const UserManagment = () => {
       addUserDialogRef.current?.showModal();
     }
   };
-  const handleEditUserButtonClick = (user: User) => {
-    setEditUser(user);
-    const dialog = editUserDialogRef.current;
-    if (dialog) {
-      dialog.style.display = "flex";
-      editUserDialogRef.current?.showModal();
-    }
-  };
+
   const handledeleteUserButtonClick = () => {
     const dialog = deleteDialogRef.current;
     if (dialog) {
@@ -257,7 +250,7 @@ const UserManagment = () => {
                             Engineer
                           </span>
                           <span className="w-[13%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
-                            <Link to={`/edit-user/${index}`}>
+                            <Link to={`/edit-user/${user.email}`}>
                               <svg
                                 className="cursor-pointer hover:scale-105"
                                 xmlns="http://www.w3.org/2000/svg"

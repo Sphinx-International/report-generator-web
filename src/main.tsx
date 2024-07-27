@@ -9,7 +9,7 @@ import Account from "./pages/Account.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Missions from "./pages/Missions.tsx";
 import MissionDetails from "./pages/MissionDetails.tsx";
-import EditUsers from "./components/EditUsers.tsx";
+import EditUsers from "./pages/EditUsers.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx"; 
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import "./index.css";

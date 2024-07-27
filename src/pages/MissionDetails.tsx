@@ -221,9 +221,6 @@ const MissionDetails = () => {
   };
 
 
-
-
-
   
   const downloadFile = async (
     attachmentId: number | undefined,
