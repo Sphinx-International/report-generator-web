@@ -11,7 +11,6 @@ export function isValidPassword(password: string): boolean {
   //  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{};':"\\|,.<>/?]).{8,}$/;
 
   
-
 export const check4DigitCode = (code: string[]) => {
   const allFilled = code.every((value) => value !== "");
   if (allFilled) {

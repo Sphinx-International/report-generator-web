@@ -64,6 +64,8 @@ const Auth = () => {
 
         if (response.status === 200) {
           localStorage.setItem("token", data.token);
+          localStorage.setItem("user_id", data.account.email);
+          localStorage.setItem("user", JSON.stringify(data.account));
 
           if (data.account.role === 0) {
             navigate("/users");

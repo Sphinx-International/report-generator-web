@@ -6,6 +6,6 @@ export type User = {
     groups: string[],
     is_superuser:boolean,
     last_login:null,
-    role:  1 | 2,
+    role: 0 |1 | 2,
     user_permissions: string[]
 }

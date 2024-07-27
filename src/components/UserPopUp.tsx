@@ -34,7 +34,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     last_name: string;
     email: string;
     password: string;
-    role: null | 1 | 2;
+    role: null| 0 | 1 | 2;
   };
 
   const [formData, setFormData] = useState<User>({

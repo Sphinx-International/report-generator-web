@@ -32,7 +32,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute element={<UserManagment />} allowedRoles={[0]}/>,
   },
   {
-    path: "/account",
+    path: "/my-account",
     element: <ProtectedRoute element={<Account />} allowedRoles={[0, 1, 2]}/>,
   },
   {
@@ -47,6 +47,7 @@ const router = createBrowserRouter([
     path: "/missions/:id",
     element: <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]}/>,
   },
+
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

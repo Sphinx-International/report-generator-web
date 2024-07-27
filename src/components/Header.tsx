@@ -1,6 +1,7 @@
 import { useDispatch } from "react-redux";
 import { openSidebar} from "../Redux/slices/sideBarSlice";
 import { AppDispatch } from "../Redux/store";
+import { User } from "../assets/types/User";
 
 
 interface headerProps {
@@ -10,6 +11,8 @@ interface headerProps {
 
 const Header: React.FC<headerProps> = (props) => {
   const dispatch = useDispatch<AppDispatch>();
+
+   const user:User = JSON.parse(localStorage.getItem("user")!)
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -21,7 +24,7 @@ const Header: React.FC<headerProps> = (props) => {
       <div className="pl-[7px] flex flex-col-reverse md:flex-row items-start gap-[10px] md:gap-0 justify-between w-full">
         <div className="flex flex-col md:gap-[4px] items-start">
           <h1 className="text-n800 lg:text-[25px] md:text-[24px] sm:text-[20px] leading-[34px] font-semibold">
-            Welcome Back, Meriem
+            Welcome Back, {user?.first_name}
           </h1>
           <span className="text-n500 md:text-[14px] sm:text-[13px] text-[11px]">
             {props.pageSentence}
@@ -94,7 +97,7 @@ const Header: React.FC<headerProps> = (props) => {
           <div className="flex items-center gap-[12px]">
             <img src="/avatar.png" alt="avatar" className="w-[35px] rounded-[50%]" />
             <div className="lg:flex items-center gap-[6px] text-n800 hidden text-[14px]">
-              Mariem Boukennouche
+              {user?.first_name} {user?.last_name}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
