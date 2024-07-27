@@ -3,28 +3,20 @@ import {
   forwardRef,
   MouseEvent,
   ChangeEvent,
-  useEffect,
 } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
-import { User } from "../assets/types/User";
 import { ThreeDots } from "react-loader-spinner";
 
-type Request = "Post" | "Put";
-
 interface Userprops {
-  userInfo?: User;
-  req: Request;
   fetchUsers?: () => void;
-
 }
 const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>("Select a role");
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [viewPassword, setViewPassword] = useState<boolean>(false);
   const [visibleEmailErr, setVisibleEmailErr] = useState<boolean>(false);
   const [EmailErr, setEmailErr] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -75,9 +67,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       };
       reader.readAsDataURL(file);
     }
-  };
-  const handleViewPassword = () => {
-    setViewPassword(!viewPassword);
   };
   const toggleDropdown = () => setIsOpen(!isOpen);
   const handleOptionClick = (option: string) => {
@@ -144,17 +133,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     }
   };
 
-  useEffect(() => {
-    if (props.userInfo !== undefined) {
-      setFormData({
-        first_name: props.userInfo.first_name,
-        last_name: props.userInfo.last_name,
-        email: props.userInfo.email,
-        password: "", // Keep password empty for security reasons
-        role: props.userInfo.role,
-      });
-    }
-  }, [props.userInfo]);
 
   return (
     <dialog
@@ -220,11 +198,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 First name
               </label>
               <input
-                defaultValue={
-                  props.userInfo !== undefined
-                    ? `${props.userInfo.first_name}`
-                    : ""
-                }
                 value={formData.first_name}
                 placeholder="Enter first name"
                 type="text"
@@ -244,11 +217,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 Last name
               </label>
               <input
-                defaultValue={
-                  props.userInfo !== undefined
-                    ? `${props.userInfo.last_name}`
-                    : ""
-                }
                 value={formData.last_name}
                 placeholder="Enter last name"
                 type="text"
@@ -270,9 +238,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 Email
               </label>
               <input
-                defaultValue={
-                  props.userInfo !== undefined ? `${props.userInfo.email}` : ""
-                }
                 value={formData.email}
                 placeholder="Enter email"
                 type="email"
@@ -373,7 +338,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 <input
                   placeholder="Generate a password"
                   value={formData.password}
-                  type={viewPassword ? "text" : "password"}
+                  type="password"
                   name="password"
                   id="password"
                   className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
@@ -381,7 +346,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                     handleChange(e);
                   }}
                 />
-                {props.req === "Post" ? (
                   <svg
                     className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
                     xmlns="http://www.w3.org/2000/svg"
@@ -395,59 +359,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                       fill="#A0A3BD"
                     />
                   </svg>
-                ) : viewPassword ? (
-                  <svg
-                    className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
-                    onClick={handleViewPassword}
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <path
-                      d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
-                      stroke="#A0A3BD"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
-                      stroke="#A0A3BD"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="3"
-                      stroke="#A0A3BD"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    onClick={handleViewPassword}
-                    className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                  >
-                    <path
-                      d="M8.82089 8.82243C8.50837 9.13505 8.33285 9.55902 8.33293 10.0011C8.333 10.4431 8.50868 10.867 8.8213 11.1795C9.13393 11.492 9.55789 11.6675 9.99993 11.6675C10.442 11.6674 10.8659 11.4917 11.1784 11.1791M13.9008 13.8942C12.7319 14.6256 11.3789 15.0091 10 15C7 15 4.5 13.3334 2.5 10C3.56 8.23336 4.76 6.93503 6.1 6.10503M8.48333 5.15002C8.98253 5.04897 9.49068 4.99871 10 5.00002C13 5.00002 15.5 6.66669 17.5 10C16.945 10.925 16.3508 11.7225 15.7183 12.3917M2.5 2.5L17.5 17.5"
-                      stroke="#A0A3BD"
-                      stroke-width="1.3"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                )}
               </div>
             </div>
           </div>
@@ -460,7 +371,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 handleSubmit(eo);
               }}
             >
-              {props.req === "Post" ?  isLoading ? <ThreeDots color="#fff" width="30" height="20"/> : "Add user" : "Update user"}
+              {isLoading ? <ThreeDots color="#fff" width="30" height="20"/> : "Add user"}
             </button>
             <button
               className="bg-n300 rounded-[86px] px-[26.5px] py-[8.5px] font-semibold text-[14px] leading-[20px] text-n600 border-[1px] border-n400"

@@ -9,6 +9,7 @@ import Account from "./pages/Account.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Missions from "./pages/Missions.tsx";
 import MissionDetails from "./pages/MissionDetails.tsx";
+import EditUsers from "./components/EditUsers.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx"; 
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import "./index.css";
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
   {
     path: "/my-account",
     element: <ProtectedRoute element={<Account />} allowedRoles={[0, 1, 2]}/>,
+  },
+  {
+    path: "/edit-user/:id",
+    element: <ProtectedRoute element={<EditUsers />} allowedRoles={[0]}/>,
   },
   {
     path: "/dashboard",
