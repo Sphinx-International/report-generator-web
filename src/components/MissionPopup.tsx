@@ -22,6 +22,7 @@ interface MissionPopupProps {
   title: boolean;
   textAreaTitle: string;
   textAreaPlaceholder: string;
+  fetchWorkOrders?: () => void;
 }
 
 type PriorityIndex = 0 | 1 | 2 | 3;
@@ -206,6 +207,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         console.error("Error submitting form", err);
       } finally {
         setIsLoading(false);
+        props.fetchWorkOrders!()
       }
     };
 

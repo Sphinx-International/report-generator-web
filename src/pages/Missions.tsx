@@ -246,6 +246,7 @@ const Missions = () => {
         title={true}
         textAreaTitle="Description"
         textAreaPlaceholder="Description"
+        fetchWorkOrders={fetchWorkOrders}
       />
       <SuccessPopup ref={submitMissionDialogRef} />
       <DeletePopup

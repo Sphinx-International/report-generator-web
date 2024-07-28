@@ -15,6 +15,7 @@ const MissionDetails = () => {
   const { id } = useParams();
 
   const [visibleEngPopup, setVisibleEngPopup] = useState<boolean>(false);
+  const [visibleCoordPopup, setVisibleCoordPopup] = useState<boolean>(false);
   const addTaskDialogRef = useRef<HTMLDialogElement>(null);
   const refuseTaskDialogRef = useRef<HTMLDialogElement>(null);
   const submitMissionDialogRef = useRef<HTMLDialogElement>(null);
@@ -30,7 +31,6 @@ const MissionDetails = () => {
   const [searchCoords, setSearchCoords] = useState<User[]>([]);
 
   const [selectedEng, setSelectedEng] = useState<string | null>(null);
-  const [selectedCoord, setSelectedCoord] = useState<string[]>([]);
 
   const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
   const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
@@ -315,6 +315,142 @@ const MissionDetails = () => {
     };
   }, [searchQueryEng]);
 
+  const searchForCoords = useCallback(() => {
+    if (!searchQueryCoord) {
+      console.log("No search query provided");
+      return;
+    }
+    setLoaderCoordSearch(true);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    const url = `ws://89.116.110.42:8000/ws/search-account/coordinator`;
+    const socket = new WebSocket(url);
+
+    socket.onopen = () => {
+      console.log("WebSocket connection opened");
+      const message = `search|${token}|${searchQueryCoord}`;
+      socket.send(message);
+    };
+
+    socket.onmessage = (event) => {
+      console.log("WebSocket message received");
+      try {
+        const data = event.data;
+        setSearchCoords(JSON.parse(data));
+      } catch (error) {
+        console.error("Error processing WebSocket message:", error);
+      } finally {
+        setLoaderCoordSearch(false);
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [searchQueryCoord]);
+
+  const handleAddMailedPerson = async (
+    workorder_id: number,
+    addedEmail: string
+  ) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    console.log(JSON.stringify({ workorder_id, add: [addedEmail] }));
+    try {
+      const response = await fetch("/workorder/update-workorder-mails", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ workorder_id, add: [addedEmail] }),
+      });
+
+      if (response) {
+        const data = await response.json();
+        console.log("Form submitted successfully", data);
+
+        console.log(response.status);
+
+        switch (response.status) {
+          case 200:
+            setVisibleCoordPopup(false);
+            break;
+          case 400:
+            console.log("verify your data");
+            break;
+          default:
+            console.log("error");
+            break;
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting form", err);
+    }
+  };
+
+  const handleDeleteMailedPerson = async (
+    workorder_id: number,
+    deletedEmailId: number
+  ) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    console.log(JSON.stringify({ workorder_id, delete: [deletedEmailId] }));
+    try {
+      const response = await fetch("/workorder/update-workorder-mails", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ workorder_id, delete: [deletedEmailId] }),
+      });
+
+      if (response) {
+        const data = await response.json();
+        console.log("Form submitted successfully", data);
+
+        console.log(response.status);
+
+        switch (response.status) {
+          case 200:
+            console.log("deleted succesfully");
+            break;
+          case 400:
+            console.log("verify your data");
+            break;
+          default:
+            console.log("error");
+            break;
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting form", err);
+    }
+  };
+
+
   useEffect(() => {
     const fetchOneWorkOrder = async () => {
       const token = localStorage.getItem("token");
@@ -353,6 +489,10 @@ const MissionDetails = () => {
   useEffect(() => {
     searchForEngs();
   }, [searchForEngs]);
+
+  useEffect(() => {
+    searchForCoords();
+  }, [searchForCoords]);
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
@@ -418,14 +558,14 @@ const MissionDetails = () => {
                       alt="avatar"
                       className=" rounded-[50%] w-[40px] cursor-pointer"
                       onClick={() => {
-                        setVisibleEngPopup(true);
+                        setVisibleEngPopup(!visibleEngPopup);
                       }}
                     />
                     <span className="text-[17px] text-550 leading-[30px]">
                       {selectedEng}
                     </span>
                     {visibleEngPopup && (
-                      <div className="w-[400px] absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                      <div className="w-[400px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
                         <div className=" relative w-full">
                           <input
                             type="search"
@@ -480,7 +620,8 @@ const MissionDetails = () => {
                               />
                             </div>
                           ) : (
-                            searchEngs.length !== 0 && searchQueryEng !=="" &&
+                            searchEngs.length !== 0 &&
+                            searchQueryEng !== "" &&
                             searchEngs.map((user, index) => {
                               return (
                                 <div
@@ -512,7 +653,7 @@ const MissionDetails = () => {
                     <span
                       className="p-[10px] rounded-[50%] bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer"
                       onClick={() => {
-                        setVisibleEngPopup(true);
+                        setVisibleEngPopup(!visibleEngPopup);
                       }}
                     >
                       <svg
@@ -532,7 +673,7 @@ const MissionDetails = () => {
                       Assign user
                     </span>
                     {visibleEngPopup && (
-                      <div className="w-[400px] absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                      <div className="w-[400px] z-30 absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
                         <div className=" relative w-full">
                           <input
                             type="search"
@@ -587,7 +728,8 @@ const MissionDetails = () => {
                               />
                             </div>
                           ) : (
-                            searchEngs.length !== 0 && searchQueryEng !=="" &&
+                            searchEngs.length !== 0 &&
+                            searchQueryEng !== "" &&
                             searchEngs.map((user, index) => {
                               return (
                                 <div
@@ -646,18 +788,111 @@ const MissionDetails = () => {
                 </div>
 
                 <div className="flex items-center gap-[4px]">
-                  <span className="px-[11px] rounded-[50%] bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold">
-                    +
-                  </span>
+                  <div className="relative">
+                    <span
+                      className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
+                      onClick={() => {
+                        setVisibleCoordPopup(!visibleCoordPopup);
+                      }}
+                    >
+                      +
+                    </span>
+                    {visibleCoordPopup && (
+                      <div className="w-[400px] absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                        <div className=" relative w-full">
+                          <input
+                            type="search"
+                            name=""
+                            id=""
+                            value={searchQueryCoord}
+                            onChange={(eo) => {
+                              setSearchQueryCoord(eo.target.value);
+                            }}
+                            className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md md:px-[35px] md:text-[13px] text-[11px]"
+                            placeholder="Search"
+                          />
+                          <svg
+                            className="absolute left-[14px] top-[50%] translate-y-[-50%]"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
+                              stroke="#6F6C8F"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
+                              stroke="#6F6C8F"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex flex-col items-start gap-[12px] w-full">
+                          {loaderCoordSearch ? (
+                            <div className="w-full py-[10px] flex items-center justify-center">
+                              <RotatingLines
+                                strokeWidth="4"
+                                strokeColor="#4A3AFF"
+                                width="20"
+                              />
+                            </div>
+                          ) : (
+                            searchCoords.length !== 0 &&
+                            searchQueryCoord !== "" &&
+                            searchCoords.map((user, index) => {
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                  onClick={() => {
+                                    handleAddMailedPerson(
+                                      workorder.workorder.id,
+                                      user.email
+                                    );
+                                    setVisibleCoordPopup(false);
+                                  }}
+                                >
+                                  <img
+                                    src="/avatar.png"
+                                    alt="avatar"
+                                    className="w-[31px] rounded-[50%]"
+                                  />
+                                  <span className="text-[14px] text-n600">
+                                    {user.first_name} {user.last_name}
+                                  </span>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {workorder.mail_to &&
                     workorder.mail_to.map((mail, index) => {
                       return (
-                        <img
-                          key={index}
-                          src="/avatar1.png"
-                          alt="avatar"
-                          className="w-[40px] rounded-[50%]"
-                        />
+                        <div className="relative" key={index}>
+                          <img
+                            src="/avatar1.png"
+                            alt="avatar"
+                            className="w-[40px] rounded-[50%]"
+                          />
+                          <span
+                            className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
+                            onClick={() => { handleDeleteMailedPerson(workorder.workorder.id, mail.id)}}
+                          >
+                            🗙
+                          </span>
+                        </div>
                       );
                     })}
                 </div>
