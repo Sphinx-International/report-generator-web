@@ -4,6 +4,8 @@ import {
   ChangeEvent,
   FormEvent,
   MouseEvent,
+  useEffect,
+  useCallback,
 } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import "../styles/PrioritySelector.css";
@@ -15,8 +17,7 @@ import {
 } from "../func/missionsValidation";
 import { formatFileSize } from "../func/formatFileSize";
 import { RotatingLines } from "react-loader-spinner";
-
-
+import { User } from "../assets/types/User";
 interface MissionPopupProps {
   title: boolean;
   textAreaTitle: string;
@@ -28,6 +29,21 @@ type PriorityIndex = 0 | 1 | 2 | 3;
 const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
   (props, ref) => {
     const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2>(1);
+
+    const [searchQueryEng, setSearchQueryEng] = useState("");
+    const [searchQueryCoord, setSearchQueryCoord] = useState("");
+
+    const [searchEngs, setSearchEngs] = useState<User[]>([]);
+    const [searchCoords, setSearchCoords] = useState<User[]>([]);
+
+    const [selectedEng, setSelectedEng] = useState<string | null>(null);
+    const [selectedCoord, setSelectedCoord] = useState<string[]>([]);
+
+    const [isFocusedAssignInput, setIsFocusedAssignInput] = useState(false);
+    const [isFocusedMailInput, setIsFocusedMailInput] = useState(false);
+
+    const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
+    const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
 
     const priorities = ["Low", "Medium", "High", "Urgent"];
     const [currentPriorityIndex, setCurrentPriorityIndex] = useState<
@@ -43,6 +59,9 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       attachments: [],
     });
 
+    if (formValues.assigned_to) {
+      console.log(formValues.assigned_to);
+    }
     const [isLoading, setIsLoading] = useState(false);
 
     const [formErrs, setFormErrs] = useState<FormErrors>({});
@@ -103,6 +122,23 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       const { name, value } = e.target;
       setformValues((prev) => ({ ...prev, [name]: value }));
     };
+
+    const removeEng = () => {
+      setSelectedEng(null);
+      setformValues((prev) => ({
+        ...prev,
+        assigned_to: "",
+      }));
+    };
+    const removeCoord = (deletedItem:string) => {
+      setSelectedCoord((prev) => prev.filter((item) => item !== deletedItem));
+      
+      setformValues((prev) => ({
+        ...prev,
+        accounts: prev.accounts.filter((item) => item !== deletedItem),
+      }));
+    };
+    
 
     const handleCreateWorkorder = async (e: FormEvent) => {
       e.preventDefault();
@@ -205,6 +241,112 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
     };
 
+    const searchForEngs = useCallback(() => {
+      if (!searchQueryEng) {
+        console.log("No search query provided");
+        return;
+      }
+      setLoaderAssignSearch(true);
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      const url = `ws://89.116.110.42:8000/ws/search-account/engineer`;
+      const socket = new WebSocket(url);
+
+      socket.onopen = () => {
+        console.log("WebSocket connection opened");
+        const message = `search|${token}|${searchQueryEng}`;
+        socket.send(message);
+      };
+
+      socket.onmessage = (event) => {
+        console.log("WebSocket message received");
+        try {
+          const data = event.data;
+          setSearchEngs(JSON.parse(data));
+        } catch (error) {
+          console.error("Error processing WebSocket message:", error);
+        } finally {
+          setLoaderAssignSearch(false);
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+
+      return () => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        }
+      };
+    }, [searchQueryEng]);
+
+    const searchForCoords = useCallback(() => {
+      if (!searchQueryCoord) {
+        console.log("No search query provided");
+        return;
+      }
+      setLoaderCoordSearch(true);
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      const url = `ws://89.116.110.42:8000/ws/search-account/coordinator`;
+      const socket = new WebSocket(url);
+
+      socket.onopen = () => {
+        console.log("WebSocket connection opened");
+        const message = `search|${token}|${searchQueryCoord}`;
+        socket.send(message);
+      };
+
+      socket.onmessage = (event) => {
+        console.log("WebSocket message received");
+        try {
+          const data = event.data;
+          setSearchCoords(JSON.parse(data));
+        } catch (error) {
+          console.error("Error processing WebSocket message:", error);
+        } finally {
+          setLoaderCoordSearch(false);
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+
+      return () => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        }
+      };
+    }, [searchQueryCoord]);
+
+    useEffect(() => {
+      searchForEngs();
+    }, [searchForEngs]);
+
+    useEffect(() => {
+      searchForCoords();
+    }, [searchForCoords]);
+
     return (
       <dialog
         ref={ref}
@@ -247,42 +389,106 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     >
                       Assigned to
                     </label>
-                    <div className="relative w-full">
-                      <input
-                        type="search"
-                        name="assigned_to"
-                        id="assigned_to"
-                        value={formValues.assigned_to}
-                        className="w-full rounded-[19px] border-[1px] h-[47px] border-n400  pl-[40px] pr-[12px] md:text-[15px] text-[13px] text-n600"
-                        placeholder="Search members"
-                        onChange={(e) => {
-                          handleChange(e);
-                        }}
-                      />
-                      <svg
-                        className="absolute left-[14px] top-[50%] translate-y-[-50%]"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <path
-                          d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
-                          stroke="#6F6C8F"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+
+                    {selectedEng ? (
+                      <div className="flex items-center gap-[8px] w-full">
+                        <div className="relative">
+                          {" "}
+                          <img
+                            src="avatar.png"
+                            alt="avatar"
+                            className="w-[40px"
+                          />
+                          <span
+                            className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
+                            onClick={removeEng}
+                          >
+                            🗙
+                          </span>
+                        </div>
+
+                        <span className="text-550 text-[14px]">
+                          {selectedEng}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="relative w-full">
+                        <input
+                          type="search"
+                          name="assigned_to"
+                          id="assigned_to"
+                          value={searchQueryEng}
+                          className="w-full rounded-[19px] border-[1px] h-[47px] border-n400  pl-[40px] pr-[12px] md:text-[15px] text-[13px] text-n600"
+                          placeholder="Search members"
+                          onChange={(e) => {
+                            setSearchQueryEng(e.target.value);
+                          }}
+                          onFocus={() => setIsFocusedAssignInput(true)}
                         />
-                        <path
-                          d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
-                          stroke="#6F6C8F"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </div>
+                        <svg
+                          className="absolute left-[14px] top-[50%] translate-y-[-50%]"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <path
+                            d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
+                            stroke="#6F6C8F"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
+                            stroke="#6F6C8F"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        {isFocusedAssignInput && searchQueryEng !== "" && (
+                          <div className="rounded-[20px] p-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
+                            {loaderAssignSearch ? (
+                              <div className="w-full py-[10px] flex items-center justify-center">
+                                <RotatingLines
+                                  strokeWidth="4"
+                                  strokeColor="#4A3AFF"
+                                  width="20"
+                                />
+                              </div>
+                            ) : (
+                              searchEngs.map((eng) => {
+                                return (
+                                  <div
+                                    className="flex items-center gap-[8px] w-full cursor-pointer"
+                                    onClick={() => {
+                                      setformValues((prev) => ({
+                                        ...prev,
+                                        assigned_to: eng.email,
+                                      }));
+                                      console.log(eng.email);
+                                      setSelectedEng(eng.email);
+                                      setSearchQueryEng("");
+                                    }}
+                                  >
+                                    <img
+                                      src="avatar.png"
+                                      alt="avatar"
+                                      className="w-[35px]"
+                                    />
+                                    <span className="text-n700 text-[14px]">
+                                      {eng.email}
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -490,7 +696,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             <div className="flex items-center flex-col gap-[20px] w-full">
               <div className="flex flex-col items-start gap-[8px] w-[100%]">
                 <label
-                  htmlFor="title"
+                  htmlFor="mailed_users"
                   className="leading-[21px] font-medium ml-[9px] text-n700"
                 >
                   Mailed users
@@ -498,16 +704,15 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 <div className="relative w-full">
                   <input
                     type="search"
-                    name=""
+                    name="mailed_users"
                     id=""
+                    value={searchQueryCoord}
                     className="w-full rounded-[19px] border-[1px] h-[47px] border-n400  pl-[40px] pr-[12px] md:text-[15px] text-[13px] text-n600"
                     placeholder="Search members"
                     onChange={(e) => {
-                      setformValues((prev) => ({
-                        ...prev,
-                        accounts: [e.target.value],
-                      }));
+                      setSearchQueryCoord(e.target.value);
                     }}
+                    onFocus={() => setIsFocusedMailInput(true)}
                   />
                   <svg
                     className="absolute left-[14px] top-[50%] translate-y-[-50%]"
@@ -532,13 +737,85 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       stroke-linejoin="round"
                     />
                   </svg>
-                </div>
-                {formErrs.accounts !== "" &&
-                  formErrs.accounts !== undefined && (
-                    <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                      {formErrs.accounts}
-                    </span>
+
+                  {isFocusedMailInput && searchQueryCoord !== "" && (
+                    <div className="rounded-[20px] p-[18px] z-50 bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
+                      {loaderCoordSearch ? (
+                        <div className="w-full py-[10px] flex items-center justify-center">
+                          <RotatingLines
+                            strokeWidth="4"
+                            strokeColor="#4A3AFF"
+                            width="20"
+                          />
+                        </div>
+                      ) : (
+                        searchCoords.map((coord) => {
+                          return (
+                            <div
+                              className="flex items-center gap-[8px] w-full cursor-pointer"
+                              onClick={() => {
+                                setformValues((prev) => {
+                                  if (!prev.accounts.includes(coord.email)) {
+                                    return {
+                                      ...prev,
+                                      accounts: [...prev.accounts, coord.email],
+                                    };
+                                  }
+                                  return prev;
+                                });
+                                setSelectedCoord((prev) => {
+                                  if (!prev.includes(coord.email)) {
+                                    return [...prev, coord.email];
+                                  }
+                                  return prev;
+                                });
+                                setSearchQueryCoord("");
+                              }}
+                            >
+                              <img
+                                src="avatar.png"
+                                alt="avatar"
+                                className="w-[35px]"
+                              />
+                              <span className="text-n700 text-[14px]">
+                                {coord.email}
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   )}
+                </div>
+                {formErrs.accounts !== "" && formErrs.accounts !== undefined ? (
+                  <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                    {formErrs.accounts}
+                  </span>
+                ) : (
+                  selectedCoord && (
+                    <div className="flex items-center gap-[5px] pl-4">
+                      {selectedCoord.map((coord, index) => {
+                        return (
+                          <div className="" key={index}>
+                            <div className="relative">
+                              <img
+                                src="avatar1.png"
+                                alt="avatar"
+                                className="w-[35px]"
+                              />
+                              <span
+                                className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
+                                onClick={() => { removeCoord(coord) }}
+                              >
+                                🗙
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )
+                )}
               </div>
 
               <div className="flex flex-col items-start gap-[8px] w-[100%]">
@@ -641,7 +918,11 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   handleSecondSubmit(e);
                 }}
               >
-                {isLoading ?<RotatingLines strokeColor="white" width="22.5"/> :"Confirm"}
+                {isLoading ? (
+                  <RotatingLines strokeColor="white" width="22.5" />
+                ) : (
+                  "Confirm"
+                )}
               </button>
             </div>
           </>

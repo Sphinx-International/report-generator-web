@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, ChangeEvent } from "react";
+import { useState, useRef, useEffect, ChangeEvent, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import WorkOrderStatus from "../components/WorkOrderStatus";
 import WorkOrderpriority from "../components/WorkOrderPriorities";
@@ -10,14 +10,11 @@ import { ResOfOneMission } from "../assets/types/Mission";
 import { User } from "../assets/types/User";
 import { RotatingLines } from "react-loader-spinner";
 import { formatFileSize } from "../func/formatFileSize";
-import io from "socket.io-client";
 
 const MissionDetails = () => {
   const { id } = useParams();
 
   const [visibleEngPopup, setVisibleEngPopup] = useState<boolean>(false);
-  const [selectedEng, setSelectedEng] = useState<User>();
-  const [Users, setUsers] = useState<User[]>([]);
   const addTaskDialogRef = useRef<HTMLDialogElement>(null);
   const refuseTaskDialogRef = useRef<HTMLDialogElement>(null);
   const submitMissionDialogRef = useRef<HTMLDialogElement>(null);
@@ -25,7 +22,19 @@ const MissionDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [reportFile, setReportFile] = useState<File>();
   const [acceptenceFile, setAcceptenceFile] = useState<File>();
-  const [searchQuery, setSearchQuery] = useState("");
+
+  const [searchQueryEng, setSearchQueryEng] = useState("");
+  const [searchQueryCoord, setSearchQueryCoord] = useState("");
+
+  const [searchEngs, setSearchEngs] = useState<User[]>([]);
+  const [searchCoords, setSearchCoords] = useState<User[]>([]);
+
+  const [selectedEng, setSelectedEng] = useState<string | null>(null);
+  const [selectedCoord, setSelectedCoord] = useState<string[]>([]);
+
+  const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
+  const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
+
   const handleFileChange = (
     event: ChangeEvent<HTMLInputElement>,
     setFile: React.Dispatch<React.SetStateAction<File | undefined>>
@@ -220,12 +229,10 @@ const MissionDetails = () => {
     }
   };
 
-
-  
   const downloadFile = async (
     attachmentId: number | undefined,
     path: string,
-    fileName:string| undefined
+    fileName: string | undefined
   ) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -259,49 +266,54 @@ const MissionDetails = () => {
     }
   };
 
-  const fetchUsers = async () => {
+  const searchForEngs = useCallback(() => {
+    if (!searchQueryEng) {
+      console.log("No search query provided");
+      return;
+    }
+    setLoaderAssignSearch(true);
+
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
     }
 
-    const socket = io("http://localhost:5173", {
-      path: "/ws/search-account",
-      extraHeaders: {
-        Authorization: `Token ${token}`,
-      },
-    });
+    const url = `ws://89.116.110.42:8000/ws/search-account/engineer`;
+    const socket = new WebSocket(url);
 
-    socket.on("connect", () => {
+    socket.onopen = () => {
       console.log("WebSocket connection opened");
-      socket.emit("search", `query=${searchQuery}`);
-    });
+      const message = `search|${token}|${searchQueryEng}`;
+      socket.send(message);
+    };
 
-    socket.on("message", (data) => {
+    socket.onmessage = (event) => {
+      console.log("WebSocket message received");
       try {
-        const parsedData = JSON.parse(data);
-        console.log(parsedData);
-        setUsers(parsedData.data);
+        const data = event.data;
+        setSearchEngs(JSON.parse(data));
       } catch (error) {
-        console.error("Error parsing WebSocket message: ", error);
-      }
-    });
-
-    socket.on("error", (error) => {
-      console.error("WebSocket error: ", error);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("WebSocket connection closed");
-    });
-
-    return () => {
-      if (socket.connected) {
-        socket.disconnect();
+        console.error("Error processing WebSocket message:", error);
+      } finally {
+        setLoaderAssignSearch(false);
       }
     };
-  };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [searchQueryEng]);
 
   useEffect(() => {
     const fetchOneWorkOrder = async () => {
@@ -337,6 +349,10 @@ const MissionDetails = () => {
     };
     fetchOneWorkOrder();
   }, [id, workorder]);
+
+  useEffect(() => {
+    searchForEngs();
+  }, [searchForEngs]);
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
@@ -403,11 +419,10 @@ const MissionDetails = () => {
                       className=" rounded-[50%] w-[40px] cursor-pointer"
                       onClick={() => {
                         setVisibleEngPopup(true);
-                        // fetchUsers();
                       }}
                     />
                     <span className="text-[17px] text-550 leading-[30px]">
-                      {selectedEng.first_name} {selectedEng.last_name}
+                      {selectedEng}
                     </span>
                     {visibleEngPopup && (
                       <div className="w-[400px] absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
@@ -416,10 +431,9 @@ const MissionDetails = () => {
                             type="search"
                             name=""
                             id=""
-                            value={searchQuery}
+                            value={searchQueryEng}
                             onChange={(eo) => {
-                              setSearchQuery(eo.target.value);
-                              fetchUsers();
+                              setSearchQueryEng(eo.target.value);
                             }}
                             className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md md:px-[35px] md:text-[13px] text-[11px]"
                             placeholder="Search"
@@ -457,14 +471,23 @@ const MissionDetails = () => {
                               Create new user
                             </span>
                           </div>
-                          {Users.length !== 0 &&
-                            Users.map((user, index) => {
+                          {loaderAssignSearch ? (
+                            <div className="w-full py-[10px] flex items-center justify-center">
+                              <RotatingLines
+                                strokeWidth="4"
+                                strokeColor="#4A3AFF"
+                                width="20"
+                              />
+                            </div>
+                          ) : (
+                            searchEngs.length !== 0 && searchQueryEng !=="" &&
+                            searchEngs.map((user, index) => {
                               return (
                                 <div
                                   key={index}
                                   className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                   onClick={() => {
-                                    setSelectedEng(user);
+                                    setSelectedEng(user.email);
                                     setVisibleEngPopup(false);
                                   }}
                                 >
@@ -478,7 +501,8 @@ const MissionDetails = () => {
                                   </span>
                                 </div>
                               );
-                            })}
+                            })
+                          )}
                         </div>
                       </div>
                     )}
@@ -489,7 +513,6 @@ const MissionDetails = () => {
                       className="p-[10px] rounded-[50%] bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer"
                       onClick={() => {
                         setVisibleEngPopup(true);
-                        //fetchUsers();
                       }}
                     >
                       <svg
@@ -515,10 +538,9 @@ const MissionDetails = () => {
                             type="search"
                             name=""
                             id=""
-                            value={searchQuery}
+                            value={searchQueryEng}
                             onChange={(eo) => {
-                              setSearchQuery(eo.target.value);
-                              fetchUsers();
+                              setSearchQueryEng(eo.target.value);
                             }}
                             className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md md:px-[35px] md:text-[13px] text-[11px]"
                             placeholder="Search"
@@ -556,14 +578,23 @@ const MissionDetails = () => {
                               Create new user
                             </span>
                           </div>
-                          {Users &&
-                            Users.map((user, index) => {
+                          {loaderAssignSearch ? (
+                            <div className="w-full py-[10px] flex items-center justify-center">
+                              <RotatingLines
+                                strokeWidth="4"
+                                strokeColor="#4A3AFF"
+                                width="20"
+                              />
+                            </div>
+                          ) : (
+                            searchEngs.length !== 0 && searchQueryEng !=="" &&
+                            searchEngs.map((user, index) => {
                               return (
                                 <div
                                   key={index}
                                   className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                   onClick={() => {
-                                    setSelectedEng(user);
+                                    setSelectedEng(user.email);
                                     setVisibleEngPopup(false);
                                   }}
                                 >
@@ -577,7 +608,8 @@ const MissionDetails = () => {
                                   </span>
                                 </div>
                               );
-                            })}
+                            })
+                          )}
                         </div>
                       </div>
                     )}
@@ -641,7 +673,7 @@ const MissionDetails = () => {
                   <div className="w-full flex flex-col gap-[12px]">
                     {workorder.attachments.length > 0
                       ? workorder.attachments.map((attach, index) => {
-                        return (
+                          return (
                             <div
                               key={index}
                               className="cursor-pointer w-[50%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]"
@@ -681,7 +713,7 @@ const MissionDetails = () => {
                                 </div>
                               </div>
                             </div>
-                          );  
+                          );
                         })
                       : null}
                   </div>
@@ -942,7 +974,7 @@ const MissionDetails = () => {
                 } border-[2px]  leading-[20px] font-semibold text-[14px]`}
                 disabled={selectedEng ? false : true}
                 onClick={() => {
-                  handleAssignment(workorder.workorder.id, selectedEng!.email);
+                  handleAssignment(workorder.workorder.id, selectedEng!);
                 }}
               >
                 Assign
