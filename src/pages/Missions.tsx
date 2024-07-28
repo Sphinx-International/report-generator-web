@@ -15,6 +15,8 @@ import { ResMission } from "../assets/types/Mission";
 import { useDispatch } from "react-redux";
 import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
 import { AppDispatch } from "../Redux/store";
+import { RotatingLines } from "react-loader-spinner";
+
 const Missions = () => {
   const navigate = useNavigate();
 
@@ -29,6 +31,13 @@ const Missions = () => {
 
   const [workorders, setWorkorders] = useState<ResMission[] | null>(null);
   const isDialogOpen = useSelector((state: RootState) => state.dialog.isOpen);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [totalWorkorders, setTotalWorkorders] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 6;
+
+  const totalPages = Math.ceil(totalWorkorders / limit);
 
   const handladdMissionButtonClick = () => {
     const dialog = missionDialogRef.current;
@@ -54,16 +63,14 @@ const Missions = () => {
     }
   };
 
-  const fetchWorkOrders = async () => {
+  const fetchWorkOrders = async (offset = 0, limit = 8) => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found");
-      return;
+      return { total: 0, current_offset: 0 };
     }
 
-    const offset = 0;
-    const limit = 8;
-
+    setIsLoading(true);
     const url = `/workorder/get-workorders?offset=${offset}&limit=${limit}`;
 
     try {
@@ -76,28 +83,39 @@ const Missions = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text(); // Read the response body as text
+        const errorText = await response.text();
         console.error("Error response text: ", errorText);
-        localStorage.clear()
+        localStorage.clear();
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      // console.log("Response data: ", data); // Log the data for debugging
       setWorkorders(data.data);
+      setTotalWorkorders(data.total);
+      return { total: data.total, current_offset: offset };
     } catch (err) {
       console.error("Error: ", err);
+      return { total: 0, current_offset: 0 };
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleFirstPage = () => setCurrentPage(1);
+  const handlePreviousPage = () =>
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const handleLastPage = () => setCurrentPage(totalPages);
+
   useEffect(() => {
-    fetchWorkOrders();
+    fetchWorkOrders((currentPage - 1) * limit, limit);
     const dialog = submitMissionDialogRef.current;
     if (dialog && isDialogOpen) {
       dialog.style.display = "flex";
       dialog.showModal();
     }
-  }, [isDialogOpen, workorders]);
+  }, [isDialogOpen, currentPage]);
 
   return (
     <div className="flex w-full md:h-[100vh]">
@@ -122,90 +140,105 @@ const Missions = () => {
               : ["To do", "Acceptance", "Done"]
           }
           functionalties={{
-            primaryFunc: { name: "Add workorder"},
-            secondaryFuncs: [{ name: "Delete"}],
+            primaryFunc: { name: "Add workorder" },
+            secondaryFuncs: [{ name: "Delete" }],
           }}
           handleAddPrimaryButtonClick={handladdMissionButtonClick}
           handleSecondaryButtonClick={handleDeleteButtonClick}
         >
-          <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
-            {workorders
-              ? workorders.map((workorder: ResMission, index: number) => {
-                  return (
-                    <div
-                      key={workorder.id}
-                      className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
-                    >
-                      <div
-                        className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
-                        onClick={() => navigate(`/missions/${workorder.id}`)}
-                      >
-                        <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
-                          {workorder.title}
-                        </h2>
-                        <p
-                          className="sm:text-[14px] text-[12px] leading-[21px] text-n500 overflow-hidden text-ellipsis "
-                          style={{
-                            display: "-webkit-box",
-                            WebkitLineClamp: "3",
-                            WebkitBoxOrient: "vertical",
-                          }}
+          {isLoading ? (
+            <div className="w-full flex items-center justify-center py-[40px]">
+              <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60" />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-[40px]">
+              <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
+                {workorders
+                  ? workorders.map((workorder: ResMission, index: number) => {
+                      return (
+                        <div
+                          key={workorder.id}
+                          className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
                         >
-                          {workorder.description}
-                        </p>
-                        <div className="flex items-center gap-[8px]">
-                          <WorkOrderStatus
-                            status={workorder.status}
-                            styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                          />
-                          <WorkOrderpriority
-                            priority={workorder.priority}
-                            styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="w-full flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px]  px-[24px] py-[16px]">
-                        {workorder.assigned_to ? (
-                          <div className="w-full flex items-center gap-[5px]">
-                            <img
-                              src="/avatar1.png"
-                              alt="avatar"
-                              className="sm:w-[29px] w-[26px]"
-                            />
-                            <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
-                              {workorder.assigned_to}
-                            </span>
+                          <div
+                            className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
+                            onClick={() =>
+                              navigate(`/missions/${workorder.id}`)
+                            }
+                          >
+                            <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
+                              {workorder.title}
+                            </h2>
+                            <p
+                              className="sm:text-[14px] text-[12px] leading-[21px] text-n500 overflow-hidden text-ellipsis "
+                              style={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: "3",
+                                WebkitBoxOrient: "vertical",
+                              }}
+                            >
+                              {workorder.description}
+                            </p>
+                            <div className="flex items-center gap-[8px]">
+                              <WorkOrderStatus
+                                status={workorder.status}
+                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                              />
+                              <WorkOrderpriority
+                                priority={workorder.priority}
+                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                              />
+                            </div>
                           </div>
-                        ) : null}
-                        {localStorage.getItem("role") ==="0"&& (
-                        <input
-                        type="checkbox"
-                        name="select-workOrder"
-                        id={`${index}`}
-                        className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCheckboxChange(`${workorder.id}`);
-                        }}
-                      />
-                        )}
 
-                      </div>
+                          <div className="w-full flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px]  px-[24px] py-[16px]">
+                            {workorder.assigned_to ? (
+                              <div className="w-full flex items-center gap-[5px]">
+                                <img
+                                  src="/avatar1.png"
+                                  alt="avatar"
+                                  className="sm:w-[29px] w-[26px]"
+                                />
+                                <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
+                                  {workorder.assigned_to}
+                                </span>
+                              </div>
+                            ) : null}
+                            {localStorage.getItem("role") === "0" && (
+                              <input
+                                type="checkbox"
+                                name="select-workOrder"
+                                id={`${index}`}
+                                className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCheckboxChange(`${workorder.id}`);
+                                }}
+                              />
+                            )}
+                          </div>
 
-                      <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                        {" "}
-                        {++index}
-                      </span>
-                    </div>
-                  );
-                })
-              : null}
-          </div>
-          <Pagination
-            buttonTitle="add mission +"
-            buttonFunc={handladdMissionButtonClick}
-          />
+                          <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
+                            {" "}
+                            {++index}
+                          </span>
+                        </div>
+                      );
+                    })
+                  : null}
+              </div>
+              <Pagination
+                buttonTitle="Add Mission"
+                buttonFunc={handladdMissionButtonClick}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onFirstPage={handleFirstPage}
+                onPreviousPage={handlePreviousPage}
+                onNextPage={handleNextPage}
+                onLastPage={handleLastPage}
+              />
+            </div>
+          )}
         </Main>
       </div>
       <MissionPopup
@@ -215,7 +248,17 @@ const Missions = () => {
         textAreaPlaceholder="Description"
       />
       <SuccessPopup ref={submitMissionDialogRef} />
-      <DeletePopup ref={deleteDialogRef} deleteItems={selectedWorkorders} deleteUrl="/workorder/delete-workorders" jsonTitle="workorders"/>
+      <DeletePopup
+        ref={deleteDialogRef}
+        deleteItems={selectedWorkorders}
+        deleteUrl="/workorder/delete-workorders"
+        jsonTitle="workorders"
+        fetchFunc={fetchWorkOrders}
+        fetchUrl="/workorder/get-workorders"
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        limit={limit}
+      />
     </div>
   );
 };

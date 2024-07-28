@@ -52,12 +52,13 @@ const UserManagment = () => {
   const addUserDialogRef = useRef<HTMLDialogElement>(null);
   const editUserDialogRef = useRef<HTMLDialogElement>(null);
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
-
-  const [editUser, setEditUser] = useState<User>();
-
+  const limit = 4;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const handleCheckboxChange = (userId: string) => {
     dispatch(toggleUserInTab(userId));
   };
+  console.log(currentPage);
   const handleAddUserButtonClick = () => {
     const dialog = addUserDialogRef.current;
     if (dialog) {
@@ -90,15 +91,13 @@ const UserManagment = () => {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (offset = 0, limit = 4) => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found");
-      return;
+      return { total: 0, current_offset: 0 };
     }
 
-    const offset = 0;
-    const limit = 8;
     const url = `/account/get-accounts?offset=${offset}&limit=${limit}`;
     setIsloading(true);
     try {
@@ -111,24 +110,27 @@ const UserManagment = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text(); // Read the response body as text
+        const errorText = await response.text();
         console.error("Error response text: ", errorText);
         localStorage.clear();
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      console.log(response.status);
       const data = await response.json();
-      // console.log("Response data: ", data); // Log the data for debugging
       setUsers(data.data);
+      setTotal(data.total);
+      return { total: data.total, current_offset: offset };
     } catch (err) {
       console.error("Error: ", err);
+      return { total: 0, current_offset: 0 };
     } finally {
       setIsloading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    const offset = (currentPage - 1) * limit;
+
+    fetchUsers(offset);
 
     const userDialog = addUserDialogRef.current;
     return () => {
@@ -136,7 +138,16 @@ const UserManagment = () => {
         userDialog.removeEventListener("close", handleDialogClose);
       }
     };
-  }, []);
+  }, [currentPage]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  const handleFirstPage = () => setCurrentPage(1);
+  const handlePreviousPage = () =>
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const handleLastPage = () => setCurrentPage(totalPages);
 
   const handleSpanClick = () => {
     if (selectedUsers.length === 0) {
@@ -324,24 +335,25 @@ const UserManagment = () => {
                             {user.email} <br /> 10-09-2002 <br /> Engineer
                           </span>
                           <Link to={`/edit-user/${index}`}>
-
-                          <svg
-                           onClick={(e) => { e.stopPropagation(); }}
-                            className="absolute top-[12px] right-[12px] sm:w-[16px] sm:h-[16px]"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 12 12"
-                            fill="none"
-                          >
-                            <path
-                              d="M8.16876 1.42914C8.44354 1.15437 8.81621 1 9.20481 1C9.5934 1 9.96608 1.15437 10.2409 1.42914C10.5156 1.70392 10.67 2.0766 10.67 2.46519C10.67 2.85379 10.5156 3.22646 10.2409 3.50124L4.01559 9.7272C3.85158 9.89106 3.64897 10.011 3.42642 10.076L1.44205 10.6562C1.38261 10.6735 1.31961 10.6746 1.25964 10.6592C1.19967 10.6438 1.14493 10.6126 1.10115 10.5689C1.05737 10.5251 1.02617 10.4703 1.0108 10.4104C0.99544 10.3504 0.996479 10.2874 1.01381 10.228L1.594 8.24358C1.65929 8.02121 1.77948 7.81884 1.94349 7.6551L8.16876 1.42914Z"
-                              stroke="#A0A3BD"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                            </Link>
+                            <svg
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="absolute top-[12px] right-[12px] sm:w-[16px] sm:h-[16px]"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 12 12"
+                              fill="none"
+                            >
+                              <path
+                                d="M8.16876 1.42914C8.44354 1.15437 8.81621 1 9.20481 1C9.5934 1 9.96608 1.15437 10.2409 1.42914C10.5156 1.70392 10.67 2.0766 10.67 2.46519C10.67 2.85379 10.5156 3.22646 10.2409 3.50124L4.01559 9.7272C3.85158 9.89106 3.64897 10.011 3.42642 10.076L1.44205 10.6562C1.38261 10.6735 1.31961 10.6746 1.25964 10.6592C1.19967 10.6438 1.14493 10.6126 1.10115 10.5689C1.05737 10.5251 1.02617 10.4703 1.0108 10.4104C0.99544 10.3504 0.996479 10.2874 1.01381 10.228L1.594 8.24358C1.65929 8.02121 1.77948 7.81884 1.94349 7.6551L8.16876 1.42914Z"
+                                stroke="#A0A3BD"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                            </svg>
+                          </Link>
                         </div>
                       );
                     })
@@ -352,19 +364,31 @@ const UserManagment = () => {
             <Pagination
               buttonTitle="add user +"
               buttonFunc={handleAddUserButtonClick}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onFirstPage={handleFirstPage}
+              onPreviousPage={handlePreviousPage}
+              onNextPage={handleNextPage}
+              onLastPage={handleLastPage}
             />
           </div>
         </Main>
       </div>
 
-      <UserPopUp ref={editUserDialogRef} />
-      <UserPopUp ref={addUserDialogRef} fetchUsers={fetchUsers} />
+      <UserPopUp
+        ref={addUserDialogRef}
+        fetchUsers={() => fetchUsers((currentPage - 1) * limit, limit)}
+      />
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedUsers}
         deleteUrl="/account/delete-accounts"
         jsonTitle="accounts"
-        fetchUsers={fetchUsers}
+        fetchFunc={fetchUsers}
+        fetchUrl="/account/get-accounts"
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        limit={limit}
       />
     </div>
   );

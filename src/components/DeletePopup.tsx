@@ -8,7 +8,11 @@ interface DeletePopUpProps {
   deleteItems: string[];
   deleteUrl: string
   jsonTitle:string
-  fetchUsers?: () => void;
+  fetchUrl: string;
+  fetchFunc: (offset: number, limit: number) => Promise<{ total: number; current_offset: number }>;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  limit: number;
 }
 
 const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
@@ -30,41 +34,69 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
 
     const handleDeleteItems = async (e: React.FormEvent) => {
       e.preventDefault();
-
+    
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found");
         return;
       }
       setIsLoading(true);
-      console.log(JSON.stringify({
-        [props.jsonTitle]: props.deleteItems,
-      }))
+    
       try {
+        // Fetch current users to determine if deletion will empty the current page
+        const initialResponse = await fetch(`${props.fetchUrl}?offset=${(props.currentPage - 1) * props.limit}&limit=${props.limit}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+        });
+    
+        if (!initialResponse.ok) {
+          console.error("Failed to fetch users before deletion");
+          throw new Error("Failed to fetch users before deletion");
+        }
+    
+        const initialData = await initialResponse.json();
+        const initialUserCount = initialData.data.length;
+    
+        // Perform deletion
         const response = await fetch(`${props.deleteUrl}`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${token}`,
-            },
-            body: JSON.stringify({
-              [props.jsonTitle]: props.deleteItems,
-            }),
-
-            
-          })
-         if (response.status && props.fetchUsers) {
-          props.fetchUsers()
-         }
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+          body: JSON.stringify({
+            [props.jsonTitle]: props.deleteItems,
+          }),
+        });
+    
+        if (!response.ok) {
+          console.error("Error deleting users:", await response.text());
+          alert("Failed to delete users");
+          return;
+        }
+    
+        // Determine if the current page is empty after deletion
+        const newUserCount = initialUserCount - props.deleteItems.length;
+        if (newUserCount === 0 && props.currentPage > 1) {
+          await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit);
+          props.setCurrentPage(props.currentPage - 1);
+        } else {
+          await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit);
+        }
       } catch (error) {
         console.error("Error deleting users:", error);
         alert("Failed to delete users");
       } finally {
         setIsLoading(false);
         closeDialog(e);
-        dispatch(deleteSelectedUsers())
+        dispatch(deleteSelectedUsers());
       }
     };
+    
+    
 
     return (
       <dialog
