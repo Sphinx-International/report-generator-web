@@ -10,6 +10,8 @@ import { ResOfOneMission } from "../assets/types/Mission";
 import { User } from "../assets/types/User";
 import { RotatingLines } from "react-loader-spinner";
 import { formatFileSize } from "../func/formatFileSize";
+import { getRole } from "../func/getUserRole";
+import Page404 from "./Page404";
 
 const MissionDetails = () => {
   const { id } = useParams();
@@ -34,6 +36,9 @@ const MissionDetails = () => {
 
   const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
   const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
+
+  const [HaveAccess, setHaveAccess] = useState(true);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   const handleFileChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -450,7 +455,6 @@ const MissionDetails = () => {
     }
   };
 
-
   useEffect(() => {
     const fetchOneWorkOrder = async () => {
       const token = localStorage.getItem("token");
@@ -470,6 +474,12 @@ const MissionDetails = () => {
           },
         });
 
+        if (response.status === 403) {
+          setHaveAccess(false);
+          setIsPageLoading(false);
+          return;
+        }
+
         if (!response.ok) {
           const errorText = await response.text(); // Read the response body as text
           console.error("Error response text: ", errorText);
@@ -477,14 +487,16 @@ const MissionDetails = () => {
         }
 
         const data = await response.json();
-        // console.log("Response data: ", data); // Log the data for debugging
         setWorkorder(data);
       } catch (err) {
         console.error("Error: ", err);
+      } finally {
+        setIsPageLoading(false);
       }
     };
+
     fetchOneWorkOrder();
-  }, [id, workorder]);
+  }, [id]);
 
   useEffect(() => {
     searchForEngs();
@@ -493,6 +505,25 @@ const MissionDetails = () => {
   useEffect(() => {
     searchForCoords();
   }, [searchForCoords]);
+
+  if (!HaveAccess) {
+    return <Page404 />;
+  }
+
+  if (isPageLoading) {
+    return (
+      <div className="w-full h-[100vh] flex items-center justify-center">
+        {" "}
+        <RotatingLines
+          visible={true}
+          width="100"
+          strokeWidth="4"
+          strokeColor="#4A3AFF"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
@@ -888,7 +919,12 @@ const MissionDetails = () => {
                           />
                           <span
                             className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
-                            onClick={() => { handleDeleteMailedPerson(workorder.workorder.id, mail.id)}}
+                            onClick={() => {
+                              handleDeleteMailedPerson(
+                                workorder.workorder.id,
+                                mail.id
+                              );
+                            }}
                           >
                             🗙
                           </span>
@@ -899,15 +935,16 @@ const MissionDetails = () => {
               </div>
               <div className="w-full flex flex-col items-start gap-[23px]">
                 <div className="w-full flex flex-col gap-[6px]">
-                  <label
-                    htmlFor="attachements"
-                    className="text-[17px] text-n700 leading-[30px] font-medium"
-                  >
-                    Attachements
-                  </label>
                   <div className="w-full flex flex-col gap-[12px]">
-                    {workorder.attachments.length > 0
-                      ? workorder.attachments.map((attach, index) => {
+                    {workorder.attachments.length > 0 ? (
+                      <>
+                        <label
+                          htmlFor="attachements"
+                          className="text-[17px] text-n700 leading-[30px] font-medium"
+                        >
+                          Attachements
+                        </label>
+                        {workorder.attachments.map((attach, index) => {
                           return (
                             <div
                               key={index}
@@ -949,8 +986,9 @@ const MissionDetails = () => {
                               </div>
                             </div>
                           );
-                        })
-                      : null}
+                        })}
+                      </>
+                    ) : null}
                   </div>
                 </div>
 
@@ -1152,7 +1190,7 @@ const MissionDetails = () => {
                                 </div>
                               </div>
                             </div>
-                          ) : (
+                          ) : getRole() !== 2 ? (
                             <>
                               {" "}
                               <input
@@ -1193,6 +1231,11 @@ const MissionDetails = () => {
                                 </span>
                               </label>
                             </>
+                          ) : (
+                            <div className="text-n700 pl-4">
+                              {" "}
+                              wait for acceptance
+                            </div>
                           )}
                         </div>
                       )}
@@ -1223,7 +1266,15 @@ const MissionDetails = () => {
                     acceptenceFile === undefined)
                     ? "bg-n400"
                     : "bg-primary"
-                }`}
+                } ${
+                  workorder.workorder.status === 4 && getRole() !== 0
+                    ? "hidden"
+                    : ""
+                } ${
+                  workorder.workorder.status === 3 && getRole() === 2
+                    ? "hidden"
+                    : ""
+                } `}
                 disabled={
                   workorder.workorder.status === 2 && reportFile === undefined
                     ? true

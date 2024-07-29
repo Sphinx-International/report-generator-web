@@ -12,6 +12,7 @@ import MissionDetails from "./pages/MissionDetails.tsx";
 import EditUsers from "./pages/EditUsers.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx"; 
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
+import Page404 from "./pages/Page404.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
   {
     path: "/missions/:id",
     element: <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]}/>,
+  },
+  {
+    path: "*",
+    element: <Page404 />,
   },
 
 ]);

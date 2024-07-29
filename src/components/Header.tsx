@@ -1,9 +1,9 @@
 import { useDispatch } from "react-redux";
-import { openSidebar} from "../Redux/slices/sideBarSlice";
+import { openSidebar } from "../Redux/slices/sideBarSlice";
 import { AppDispatch } from "../Redux/store";
 import { User } from "../assets/types/User";
-
-
+import { useState } from "react";
+import { Link } from "react-router-dom";
 interface headerProps {
   pageSentence: string;
   searchBar: boolean;
@@ -11,8 +11,9 @@ interface headerProps {
 
 const Header: React.FC<headerProps> = (props) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [showDropDown, setshowDropDown] = useState<boolean>(false);
 
-   const user:User = JSON.parse(localStorage.getItem("user")!)
+  const user: User = JSON.parse(localStorage.getItem("user")!);
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -51,52 +52,57 @@ const Header: React.FC<headerProps> = (props) => {
             />
           </svg>
 
-
           <svg
-        onClick={() => {
-         dispatch(openSidebar());
-        }}
-        className="md:hidden inline-block relative"
-        xmlns="http://www.w3.org/2000/svg"
-        width="39"
-        height="39"
-        viewBox="0 0 39 39"
-        fill="none"
-      >
-        <rect
-          opacity="0.8"
-          x="0.5"
-          y="0.5"
-          width="38"
-          height="38"
-          rx="19"
-          fill="white"
-          stroke="#8E92BC"
-        />
-        <path
-          d="M11.5226 15.0684H27.4772"
-          stroke="#8E92BC"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
-        <path
-          d="M11.5226 19.5H27.4772"
-          stroke="#8E92BC"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
-        <path
-          d="M11.5226 23.9321H27.4772"
-          stroke="#8E92BC"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
-      </svg>
-
+            onClick={() => {
+              dispatch(openSidebar());
+            }}
+            className="md:hidden inline-block relative"
+            xmlns="http://www.w3.org/2000/svg"
+            width="39"
+            height="39"
+            viewBox="0 0 39 39"
+            fill="none"
+          >
+            <rect
+              opacity="0.8"
+              x="0.5"
+              y="0.5"
+              width="38"
+              height="38"
+              rx="19"
+              fill="white"
+              stroke="#8E92BC"
+            />
+            <path
+              d="M11.5226 15.0684H27.4772"
+              stroke="#8E92BC"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <path
+              d="M11.5226 19.5H27.4772"
+              stroke="#8E92BC"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <path
+              d="M11.5226 23.9321H27.4772"
+              stroke="#8E92BC"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
 
           <div className="flex items-center gap-[12px]">
-            <img src="/avatar.png" alt="avatar" className="w-[35px] rounded-[50%]" />
-            <div className="lg:flex items-center gap-[6px] text-n800 hidden text-[14px]">
+            <img
+              src="/avatar.png"
+              alt="avatar"
+              className="w-[35px] rounded-[50%]"
+            />
+            <div
+              className="lg:flex items-center gap-[6px] text-n800 hidden text-[14px] relative cursor-pointer"
+              onClick={() => {setshowDropDown(!showDropDown)}}
+            >
               {user?.first_name} {user?.last_name}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -112,6 +118,36 @@ const Header: React.FC<headerProps> = (props) => {
                   fill="#170F49"
                 />
               </svg>
+              {showDropDown && (
+                <div className="flex flex-col gap-[10px] py-[10px] w-[180px] rounded-tl-[24px] rounded-bl-[24px] rounded-br-[24px] bg-white absolute z-50 top-8 right-3 shadow-lg">
+                  <Link to="/my-account" className="w-full">
+                  <span className="text-n700 font-medium flex items-center justify-center gap-[8px] cursor-pointer text-nowrap py-[4px] hover:bg-n300 w-full">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="17"
+                      viewBox="0 0 16 17"
+                      fill="none"
+                    >
+                      <path
+                        d="M1.33301 16.0001V15.1667C1.33301 12.4053 3.57158 10.1667 6.33301 10.1667H9.66634C12.4278 10.1667 14.6663 12.4053 14.6663 15.1667V16.0001"
+                        stroke="#4A3AFF"
+                        stroke-width="1.66667"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M7.99935 7.66667C6.1584 7.66667 4.66602 6.17428 4.66602 4.33333C4.66602 2.49238 6.1584 1 7.99935 1C9.84027 1 11.3327 2.49238 11.3327 4.33333C11.3327 6.17428 9.84027 7.66667 7.99935 7.66667Z"
+                        stroke="#4A3AFF"
+                        stroke-width="1.66667"
+                        stroke-linecap="round"
+                      />
+                    </svg>{" "}
+                    My account
+                  </span>
+                  </Link>
+
+                </div>
+              )}
             </div>
           </div>
         </div>

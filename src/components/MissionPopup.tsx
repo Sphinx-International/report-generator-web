@@ -66,7 +66,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const [isLoading, setIsLoading] = useState(false);
 
     const [formErrs, setFormErrs] = useState<FormErrors>({});
-
     const closeDialog = (
       eo: MouseEvent<HTMLButtonElement> | React.FormEvent
     ) => {
@@ -140,6 +139,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }));
     };
     
+    const handleFocusMailedUsersInput = () => {
+      setIsFocusedMailInput(true);
+      setFormErrs((prev) => ({ ...prev, accounts: "" }));
+    };
 
     const handleCreateWorkorder = async (e: FormEvent) => {
       e.preventDefault();
@@ -714,7 +717,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     onChange={(e) => {
                       setSearchQueryCoord(e.target.value);
                     }}
-                    onFocus={() => setIsFocusedMailInput(true)}
+                    onFocus={handleFocusMailedUsersInput}
+
                   />
                   <svg
                     className="absolute left-[14px] top-[50%] translate-y-[-50%]"
