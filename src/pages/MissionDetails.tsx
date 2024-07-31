@@ -415,6 +415,7 @@ const MissionDetails = () => {
         switch (response.status) {
           case 200:
             setVisibleCoordPopup(false);
+            fetchOneWorkOrder()
             break;
           case 400:
             console.log("verify your data");
@@ -450,14 +451,11 @@ const MissionDetails = () => {
       });
 
       if (response) {
-        const data = await response.json();
-        console.log("Form submitted successfully", data);
-
         console.log(response.status);
 
         switch (response.status) {
           case 200:
-            console.log("deleted succesfully");
+            fetchOneWorkOrder()
             break;
           case 400:
             console.log("verify your data");
@@ -580,6 +578,17 @@ const MissionDetails = () => {
     setUndoActionTriggered(true);
     setUndoMessageVisible(false);
     setIsLoading(false)
+  };
+
+  const handleWithDragAndDropAttach = (files: FileList) => {
+    if (files) {
+      setAttachFiles((prevFiles) => [...prevFiles, ...files]);
+    }
+  };
+  const handleWithDragAndDropReportAndAccaptence = (file: File,setFileState: (file: File) => void) => {
+    if (file) {
+      setFileState(file);
+    }
   };
 
   useEffect(() => {
@@ -913,7 +922,7 @@ const MissionDetails = () => {
                       +
                     </span>
                     {visibleCoordPopup && (
-                      <div className="w-[400px] absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                      <div className="w-[400px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
                         <div className=" relative w-full">
                           <input
                             type="search"
@@ -1002,7 +1011,7 @@ const MissionDetails = () => {
                             className="w-[40px] rounded-[50%]"
                           />
                           <span
-                            className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
+                            className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
                             onClick={() => {
                               handleDeleteMailedPerson(
                                 workorder.workorder.id,
@@ -1132,7 +1141,18 @@ const MissionDetails = () => {
                                 );
                               })}
                             {getRole() !== 2 && (
-                              <div className="flex flex-col w-[48%]">
+                              <div className="flex flex-col w-[48%]"
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const files = e.dataTransfer.files;
+                                // Add the files to the input element
+                                handleWithDragAndDropAttach(files);
+                              }}>
                                 <input
                                   type="file"
                                   name="attachement"
@@ -1293,7 +1313,19 @@ const MissionDetails = () => {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-start gap-[8px] w-[100%]">
+                        <div className="flex flex-col items-start gap-[8px] w-[100%]"
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const file = e.dataTransfer.files[0];
+                          // Add the files to the input element
+                          handleWithDragAndDropReportAndAccaptence(file,setReportFile);
+                        }}
+                        >
                           <input
                             type="file"
                             name="report"
@@ -1413,7 +1445,17 @@ const MissionDetails = () => {
                               </div>
                             </div>
                           ) : getRole() !== 2 ? (
-                            <>
+                            <div  onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const file = e.dataTransfer.files[0];
+                              // Add the files to the input element
+                              handleWithDragAndDropReportAndAccaptence(file,setAcceptenceFile);
+                            }}>
                               {" "}
                               <input
                                 type="file"
@@ -1452,7 +1494,7 @@ const MissionDetails = () => {
                                   </span>
                                 </span>
                               </label>
-                            </>
+                            </div>
                           ) : (
                             <div className="text-n700 pl-4">
                               {" "}

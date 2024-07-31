@@ -1,6 +1,7 @@
 import { forwardRef, useState, MouseEvent } from "react";
 import { useDispatch } from "react-redux";
 import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
+import { deleteSelectedWorkorders } from "../Redux/slices/selectedWorkordersSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 
@@ -99,11 +100,13 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
 
       } catch (error) {
         console.error("Error deleting users:", error);
-        alert("Failed to delete users");
+        alert("Failed to delete items");
       } finally {
         setIsLoading(false);
         closeDialog(e);
         dispatch(deleteSelectedUsers());
+        dispatch(deleteSelectedWorkorders());
+
       }
     };
     

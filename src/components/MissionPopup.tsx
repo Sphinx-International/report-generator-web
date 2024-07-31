@@ -95,6 +95,15 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         }));
       }
     };
+    
+    const handleAddingFileChangeWithDragAndDrop = (files: FileList) => {
+      if (files) {
+        setformValues((prevFormValues) => ({
+          ...prevFormValues,
+          attachments: [...(prevFormValues.attachments || []), ...files],
+        }));
+      }
+    };
 
     const handleNextClick = () => {
       setCurrentPriorityIndex((prevIndex) => {
@@ -130,15 +139,15 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         assigned_to: "",
       }));
     };
-    const removeCoord = (deletedItem:string) => {
+    const removeCoord = (deletedItem: string) => {
       setSelectedCoord((prev) => prev.filter((item) => item !== deletedItem));
-      
+
       setformValues((prev) => ({
         ...prev,
         accounts: prev.accounts.filter((item) => item !== deletedItem),
       }));
     };
-    
+
     const handleFocusMailedUsersInput = () => {
       setIsFocusedMailInput(true);
       setFormErrs((prev) => ({ ...prev, accounts: "" }));
@@ -210,8 +219,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         console.error("Error submitting form", err);
       } finally {
         setIsLoading(false);
-        props.fetchWorkOrders!()
-        localStorage.setItem("selectedFilter","all")
+        props.fetchWorkOrders!();
+        localStorage.setItem("selectedFilter", "all");
       }
     };
 
@@ -719,7 +728,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       setSearchQueryCoord(e.target.value);
                     }}
                     onFocus={handleFocusMailedUsersInput}
-
                   />
                   <svg
                     className="absolute left-[14px] top-[50%] translate-y-[-50%]"
@@ -812,7 +820,9 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                               />
                               <span
                                 className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
-                                onClick={() => { removeCoord(coord) }}
+                                onClick={() => {
+                                  removeCoord(coord);
+                                }}
                               >
                                 🗙
                               </span>
@@ -825,7 +835,20 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 )}
               </div>
 
-              <div className="flex flex-col items-start gap-[8px] w-[100%]">
+              <div
+              className="flex flex-col items-start gap-[8px] w-[100%]"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const files = e.dataTransfer.files;
+                  // Add the files to the input element
+                  handleAddingFileChangeWithDragAndDrop(files);
+                }}
+              >
                 <label
                   htmlFor="attachement"
                   className="leading-[21px] font-medium ml-[9px] text-n700 "

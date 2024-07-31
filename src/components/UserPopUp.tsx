@@ -135,7 +135,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       id="User-popup"
       className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[40px] px-[20px] sm:pb-[35px] pt-[40px]  flex-col items-start gap-[20px] rounded-[34px] sm:w-[70vw] sm:h-fit w-[88vw] h-[80vh]`}
     >
-      <div className="flex flex-col items-start gap-[10px]">
+      {/*   <div className="flex flex-col items-start gap-[10px]">
         <label
           htmlFor="profilePic"
           className="text-n700 sm:text-[17px] text-[13px] leading-[20px] font-medium ml-[5px]"
@@ -175,7 +175,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
             </svg>
           )}
         </div>
-      </div>
+      </div>  */}
 
       <form
         action=""
@@ -245,19 +245,101 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
             </div>
             <div className="flex flex-col items-start gap-[8px] lg:w-[50%] w-[100%]">
               <label
-                htmlFor="birthdate"
+                htmlFor="password"
                 className="text-n700 sm:text-[17px] text-[13px] leading-[20px] font-medium pl-[9px]"
               >
-                Birthdate
+                Password
               </label>
-              <DatePicker
-                selected={selectedDate}
-                onChange={(date: Date | null) => setSelectedDate(date)}
-                placeholderText="Select a birthdate"
-                className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg text-n500 sm:text-[16px] text-[14px]"
-                id="birthdate"
-                calendarClassName="custom-datepicker"
-              />
+              <div className="relative w-full">
+                <input
+                  placeholder="Generate a password"
+                  value={formData.password}
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  id="password"
+                  className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
+                  onChange={(e) => {
+                    handleChange(e);
+                  }}
+                />
+                {formData.password === "" ? (
+                  <svg
+                    onClick={() => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        password: generatePassword(),
+                      }));
+                    }}
+                    className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="25"
+                    height="25"
+                    viewBox="0 0 25 25"
+                    fill="none"
+                  >
+                    <path
+                      d="M13.1562 2.08325C18.9167 2.08325 23.5833 6.77075 23.5833 12.4999C23.5833 18.2291 18.9167 22.9166 13.1562 22.9166C9.5 22.9166 6.30208 21.0208 4.4375 18.1562L6.08333 16.8541C7.55208 19.2395 10.1667 20.8333 13.1667 20.8333C15.3768 20.8333 17.4964 19.9553 19.0592 18.3925C20.622 16.8297 21.5 14.7101 21.5 12.4999C21.5 10.2898 20.622 8.17017 19.0592 6.60736C17.4964 5.04456 15.3768 4.16659 13.1667 4.16659C8.91667 4.16659 5.41667 7.35409 4.90625 11.4583H7.78125L3.88542 15.3437L0 11.4583H2.80208C3.32292 6.19784 7.76042 2.08325 13.1562 2.08325ZM16.2396 10.6666C16.7604 10.677 17.1875 11.0937 17.1875 11.6249V16.427C17.1875 16.9478 16.7604 17.3853 16.2292 17.3853H10.4687C9.9375 17.3853 9.51042 16.9478 9.51042 16.427V11.6249C9.51042 11.0937 9.9375 10.677 10.4583 10.6666V9.6145C10.4583 8.02075 11.7604 6.72909 13.3437 6.72909C14.9375 6.72909 16.2396 8.02075 16.2396 9.6145V10.6666ZM13.3437 8.18742C12.5625 8.18742 11.9167 8.82284 11.9167 9.6145V10.6666H14.7812V9.6145C14.7812 8.82284 14.1354 8.18742 13.3437 8.18742Z"
+                      fill="#A0A3BD"
+                    />
+                  </svg>
+                ) : showPassword ? (
+                  <svg
+                    className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    onClick={() => {
+                      setShowPassword(false);
+                    }}
+                  >
+                    <path
+                      d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
+                      stroke="#A0A3BD"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
+                      stroke="#A0A3BD"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="3"
+                      stroke="#A0A3BD"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    onClick={() => {
+                      setShowPassword(true);
+                    }}
+                  >
+                    <path
+                      d="M8.82089 8.82243C8.50837 9.13505 8.33285 9.55902 8.33293 10.0011C8.333 10.4431 8.50868 10.867 8.8213 11.1795C9.13393 11.492 9.55789 11.6675 9.99993 11.6675C10.442 11.6674 10.8659 11.4917 11.1784 11.1791M13.9008 13.8942C12.7319 14.6256 11.3789 15.0091 10 15C7 15 4.5 13.3334 2.5 10C3.56 8.23336 4.76 6.93503 6.1 6.10503M8.48333 5.15002C8.98253 5.04897 9.49068 4.99871 10 5.00002C13 5.00002 15.5 6.66669 17.5 10C16.945 10.925 16.3508 11.7225 15.7183 12.3917M2.5 2.5L17.5 17.5"
+                      stroke="#A0A3BD"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-[22px] w-full lg:flex-row flex-col-reverse">
@@ -320,102 +402,23 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 )}
               </div>
             </div>
-
+            {/* 
             <div className="flex flex-col items-start gap-[8px] lg:w-[50%] w-[100%]">
               <label
-                htmlFor="password"
+                htmlFor="birthdate"
                 className="text-n700 sm:text-[17px] text-[13px] leading-[20px] font-medium pl-[9px]"
               >
-                Password
+                Birthdate
               </label>
-              <div className="relative w-full">
-                <input
-                  placeholder="Generate a password"
-                  value={formData.password}
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  id="password"
-                  className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
-                  onChange={(e) => {
-                    handleChange(e);
-                  }}
-                />
-                {formData.password === "" ? (
-                  <svg
-                    onClick={() => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        password: generatePassword(),
-                      }));
-                    }}
-                    className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="25"
-                    height="25"
-                    viewBox="0 0 25 25"
-                    fill="none"
-                  >
-                    <path
-                      d="M13.1562 2.08325C18.9167 2.08325 23.5833 6.77075 23.5833 12.4999C23.5833 18.2291 18.9167 22.9166 13.1562 22.9166C9.5 22.9166 6.30208 21.0208 4.4375 18.1562L6.08333 16.8541C7.55208 19.2395 10.1667 20.8333 13.1667 20.8333C15.3768 20.8333 17.4964 19.9553 19.0592 18.3925C20.622 16.8297 21.5 14.7101 21.5 12.4999C21.5 10.2898 20.622 8.17017 19.0592 6.60736C17.4964 5.04456 15.3768 4.16659 13.1667 4.16659C8.91667 4.16659 5.41667 7.35409 4.90625 11.4583H7.78125L3.88542 15.3437L0 11.4583H2.80208C3.32292 6.19784 7.76042 2.08325 13.1562 2.08325ZM16.2396 10.6666C16.7604 10.677 17.1875 11.0937 17.1875 11.6249V16.427C17.1875 16.9478 16.7604 17.3853 16.2292 17.3853H10.4687C9.9375 17.3853 9.51042 16.9478 9.51042 16.427V11.6249C9.51042 11.0937 9.9375 10.677 10.4583 10.6666V9.6145C10.4583 8.02075 11.7604 6.72909 13.3437 6.72909C14.9375 6.72909 16.2396 8.02075 16.2396 9.6145V10.6666ZM13.3437 8.18742C12.5625 8.18742 11.9167 8.82284 11.9167 9.6145V10.6666H14.7812V9.6145C14.7812 8.82284 14.1354 8.18742 13.3437 8.18742Z"
-                      fill="#A0A3BD"
-                    />
-                  </svg>
-                ) : showPassword ? (
-                  <svg
-                  className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    onClick={() => { setShowPassword(false) }}
-                  >
-                    <path
-                      d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
-                      stroke="#A0A3BD"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
-                      stroke="#A0A3BD"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="3"
-                      stroke="#A0A3BD"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                  className="absolute right-[15px] top-[50%] translate-y-[-50%] cursor-pointer hover:scale-105"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    onClick={() => { setShowPassword(true) }}
-
-                  >
-                    <path
-                      d="M8.82089 8.82243C8.50837 9.13505 8.33285 9.55902 8.33293 10.0011C8.333 10.4431 8.50868 10.867 8.8213 11.1795C9.13393 11.492 9.55789 11.6675 9.99993 11.6675C10.442 11.6674 10.8659 11.4917 11.1784 11.1791M13.9008 13.8942C12.7319 14.6256 11.3789 15.0091 10 15C7 15 4.5 13.3334 2.5 10C3.56 8.23336 4.76 6.93503 6.1 6.10503M8.48333 5.15002C8.98253 5.04897 9.49068 4.99871 10 5.00002C13 5.00002 15.5 6.66669 17.5 10C16.945 10.925 16.3508 11.7225 15.7183 12.3917M2.5 2.5L17.5 17.5"
-                      stroke="#A0A3BD"
-                      stroke-width="1.3"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                )}
-              </div>
-            </div>
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date: Date | null) => setSelectedDate(date)}
+                placeholderText="Select a birthdate"
+                className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg text-n500 sm:text-[16px] text-[14px]"
+                id="birthdate"
+                calendarClassName="custom-datepicker"
+              />
+            </div> */}
           </div>
         </div>
         <div className="w-full flex sm:flex-row-reverse flex-col-reverse sm:gap-0 gap-[14px] items-center justify-between sm:relative sticky bottom-0 bg-white py-[13px] sm:py-0">
