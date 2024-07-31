@@ -14,51 +14,80 @@ type Functionalities = {
 
 interface HeaderProps {
   flitration: string[];
+  FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
+
   functionalties: Functionalities;
   children: ReactNode;
   handleAddPrimaryButtonClick: () => void;
   handleSecondaryButtonClick?: () => void;
+  setCurrentPage: (page: number) => void;
 }
 
 const Main: React.FC<HeaderProps> = (props) => {
+  const getDefaultFilter = () => {
+    const storedFilter = localStorage.getItem("selectedFilter");
+    if (storedFilter) {
+      return storedFilter;
+    }
+    return ["0", "1"].includes(localStorage.getItem("role")!) ? "all" : "To do";
+  };
+
   const selectedWorkorders = useSelector(
     (state: RootState) => state.selectedWorkorders.workOrdersTab
   );
-  const [selectedFilter, setSelectedFilter] = useState<string>(
-    ["0", "1"].includes(localStorage.getItem("role")!) ? "All" : "To do"
-  );
+  const [selectedFilter, setSelectedFilter] =
+    useState<string>(getDefaultFilter);
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleFilterClick = (item: string) => {
+    setSelectedFilter(item);
+     localStorage.setItem('selectedFilter', item.toLowerCase());
+     props.setCurrentPage(1);
+
+      if (item === "all") {
+        props.FiltrationFunc!(0, 8);
+      } else if (item === "to do") {
+        props.FiltrationFunc!(0, 8, "assigned");
+
+      }else{
+        props.FiltrationFunc!(0, 8, item.toLowerCase());
+
+      }
+  
+  };
 
   return (
     <main className="flex items-center flex-col  gap-[10px] lg:pr-[16px] w-full">
       <div className="pl-[24px] lg:flex items-center justify-between w-full hidden ">
         <div className="flex items-center xl:gap-[27px] gap-[15px]">
-          {props.flitration.map((item, index) => {
-            return (
-              <span
-                key={index}
-                className={`${
-                  selectedFilter === item
-                    ? "text-primary border-b-[2px] border-primary"
-                    : "text-n600"
-                } leading-[36px] cursor-pointer text-[15px]`}
-                onClick={() => {
-                  setSelectedFilter(item);
-                }}
-              >
-                {item}
-              </span>
-            );
-          })}
+          {props.flitration.map((item, index) => (
+            <span
+              key={index}
+              className={`${
+                selectedFilter === item.toLowerCase()
+                  ? "text-primary border-b-[2px] border-primary"
+                  : "text-n600"
+              } leading-[36px] cursor-pointer text-[15px]`}
+              onClick={() => handleFilterClick(item.toLowerCase())}
+            >
+              {item}
+            </span>
+          ))}
         </div>
         {["0", "1"].includes(localStorage.getItem("role")!) && (
           <div className="flex items-center gap-[7px]">
-            {props.functionalties.secondaryFuncs  && localStorage.getItem("role") ==="0"
+            {props.functionalties.secondaryFuncs &&
+            localStorage.getItem("role") === "0"
               ? props.functionalties.secondaryFuncs.map((button) => {
                   return (
                     <button
-                      className={`flex items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${selectedWorkorders.length === 0
-                         ?"text-n600 border-n400" : button.name === "Delete" ?"cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]" :"text-n600 border-n400"}`}
+                      className={`flex items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                        selectedWorkorders.length === 0
+                          ? "text-n600 border-n400"
+                          : button.name === "Delete"
+                          ? "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
+                          : "text-n600 border-n400"
+                      }`}
                       aria-disabled={
                         selectedWorkorders.length === 0 &&
                         button.name === "Delete"

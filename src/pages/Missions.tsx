@@ -63,7 +63,7 @@ const Missions = () => {
     }
   };
 
-  const fetchWorkOrders = async (offset = 0, limit = 8) => {
+  const fetchWorkOrders = async (offset = 0, limit = 8, status?:string) => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found");
@@ -71,7 +71,10 @@ const Missions = () => {
     }
 
     setIsLoading(true);
-    const url = `/workorder/get-workorders?offset=${offset}&limit=${limit}`;
+
+  const url = status 
+    ? `/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
+    : `/workorder/get-workorders?offset=${offset}&limit=${limit}`;
 
     try {
       const response = await fetch(url, {
@@ -89,10 +92,26 @@ const Missions = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      setWorkorders(data.data);
-      setTotalWorkorders(data.total);
-      return { total: data.total, current_offset: offset };
+
+          switch (response.status) {
+            case 200:
+           {   const data = await response.json();
+              setWorkorders(data.data);
+              setTotalWorkorders(data.total);
+              return { total: data.total, current_offset: offset };
+            }
+              break;
+          
+              case 204:
+                console.log("here")
+                setWorkorders(null);
+                break;
+
+            default:
+              break;
+          }
+      
+
     } catch (err) {
       console.error("Error: ", err);
       return { total: 0, current_offset: 0 };
@@ -109,7 +128,13 @@ const Missions = () => {
   const handleLastPage = () => setCurrentPage(totalPages);
 
   useEffect(() => {
-    fetchWorkOrders((currentPage - 1) * limit, limit);
+    const filter = localStorage.getItem("selectedFilter")
+
+    if (filter === "all" || !filter) {
+      fetchWorkOrders((currentPage - 1) * limit, limit);
+    } else {
+      fetchWorkOrders((currentPage - 1) * limit, limit,filter);
+    }
     const dialog = submitMissionDialogRef.current;
     if (dialog && isDialogOpen) {
       dialog.style.display = "flex";
@@ -125,9 +150,7 @@ const Missions = () => {
           pageSentence="Here are information about all missions"
           searchBar={true}
         />
-
-        {workorders && !isLoading ? (
-          <Main
+                   <Main
             flitration={
               ["0", "1"].includes(localStorage.getItem("role")!)
                 ? [
@@ -136,19 +159,24 @@ const Missions = () => {
                     "Assigned",
                     "Executed",
                     "Validated",
-                    "Acceptance",
-                    "Done",
+                    "Accepted",
+                    "Closed",
                   ]
-                : ["To do", "Acceptance", "Done"]
+                : ["All","To do","Executed",
+                  "Validated", "Accepted", ]
             }
+            FiltrationFunc={fetchWorkOrders}
             functionalties={{
               primaryFunc: { name: "Add workorder" },
               secondaryFuncs: [{ name: "Delete" }],
             }}
             handleAddPrimaryButtonClick={handladdMissionButtonClick}
             handleSecondaryButtonClick={handleDeleteButtonClick}
+            setCurrentPage={setCurrentPage}
           >
-            <div className="flex flex-col gap-[40px]">
+        {workorders && !isLoading ? (
+          <>
+            <div className="w-full flex flex-col gap-[40px]">
               <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
                 {workorders.map((workorder: ResMission, index: number) => (
                   <div
@@ -229,7 +257,7 @@ const Missions = () => {
                 />
               </div>
             </div>
-          </Main>
+          </>
         ) : isLoading ? (
           <div className="w-full flex items-center justify-center py-[40px]">
             <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60" />
@@ -246,6 +274,7 @@ const Missions = () => {
             </h3>
           </div>
         )}
+        </Main>
       </div>
       <MissionPopup
         ref={missionDialogRef}

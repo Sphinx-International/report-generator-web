@@ -25,7 +25,7 @@ export interface ResMission {
     workorder: number,
     account:string
 }
-type ResFile ={
+export type ResFile ={
     id:number,
     file_name: string,
     uploaded_at:Date,

@@ -211,6 +211,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       } finally {
         setIsLoading(false);
         props.fetchWorkOrders!()
+        localStorage.setItem("selectedFilter","all")
       }
     };
 
