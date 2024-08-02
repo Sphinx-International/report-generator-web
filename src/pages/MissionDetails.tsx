@@ -885,7 +885,7 @@ const MissionDetails = () => {
                       handleChange(e);
                     }}
                   />
-                  {!isEditing_Title_tic && (
+                  {!isEditing_Title_tic && getRole() !== 2 && (
                     <svg
                       onClick={() => {
                         setIsEditing_Title_tic(true);
@@ -932,7 +932,10 @@ const MissionDetails = () => {
                           : "text-[#DB2C2C]"
                       }`}
                       onClick={() => {
-                        setShowPriority(!showPriority);
+                        if (getRole() !== 2) {
+                          setShowPriority(!showPriority);
+
+                        }
                       }}
                     >
                       {basicDataWorkorder.priority === 0
@@ -1023,7 +1026,9 @@ const MissionDetails = () => {
                     <span
                       className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
                       onClick={() => {
-                        handleeditReqAccStatus(workorder.workorder.id, 0);
+                        if (getRole() !== 2) {
+                          handleeditReqAccStatus(workorder.workorder.id, 0);
+                        }
                       }}
                     >
                       ✓
@@ -1032,7 +1037,9 @@ const MissionDetails = () => {
                     <span
                       className="px-[10px] py-[6px] rounded-[50%] text-[#DB2C2C] bg-[#DB2C2C4D] cursor-pointer"
                       onClick={() => {
-                        handleeditReqAccStatus(workorder.workorder.id, 1);
+                        if (getRole() !== 2) {
+                          handleeditReqAccStatus(workorder.workorder.id, 1);
+                        }
                       }}
                     >
                       🗙
@@ -1273,7 +1280,7 @@ const MissionDetails = () => {
                 <div className="flex flex-col gap-[10px] items-start w-full">
                   <span className="text-[17px] font-medium leading-[30px] text-n700 flex items-center gap-[6px]">
                     Description
-                    {!isEditing_desc && (
+                    {!isEditing_desc && getRole() !== 2 &&(
                       <svg
                         onClick={() => {
                           setIsEditing_desc(true);
@@ -1318,14 +1325,15 @@ const MissionDetails = () => {
 
                 <div className="flex items-center gap-[4px]">
                   <div className="relative">
-                    <span
+                    {getRole() !== 2 &&                      <span
                       className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
                       onClick={() => {
                         setVisibleCoordPopup(!visibleCoordPopup);
                       }}
                     >
                       +
-                    </span>
+                    </span> }
+
                     {visibleCoordPopup && (
                       <div className="w-[400px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
                         <div className=" relative w-full">
@@ -1442,7 +1450,7 @@ const MissionDetails = () => {
               <div className="w-full flex flex-col items-start gap-[23px]">
                 <div className="w-full flex flex-col gap-[6px]">
                   <div className="w-full flex flex-col items-end gap-[16px]">
-                    {workorder.attachments.length > 0 ? (
+                    
                       <>
                         <div className="w-full flex flex-col gap-[12px]">
                           <label
@@ -1452,7 +1460,8 @@ const MissionDetails = () => {
                             Attachements
                           </label>
                           <div className="flex gap-[20px] flex-wrap">
-                            {workorder.attachments.map((attach, index) => {
+                            {workorder.attachments.length > 0 && (
+                            workorder.attachments.map((attach, index) => {
                               return (
                                 <div
                                   key={index}
@@ -1492,7 +1501,7 @@ const MissionDetails = () => {
                                       </span>
                                     </div>
                                   </div>
-                                  <span
+                                  {getRole() !== 2 &&                                    <span
                                     className=" w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1519,10 +1528,13 @@ const MissionDetails = () => {
                                         fill="#db2323"
                                       />
                                     </svg>
-                                  </span>
+                                  </span>}
+
                                 </div>
                               );
-                            })}
+                            })
+                            )}
+
                             {attachFiles.length !== 0 &&
                               attachFiles.map((attach) => {
                                 return (
@@ -1660,8 +1672,8 @@ const MissionDetails = () => {
                           </div>
                         )}
                       </>
-                    ) : null}
-                  </div>
+                  
+                      </div>
                 </div>
 
                 {workorder.workorder.status > 1 && (
@@ -1878,68 +1890,61 @@ const MissionDetails = () => {
                                 </div>
                               </div>
                             </div>
-                          ) : getRole() !== 2 ? (
-                            <div
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const file = e.dataTransfer.files[0];
-                                // Add the files to the input element
-                                handleWithDragAndDropReportAndAccaptence(
-                                  file,
-                                  setAcceptenceFile
-                                );
-                              }}
+                          ) : <div
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const file = e.dataTransfer.files[0];
+                            // Add the files to the input element
+                            handleWithDragAndDropReportAndAccaptence(
+                              file,
+                              setAcceptenceFile
+                            );
+                          }}
+                        >
+                          {" "}
+                          <input
+                            type="file"
+                            name="acceptence"
+                            id="acceptence"
+                            className="hidden"
+                            onChange={(e) => {
+                              handleFileChange(e, setAcceptenceFile);
+                            }}
+                          />
+                          <label
+                            htmlFor="acceptence"
+                            className="cursor-pointer w-full py-[40px] flex flex-col items-center justify-center gap-[21.5px] border-dashed border-[2px] border-n400 rounded-[15px]"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="22"
+                              viewBox="0 0 18 22"
+                              fill="none"
                             >
-                              {" "}
-                              <input
-                                type="file"
-                                name="acceptence"
-                                id="acceptence"
-                                className="hidden"
-                                onChange={(e) => {
-                                  handleFileChange(e, setAcceptenceFile);
-                                }}
+                              <path
+                                opacity="0.2"
+                                d="M17.125 4.91406V16.2891C17.125 16.5046 17.0394 16.7112 16.887 16.8636C16.7347 17.016 16.528 17.1016 16.3125 17.1016H13.875V8.16406L9.8125 4.10156H4.125V1.66406C4.125 1.44857 4.2106 1.24191 4.36298 1.08954C4.51535 0.937165 4.72201 0.851562 4.9375 0.851562H13.0625L17.125 4.91406Z"
+                                fill="#6F6C8F"
                               />
-                              <label
-                                htmlFor="acceptence"
-                                className="cursor-pointer w-full py-[40px] flex flex-col items-center justify-center gap-[21.5px] border-dashed border-[2px] border-n400 rounded-[15px]"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="18"
-                                  height="22"
-                                  viewBox="0 0 18 22"
-                                  fill="none"
-                                >
-                                  <path
-                                    opacity="0.2"
-                                    d="M17.125 4.91406V16.2891C17.125 16.5046 17.0394 16.7112 16.887 16.8636C16.7347 17.016 16.528 17.1016 16.3125 17.1016H13.875V8.16406L9.8125 4.10156H4.125V1.66406C4.125 1.44857 4.2106 1.24191 4.36298 1.08954C4.51535 0.937165 4.72201 0.851562 4.9375 0.851562H13.0625L17.125 4.91406Z"
-                                    fill="#6F6C8F"
-                                  />
-                                  <path
-                                    d="M17.6998 4.33922L13.6373 0.276719C13.5618 0.201291 13.4722 0.14148 13.3736 0.100702C13.2749 0.0599241 13.1692 0.0389788 13.0625 0.0390628H4.9375C4.50652 0.0390628 4.0932 0.210268 3.78845 0.515014C3.48371 0.819761 3.3125 1.23309 3.3125 1.66406V3.28906H1.6875C1.25652 3.28906 0.843198 3.46027 0.538451 3.76501C0.233705 4.06976 0.0625 4.48309 0.0625 4.91406V19.5391C0.0625 19.97 0.233705 20.3834 0.538451 20.6881C0.843198 20.9929 1.25652 21.1641 1.6875 21.1641H13.0625C13.4935 21.1641 13.9068 20.9929 14.2115 20.6881C14.5163 20.3834 14.6875 19.97 14.6875 19.5391V17.9141H16.3125C16.7435 17.9141 17.1568 17.7429 17.4615 17.4381C17.7663 17.1334 17.9375 16.72 17.9375 16.2891V4.91406C17.9376 4.80733 17.9166 4.70163 17.8759 4.603C17.8351 4.50436 17.7753 4.41473 17.6998 4.33922ZM13.0625 19.5391H1.6875V4.91406H9.47633L13.0625 8.50023V19.5391ZM16.3125 16.2891H14.6875V8.16406C14.6876 8.05733 14.6666 7.95163 14.6259 7.853C14.5851 7.75436 14.5253 7.66473 14.4498 7.58922L10.3873 3.52672C10.3118 3.45129 10.2222 3.39148 10.1236 3.3507C10.0249 3.30992 9.91923 3.28898 9.8125 3.28906H4.9375V1.66406H12.7263L16.3125 5.25023V16.2891ZM10.625 13.0391C10.625 13.2546 10.5394 13.4612 10.387 13.6136C10.2347 13.766 10.028 13.8516 9.8125 13.8516H4.9375C4.72201 13.8516 4.51535 13.766 4.36298 13.6136C4.2106 13.4612 4.125 13.2546 4.125 13.0391C4.125 12.8236 4.2106 12.6169 4.36298 12.4645C4.51535 12.3122 4.72201 12.2266 4.9375 12.2266H9.8125C10.028 12.2266 10.2347 12.3122 10.387 12.4645C10.5394 12.6169 10.625 12.8236 10.625 13.0391ZM10.625 16.2891C10.625 16.5046 10.5394 16.7112 10.387 16.8636C10.2347 17.016 10.028 17.1016 9.8125 17.1016H4.9375C4.72201 17.1016 4.51535 17.016 4.36298 16.8636C4.2106 16.7112 4.125 16.5046 4.125 16.2891C4.125 16.0736 4.2106 15.8669 4.36298 15.7145C4.51535 15.5622 4.72201 15.4766 4.9375 15.4766H9.8125C10.028 15.4766 10.2347 15.5622 10.387 15.7145C10.5394 15.8669 10.625 16.0736 10.625 16.2891Z"
-                                    fill="#6F6C8F"
-                                  />
-                                </svg>
-                                <span className="text-[13px] text-n600 font-medium leading-[13px]">
-                                  Drag & drop your files here or{" "}
-                                  <span className="text-primary">
-                                    chooses files
-                                  </span>
-                                </span>
-                              </label>
-                            </div>
-                          ) : (
-                            <div className="text-n700 pl-4">
-                              {" "}
-                              wait for acceptance
-                            </div>
-                          )}
+                              <path
+                                d="M17.6998 4.33922L13.6373 0.276719C13.5618 0.201291 13.4722 0.14148 13.3736 0.100702C13.2749 0.0599241 13.1692 0.0389788 13.0625 0.0390628H4.9375C4.50652 0.0390628 4.0932 0.210268 3.78845 0.515014C3.48371 0.819761 3.3125 1.23309 3.3125 1.66406V3.28906H1.6875C1.25652 3.28906 0.843198 3.46027 0.538451 3.76501C0.233705 4.06976 0.0625 4.48309 0.0625 4.91406V19.5391C0.0625 19.97 0.233705 20.3834 0.538451 20.6881C0.843198 20.9929 1.25652 21.1641 1.6875 21.1641H13.0625C13.4935 21.1641 13.9068 20.9929 14.2115 20.6881C14.5163 20.3834 14.6875 19.97 14.6875 19.5391V17.9141H16.3125C16.7435 17.9141 17.1568 17.7429 17.4615 17.4381C17.7663 17.1334 17.9375 16.72 17.9375 16.2891V4.91406C17.9376 4.80733 17.9166 4.70163 17.8759 4.603C17.8351 4.50436 17.7753 4.41473 17.6998 4.33922ZM13.0625 19.5391H1.6875V4.91406H9.47633L13.0625 8.50023V19.5391ZM16.3125 16.2891H14.6875V8.16406C14.6876 8.05733 14.6666 7.95163 14.6259 7.853C14.5851 7.75436 14.5253 7.66473 14.4498 7.58922L10.3873 3.52672C10.3118 3.45129 10.2222 3.39148 10.1236 3.3507C10.0249 3.30992 9.91923 3.28898 9.8125 3.28906H4.9375V1.66406H12.7263L16.3125 5.25023V16.2891ZM10.625 13.0391C10.625 13.2546 10.5394 13.4612 10.387 13.6136C10.2347 13.766 10.028 13.8516 9.8125 13.8516H4.9375C4.72201 13.8516 4.51535 13.766 4.36298 13.6136C4.2106 13.4612 4.125 13.2546 4.125 13.0391C4.125 12.8236 4.2106 12.6169 4.36298 12.4645C4.51535 12.3122 4.72201 12.2266 4.9375 12.2266H9.8125C10.028 12.2266 10.2347 12.3122 10.387 12.4645C10.5394 12.6169 10.625 12.8236 10.625 13.0391ZM10.625 16.2891C10.625 16.5046 10.5394 16.7112 10.387 16.8636C10.2347 17.016 10.028 17.1016 9.8125 17.1016H4.9375C4.72201 17.1016 4.51535 17.016 4.36298 16.8636C4.2106 16.7112 4.125 16.5046 4.125 16.2891C4.125 16.0736 4.2106 15.8669 4.36298 15.7145C4.51535 15.5622 4.72201 15.4766 4.9375 15.4766H9.8125C10.028 15.4766 10.2347 15.5622 10.387 15.7145C10.5394 15.8669 10.625 16.0736 10.625 16.2891Z"
+                                fill="#6F6C8F"
+                              />
+                            </svg>
+                            <span className="text-[13px] text-n600 font-medium leading-[13px]">
+                              Drag & drop your files here or{" "}
+                              <span className="text-primary">
+                                chooses files
+                              </span>
+                            </span>
+                          </label>
+                        </div>}
                         </div>
                       )}
                   </>
@@ -2043,11 +2048,7 @@ const MissionDetails = () => {
                     workorder.workorder.status === 4 && getRole() !== 0
                       ? "hidden"
                       : ""
-                  } ${
-                    workorder.workorder.status === 3 && getRole() === 2
-                      ? "hidden"
-                      : ""
-                  } `}
+                  }  `}
                   disabled={
                     workorder.workorder.status === 2 && reportFile === undefined
                       ? true
