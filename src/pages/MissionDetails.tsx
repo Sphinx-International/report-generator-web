@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, ChangeEvent, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import WorkOrderStatus from "../components/WorkOrderStatus";
-import WorkOrderpriority from "../components/WorkOrderPriorities";
 import SideBar from "../components/SideBar";
 import Header from "../components/Header";
 import MissionPopup from "../components/MissionPopup";
@@ -12,6 +11,13 @@ import { RotatingLines } from "react-loader-spinner";
 import { formatFileSize } from "../func/formatFileSize";
 import { getRole } from "../func/getUserRole";
 import Page404 from "./Page404";
+
+type WorkorderProperties = {
+  title?: string;
+  ticker_number?: number;
+  priority?: number;
+  description?: string;
+};
 
 const MissionDetails = () => {
   const { id } = useParams();
@@ -27,8 +33,8 @@ const MissionDetails = () => {
   const [reportFile, setReportFile] = useState<File>();
   const [acceptenceFile, setAcceptenceFile] = useState<File>();
 
-  const [searchQueryEng, setSearchQueryEng] = useState("");
-  const [searchQueryCoord, setSearchQueryCoord] = useState("");
+  const [searchQueryEng, setSearchQueryEng] = useState<string>("");
+  const [searchQueryCoord, setSearchQueryCoord] = useState<string>("");
 
   const [searchEngs, setSearchEngs] = useState<User[]>([]);
   const [searchCoords, setSearchCoords] = useState<User[]>([]);
@@ -45,7 +51,40 @@ const MissionDetails = () => {
 
   const [undoMessageVisible, setUndoMessageVisible] = useState(false);
   const undoTimeoutRef = useRef<number | null>(null);
-  const [undoActionTriggered, setUndoActionTriggered] = useState(false);
+  const undoActionTriggeredRef = useRef(false);
+  const [timeLeft, setTimeLeft] = useState(5); // Countdown starts at 5 seconds
+  const intervalRef = useRef<number | null>(null); // Ref for countdown interval
+
+
+
+  const [basicDataWorkorder, setBasicDataWorkorder] = useState({
+    title: "",
+    ticketNumber: -1,
+    priority: 0 | 1 | 2 | 3,
+    description: "",
+  });
+
+  const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
+  const [isEditing_desc, setIsEditing_desc] = useState(false);
+  const [showPriority, setShowPriority] = useState(false);
+
+
+
+  useEffect(() => {
+    // Clear the interval when the component unmounts or when timeLeft is 0
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setBasicDataWorkorder((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleFileChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -67,12 +106,12 @@ const MissionDetails = () => {
     workorder_id: number,
     engineer_id: string
   ) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
     }
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await fetch("/workorder/assign-workorder", {
         method: "PUT",
@@ -87,56 +126,7 @@ const MissionDetails = () => {
         switch (response.status) {
           case 200:
             setVisibleEngPopup(false);
-            fetchOneWorkOrder()
-            break;
-          case 400:
-            console.log("verify your data");
-            break;
-          default:
-            console.log("error");
-            break;
-        }
-      }
-    } catch (err) {
-      console.error("Error submitting form", err);
-    } finally{
-      setIsLoading(false)
-    }
-  };
-  const handleExecute = (workorder_id: number) => {
-    setUndoMessageVisible(true);
-    setUndoActionTriggered(false);
-    setIsLoading(true)
-    undoTimeoutRef.current = window.setTimeout(async () => {
-      if (!undoActionTriggered) {
-        await executeWorkOrder(workorder_id);
-      }
-      setUndoMessageVisible(false);
-    }, 5000);
-  };
-
-  const executeWorkOrder = async (workorder_id: number) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-    try {
-      const response = await fetch("/workorder/execute-workorder", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({ workorder_id }),
-      });
-
-      if (response) {
-        console.log(response.status);
-        switch (response.status) {
-          case 200:
-            setVisibleEngPopup(false);
-            fetchOneWorkOrder()
+            fetchOneWorkOrder();
             break;
           case 400:
             console.log("verify your data");
@@ -152,11 +142,84 @@ const MissionDetails = () => {
       setIsLoading(false);
     }
   };
+  const handleExecute = (workorder_id: number) => {
+    setUndoMessageVisible(true);
+    setTimeLeft(5); // Set countdown to 5 seconds
+    setIsLoading(true);
+    undoActionTriggeredRef.current = false;
+
+
+    if (undoTimeoutRef.current) {
+      clearTimeout(undoTimeoutRef.current);
+    }
+
+    // Start countdown timer
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = window.setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    undoTimeoutRef.current = window.setTimeout(async () => {
+      if (!undoActionTriggeredRef.current) {
+        await executeWorkOrder(workorder_id);
+      }
+      setUndoMessageVisible(false);
+    }, 5000);
+  };
+
+
+  const executeWorkOrder = async (workorder_id: number) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    try {
+      const response = await fetch("/workorder/execute-workorder", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ workorder_id }),
+      });
+  
+      if (response) {
+        console.log(response.status);
+        switch (response.status) {
+          case 200:
+            setVisibleEngPopup(false);
+            fetchOneWorkOrder();
+            break;
+          case 400:
+            console.log("verify your data");
+            break;
+          default:
+            console.log("error");
+            break;
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting form", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleValidate = async (
     workorder_id: number,
     workorder_report: File
   ) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -184,7 +247,7 @@ const MissionDetails = () => {
 
         switch (response.status) {
           case 200:
-            fetchOneWorkOrder()
+            fetchOneWorkOrder();
             break;
           case 400:
             console.log("verify your data");
@@ -204,7 +267,7 @@ const MissionDetails = () => {
     workorder_id: number,
     acceptenceFile: File
   ) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -234,8 +297,8 @@ const MissionDetails = () => {
 
         switch (response.status) {
           case 200:
-            fetchOneWorkOrder()
-          break;
+            fetchOneWorkOrder();
+            break;
           case 400:
             console.log("verify your data");
             break;
@@ -256,7 +319,7 @@ const MissionDetails = () => {
     path: string,
     fileName: string | undefined
   ) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -295,7 +358,7 @@ const MissionDetails = () => {
     }
     setLoaderAssignSearch(true);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -344,7 +407,7 @@ const MissionDetails = () => {
     }
     setLoaderCoordSearch(true);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -390,7 +453,7 @@ const MissionDetails = () => {
     workorder_id: number,
     addedEmail: string
   ) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -415,7 +478,7 @@ const MissionDetails = () => {
         switch (response.status) {
           case 200:
             setVisibleCoordPopup(false);
-            fetchOneWorkOrder()
+            fetchOneWorkOrder();
             break;
           case 400:
             console.log("verify your data");
@@ -434,7 +497,7 @@ const MissionDetails = () => {
     workorder_id: number,
     deletedEmailId: number
   ) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -455,7 +518,7 @@ const MissionDetails = () => {
 
         switch (response.status) {
           case 200:
-            fetchOneWorkOrder()
+            fetchOneWorkOrder();
             break;
           case 400:
             console.log("verify your data");
@@ -469,8 +532,8 @@ const MissionDetails = () => {
       console.error("Error submitting form", err);
     }
   };
-  const fetchOneWorkOrder = async () => {
-    const token = localStorage.getItem("token");
+  const fetchOneWorkOrder = useCallback(async () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -501,22 +564,84 @@ const MissionDetails = () => {
 
       const data = await response.json();
       setWorkorder(data);
+      setBasicDataWorkorder({
+        title: data.workorder.title,
+        ticketNumber: data.workorder.ticker_number,
+        priority: data.workorder.priority,
+        description: data.workorder.description,
+      });
     } catch (err) {
       console.error("Error: ", err);
     } finally {
       setIsPageLoading(false);
     }
+  }, [id]);
+
+  const handleEditWorkorder = async (
+    id: number,
+    properties: WorkorderProperties = {}
+  ) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    const { title, ticker_number, priority, description } = properties;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: Record<string, any> = { id };
+
+    if (title !== undefined) body.title = title;
+    if (ticker_number !== undefined) body.ticker_number = ticker_number;
+    if (priority !== undefined) body.priority = priority;
+    if (description !== undefined) body.description = description;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/workorder/update-workorder", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body), // No need to wrap body in another object
+      });
+
+      if (response) {
+        switch (response.status) {
+          case 400:
+            console.log("verify your data");
+            break;
+          default:
+            console.log("error");
+            break;
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting form", err);
+    } finally {
+      if (priority !== undefined) {
+        setShowPriority(false);
+      } else {
+        setIsEditing_Title_tic(false);
+        setIsEditing_desc(false);
+      }
+      setIsLoading(false);
+    }
   };
+
   useEffect(() => {
     fetchOneWorkOrder();
-  }, []);
+  }, [fetchOneWorkOrder]);
 
   const handleAddOrRemoveAttachement = async (
     workorder_id: number,
     file: File[] | string,
-    operation: "add" | "delete"
+    operation: "add" | "delete",
+    path:string
   ) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -537,7 +662,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("/workorder/update-workorder-attachments", {
+      const response = await fetch(`/workorder/${path}`, {
         method: "PUT",
         headers: {
           Authorization: `Token ${token}`,
@@ -575,9 +700,12 @@ const MissionDetails = () => {
     if (undoTimeoutRef.current !== null) {
       clearTimeout(undoTimeoutRef.current);
     }
-    setUndoActionTriggered(true);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    undoActionTriggeredRef.current = true;
     setUndoMessageVisible(false);
-    setIsLoading(false)
+    setIsLoading(false);
   };
 
   const handleWithDragAndDropAttach = (files: FileList) => {
@@ -585,7 +713,10 @@ const MissionDetails = () => {
       setAttachFiles((prevFiles) => [...prevFiles, ...files]);
     }
   };
-  const handleWithDragAndDropReportAndAccaptence = (file: File,setFileState: (file: File) => void) => {
+  const handleWithDragAndDropReportAndAccaptence = (
+    file: File,
+    setFileState: (file: File) => void
+  ) => {
     if (file) {
       setFileState(file);
     }
@@ -626,34 +757,62 @@ const MissionDetails = () => {
           <div className="flex flex-col items-end gap-[40px] w-full px-[25px] ">
             <div className="flex flex-col w-full gap-[31px] border-[1px] border-n400 rounded-[20px] px-[25px] py-[32px]">
               <div className="w-full flex justify-between items-start gap-[14px] pl-[6px]">
-                <div className="flex items-center gap-[12px]">
-                  <h1 className="text-primary font-semibold text-[24px] leading-[36px] ]">
-                    {workorder.workorder.title}
-                  </h1>
-                  <h1 className="text-primary font-semibold text-[24px] leading-[36px] ]">
-                    #{workorder.workorder.id}
-                  </h1>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    fill="none"
-                    className="cursor-pointer"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M16.0909 4.06248C16.1622 4.17064 16.1939 4.30007 16.1808 4.42892C16.1677 4.55778 16.1105 4.67815 16.0189 4.76973L9.12418 11.6637C9.05364 11.7342 8.96564 11.7847 8.86918 11.81L5.99743 12.56C5.9025 12.5847 5.80275 12.5842 5.70807 12.5585C5.6134 12.5328 5.52709 12.4828 5.45772 12.4134C5.38835 12.3441 5.33833 12.2578 5.31262 12.1631C5.28692 12.0684 5.28642 11.9687 5.31118 11.8737L6.06118 9.00273C6.08307 8.91655 6.12437 8.83651 6.18193 8.76873L13.1022 1.85298C13.2076 1.74764 13.3506 1.68848 13.4997 1.68848C13.6487 1.68848 13.7917 1.74764 13.8972 1.85298L16.0189 3.97398C16.0458 4.00099 16.07 4.03064 16.0909 4.06248ZM14.8257 4.37148L13.4997 3.04623L7.11118 9.43473L6.64243 11.2295L8.43718 10.7607L14.8257 4.37148Z"
-                      fill="#514F6E"
-                      fill-opacity="0.75"
-                    />
-                    <path
-                      d="M14.7302 12.8697C14.9352 11.1176 15.0006 9.35208 14.9259 7.58967C14.9243 7.54815 14.9313 7.50674 14.9464 7.46803C14.9615 7.42931 14.9844 7.39413 15.0137 7.36467L15.7517 6.62667C15.7718 6.60639 15.7974 6.59236 15.8254 6.58628C15.8533 6.58019 15.8824 6.58231 15.9092 6.59237C15.936 6.60243 15.9593 6.62 15.9763 6.64299C15.9933 6.66597 16.0034 6.69338 16.0052 6.72192C16.1441 8.81535 16.0914 10.9171 15.8477 13.0009C15.6707 14.5174 14.4527 15.7062 12.9429 15.8749C10.3219 16.1652 7.67692 16.1652 5.05593 15.8749C3.54693 15.7062 2.32818 14.5174 2.15118 13.0009C1.84023 10.3425 1.84023 7.65686 2.15118 4.99842C2.32818 3.48192 3.54618 2.29317 5.05593 2.12442C7.04521 1.90383 9.04948 1.8504 11.0477 1.96467C11.0763 1.96672 11.1037 1.97693 11.1267 1.99408C11.1496 2.01123 11.1672 2.0346 11.1773 2.06144C11.1874 2.08827 11.1896 2.11743 11.1837 2.14548C11.1777 2.17352 11.1638 2.19927 11.1437 2.21967L10.3989 2.96367C10.3698 2.99273 10.335 3.01551 10.2966 3.0306C10.2583 3.04569 10.2173 3.05278 10.1762 3.05142C8.50875 2.99474 6.8394 3.05866 5.18118 3.24267C4.69664 3.2963 4.24432 3.51171 3.8973 3.85411C3.55027 4.19651 3.32881 4.64589 3.26868 5.12967C2.96797 7.70091 2.96797 10.2984 3.26868 12.8697C3.32881 13.3535 3.55027 13.8028 3.8973 14.1452C4.24432 14.4876 4.69664 14.703 5.18118 14.7567C7.69743 15.0379 10.3014 15.0379 12.8184 14.7567C13.303 14.703 13.7553 14.4876 14.1023 14.1452C14.4493 13.8028 14.6701 13.3535 14.7302 12.8697Z"
-                      fill="#514F6E"
-                      fill-opacity="0.75"
-                    />
-                  </svg>
+                <div className="flex items-center gap-[12px] w-full text-primary font-semibold text-[24px]">
+                  <input
+                    className={`text-primary font-semibold text-[24px] w-[60%] rounded-[20px] py-[7px] px-[25px] ${
+                      isEditing_Title_tic
+                        ? "border-n300 border-[1px] shadow-md"
+                        : ""
+                    }`}
+                    type="text"
+                    name="title"
+                    disabled={isEditing_Title_tic ? false : true}
+                    value={basicDataWorkorder.title}
+                    onChange={(e) => {
+                      handleChange(e);
+                    }}
+                  />
+                  #
+                  <input
+                    className={`text-primary font-semibold text-[24px] w-[18%] rounded-[20px] py-[7px] px-[25px] ${
+                      isEditing_Title_tic
+                        ? "border-n300 border-[1px] shadow-md"
+                        : ""
+                    }`}
+                    type="number"
+                    name="ticketNumber"
+                    disabled={isEditing_Title_tic ? false : true}
+                    value={`${basicDataWorkorder.ticketNumber}`}
+                    onChange={(e) => {
+                      handleChange(e);
+                    }}
+                  />
+                  {!isEditing_Title_tic && (
+                    <svg
+                      onClick={() => {
+                        setIsEditing_Title_tic(true);
+                      }}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      className="cursor-pointer"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M16.0909 4.06248C16.1622 4.17064 16.1939 4.30007 16.1808 4.42892C16.1677 4.55778 16.1105 4.67815 16.0189 4.76973L9.12418 11.6637C9.05364 11.7342 8.96564 11.7847 8.86918 11.81L5.99743 12.56C5.9025 12.5847 5.80275 12.5842 5.70807 12.5585C5.6134 12.5328 5.52709 12.4828 5.45772 12.4134C5.38835 12.3441 5.33833 12.2578 5.31262 12.1631C5.28692 12.0684 5.28642 11.9687 5.31118 11.8737L6.06118 9.00273C6.08307 8.91655 6.12437 8.83651 6.18193 8.76873L13.1022 1.85298C13.2076 1.74764 13.3506 1.68848 13.4997 1.68848C13.6487 1.68848 13.7917 1.74764 13.8972 1.85298L16.0189 3.97398C16.0458 4.00099 16.07 4.03064 16.0909 4.06248ZM14.8257 4.37148L13.4997 3.04623L7.11118 9.43473L6.64243 11.2295L8.43718 10.7607L14.8257 4.37148Z"
+                        fill="#514F6E"
+                        fill-opacity="0.75"
+                      />
+                      <path
+                        d="M14.7302 12.8697C14.9352 11.1176 15.0006 9.35208 14.9259 7.58967C14.9243 7.54815 14.9313 7.50674 14.9464 7.46803C14.9615 7.42931 14.9844 7.39413 15.0137 7.36467L15.7517 6.62667C15.7718 6.60639 15.7974 6.59236 15.8254 6.58628C15.8533 6.58019 15.8824 6.58231 15.9092 6.59237C15.936 6.60243 15.9593 6.62 15.9763 6.64299C15.9933 6.66597 16.0034 6.69338 16.0052 6.72192C16.1441 8.81535 16.0914 10.9171 15.8477 13.0009C15.6707 14.5174 14.4527 15.7062 12.9429 15.8749C10.3219 16.1652 7.67692 16.1652 5.05593 15.8749C3.54693 15.7062 2.32818 14.5174 2.15118 13.0009C1.84023 10.3425 1.84023 7.65686 2.15118 4.99842C2.32818 3.48192 3.54618 2.29317 5.05593 2.12442C7.04521 1.90383 9.04948 1.8504 11.0477 1.96467C11.0763 1.96672 11.1037 1.97693 11.1267 1.99408C11.1496 2.01123 11.1672 2.0346 11.1773 2.06144C11.1874 2.08827 11.1896 2.11743 11.1837 2.14548C11.1777 2.17352 11.1638 2.19927 11.1437 2.21967L10.3989 2.96367C10.3698 2.99273 10.335 3.01551 10.2966 3.0306C10.2583 3.04569 10.2173 3.05278 10.1762 3.05142C8.50875 2.99474 6.8394 3.05866 5.18118 3.24267C4.69664 3.2963 4.24432 3.51171 3.8973 3.85411C3.55027 4.19651 3.32881 4.64589 3.26868 5.12967C2.96797 7.70091 2.96797 10.2984 3.26868 12.8697C3.32881 13.3535 3.55027 13.8028 3.8973 14.1452C4.24432 14.4876 4.69664 14.703 5.18118 14.7567C7.69743 15.0379 10.3014 15.0379 12.8184 14.7567C13.303 14.703 13.7553 14.4876 14.1023 14.1452C14.4493 13.8028 14.6701 13.3535 14.7302 12.8697Z"
+                        fill="#514F6E"
+                        fill-opacity="0.75"
+                      />
+                    </svg>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-[8px]">
@@ -661,10 +820,107 @@ const MissionDetails = () => {
                     status={workorder.workorder.status}
                     styles={{ fontSize: 13, px: 28, py: 9.5 }}
                   />
-                  <WorkOrderpriority
-                    priority={workorder.workorder.priority}
-                    styles={{ fontSize: 13, px: 28, py: 9.5 }}
-                  />
+
+                  <div className="relative">
+                    {" "}
+                    <span
+                      className={`cursor-pointer rounded-[100px] text-[13px] font-medium leading-[15px] bg-[#FEF6FF] py-[9.5px] px-[28px] ${
+                        basicDataWorkorder.priority === 0
+                          ? "text-primary"
+                          : basicDataWorkorder.priority === 1
+                          ? "text-[#DB2C9F]"
+                          : basicDataWorkorder.priority === 2
+                          ? "text-[#FFAA29]"
+                          : "text-[#DB2C2C]"
+                      }`}
+                      onClick={() => {
+                        setShowPriority(!showPriority);
+                      }}
+                    >
+                      {basicDataWorkorder.priority === 0
+                        ? "Low"
+                        : basicDataWorkorder.priority === 1
+                        ? "Medium"
+                        : basicDataWorkorder.priority === 2
+                        ? "High"
+                        : "Urgent"}
+                    </span>
+                    {showPriority && (
+                      <div className="p-[20px] rounded-tl-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-md absolute flex flex-col items-start gap-[27px] right-3 top-10">
+                        <div className="flex flex-col items-start gap-[16px]">
+                          <span className="text-[14px] text-n700 font-medium">
+                            Priority
+                          </span>
+                          <div className="flex items-center gap-[4px]">
+                            {Array.from({ length: 4 }).map((_, index) => {
+                              return (
+                                <span
+                                  className={`cursor-pointer rounded-[100px] py-[4.5px] px-[20px] leading-[15px] text-[10px] font-medium ${
+                                    index === 0
+                                      ? index === basicDataWorkorder.priority
+                                        ? "text-primary bg-[#FFF5F3] border-[1px] border-primary"
+                                        : "text-primary bg-[#FFF5F3]"
+                                      : index === 1
+                                      ? index === basicDataWorkorder.priority
+                                        ? "text-[#DB2C9F] bg-[#FEF6FF] border-[1px] border-[#DB2C9F]"
+                                        : "text-[#DB2C9F] bg-[#FEF6FF]"
+                                      : index === 2
+                                      ? index === basicDataWorkorder.priority
+                                        ? "text-[#FFAA29] bg-[#FFF8EC] border-[1px] border-[#FFAA29]"
+                                        : "text-[#FFAA29] bg-[#FFF8EC]"
+                                      : index === basicDataWorkorder.priority
+                                      ? "text-[#DB2C2C] bg-[#FEF6FF] border-[1px] border-[#DB2C2C]"
+                                      : "text-[#DB2C2C] bg-[#FEF6FF]"
+                                  }`}
+                                  onClick={() => {
+                                    setBasicDataWorkorder((prev) => ({
+                                      ...prev,
+                                      priority: index,
+                                    }));
+                                  }}
+                                >
+                                  {index === 0
+                                    ? "Low"
+                                    : index === 1
+                                    ? "Medium"
+                                    : index === 2
+                                    ? "High"
+                                    : "Urgent"}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        {workorder.workorder.priority !==
+                          basicDataWorkorder.priority && (
+                          <div className="flex items-center gap-[6px] w-full">
+                            <button
+                              className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
+                              onClick={() => {
+                                setBasicDataWorkorder((prev) => ({
+                                  ...prev,
+                                  priority: workorder.workorder.priority,
+                                }));
+                                setShowPriority(false);
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                              onClick={() => {
+                                handleEditWorkorder(workorder.workorder.id, {
+                                  priority: basicDataWorkorder.priority,
+                                });
+                              }}
+                            >
+                              Save
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="w-full flex flex-col items-start gap-[12px]">
@@ -743,30 +999,38 @@ const MissionDetails = () => {
                                 width="20"
                               />
                             </div>
+                          ) : searchQueryEng !== "" ? (
+                            searchEngs.length > 0 ? (
+                              searchEngs.map((user, index) => {
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                    onClick={() => {
+                                      setSelectedEng(user.email);
+                                      setVisibleEngPopup(false);
+                                    }}
+                                  >
+                                    <img
+                                      src="/avatar.png"
+                                      alt="avatar"
+                                      className="w-[31px] rounded-[50%]"
+                                    />
+                                    <span className="text-[14px] text-n600">
+                                      {user.first_name} {user.last_name}
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <span className="text-n700 w-full flex justify-center text-[14px]">
+                                no result founded
+                              </span>
+                            )
                           ) : (
-                            searchEngs.length !== 0 &&
-                            searchQueryEng !== "" &&
-                            searchEngs.map((user, index) => {
-                              return (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                  onClick={() => {
-                                    setSelectedEng(user.email);
-                                    setVisibleEngPopup(false);
-                                  }}
-                                >
-                                  <img
-                                    src="/avatar.png"
-                                    alt="avatar"
-                                    className="w-[31px] rounded-[50%]"
-                                  />
-                                  <span className="text-[14px] text-n600">
-                                    {user.first_name} {user.last_name}
-                                  </span>
-                                </div>
-                              );
-                            })
+                            <span className="text-n700 w-full flex justify-center text-[14px]">
+                              search for engineer
+                            </span>
                           )}
                         </div>
                       </div>
@@ -851,64 +1115,88 @@ const MissionDetails = () => {
                                 width="20"
                               />
                             </div>
+                          ) : searchQueryEng !== "" ? (
+                            searchEngs.length > 0 ? (
+                              searchEngs.map((user, index) => {
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                    onClick={() => {
+                                      setSelectedEng(user.email);
+                                      setVisibleEngPopup(false);
+                                    }}
+                                  >
+                                    <img
+                                      src="/avatar.png"
+                                      alt="avatar"
+                                      className="w-[31px] rounded-[50%]"
+                                    />
+                                    <span className="text-[14px] text-n600">
+                                      {user.first_name} {user.last_name}
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <span className="text-n700 w-full flex justify-center text-[14px]">
+                                no result founded
+                              </span>
+                            )
                           ) : (
-                            searchEngs.length !== 0 &&
-                            searchQueryEng !== "" &&
-                            searchEngs.map((user, index) => {
-                              return (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                  onClick={() => {
-                                    setSelectedEng(user.email);
-                                    setVisibleEngPopup(false);
-                                  }}
-                                >
-                                  <img
-                                    src="/avatar.png"
-                                    alt="avatar"
-                                    className="w-[31px] rounded-[50%]"
-                                  />
-                                  <span className="text-[14px] text-n600">
-                                    {user.first_name} {user.last_name}
-                                  </span>
-                                </div>
-                              );
-                            })
+                            <span className="text-n700 w-full flex justify-center text-[14px]">
+                              search for engineer
+                            </span>
                           )}
                         </div>
                       </div>
                     )}
                   </div>
                 )}
-                <div className="flex flex-col items-start">
+                <div className="flex flex-col gap-[10px] items-start w-full">
                   <span className="text-[17px] font-medium leading-[30px] text-n700 flex items-center gap-[6px]">
                     Description
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      fill="none"
-                      className="cursor-pointer"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M16.0909 4.06248C16.1622 4.17064 16.1939 4.30007 16.1808 4.42892C16.1677 4.55778 16.1105 4.67815 16.0189 4.76973L9.12418 11.6637C9.05364 11.7342 8.96564 11.7847 8.86918 11.81L5.99743 12.56C5.9025 12.5847 5.80275 12.5842 5.70807 12.5585C5.6134 12.5328 5.52709 12.4828 5.45772 12.4134C5.38835 12.3441 5.33833 12.2578 5.31262 12.1631C5.28692 12.0684 5.28642 11.9687 5.31118 11.8737L6.06118 9.00273C6.08307 8.91655 6.12437 8.83651 6.18193 8.76873L13.1022 1.85298C13.2076 1.74764 13.3506 1.68848 13.4997 1.68848C13.6487 1.68848 13.7917 1.74764 13.8972 1.85298L16.0189 3.97398C16.0458 4.00099 16.07 4.03064 16.0909 4.06248ZM14.8257 4.37148L13.4997 3.04623L7.11118 9.43473L6.64243 11.2295L8.43718 10.7607L14.8257 4.37148Z"
-                        fill="#514F6E"
-                        fill-opacity="0.75"
-                      />
-                      <path
-                        d="M14.7302 12.8697C14.9352 11.1176 15.0006 9.35208 14.9259 7.58967C14.9243 7.54815 14.9313 7.50674 14.9464 7.46803C14.9615 7.42931 14.9844 7.39413 15.0137 7.36467L15.7517 6.62667C15.7718 6.60639 15.7974 6.59236 15.8254 6.58628C15.8533 6.58019 15.8824 6.58231 15.9092 6.59237C15.936 6.60243 15.9593 6.62 15.9763 6.64299C15.9933 6.66597 16.0034 6.69338 16.0052 6.72192C16.1441 8.81535 16.0914 10.9171 15.8477 13.0009C15.6707 14.5174 14.4527 15.7062 12.9429 15.8749C10.3219 16.1652 7.67692 16.1652 5.05593 15.8749C3.54693 15.7062 2.32818 14.5174 2.15118 13.0009C1.84023 10.3425 1.84023 7.65686 2.15118 4.99842C2.32818 3.48192 3.54618 2.29317 5.05593 2.12442C7.04521 1.90383 9.04948 1.8504 11.0477 1.96467C11.0763 1.96672 11.1037 1.97693 11.1267 1.99408C11.1496 2.01123 11.1672 2.0346 11.1773 2.06144C11.1874 2.08827 11.1896 2.11743 11.1837 2.14548C11.1777 2.17352 11.1638 2.19927 11.1437 2.21967L10.3989 2.96367C10.3698 2.99273 10.335 3.01551 10.2966 3.0306C10.2583 3.04569 10.2173 3.05278 10.1762 3.05142C8.50875 2.99474 6.8394 3.05866 5.18118 3.24267C4.69664 3.2963 4.24432 3.51171 3.8973 3.85411C3.55027 4.19651 3.32881 4.64589 3.26868 5.12967C2.96797 7.70091 2.96797 10.2984 3.26868 12.8697C3.32881 13.3535 3.55027 13.8028 3.8973 14.1452C4.24432 14.4876 4.69664 14.703 5.18118 14.7567C7.69743 15.0379 10.3014 15.0379 12.8184 14.7567C13.303 14.703 13.7553 14.4876 14.1023 14.1452C14.4493 13.8028 14.6701 13.3535 14.7302 12.8697Z"
-                        fill="#514F6E"
-                        fill-opacity="0.75"
-                      />
-                    </svg>
+                    {!isEditing_desc && (
+                      <svg
+                        onClick={() => {
+                          setIsEditing_desc(true);
+                        }}
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 18 18"
+                        fill="none"
+                        className="cursor-pointer"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M16.0909 4.06248C16.1622 4.17064 16.1939 4.30007 16.1808 4.42892C16.1677 4.55778 16.1105 4.67815 16.0189 4.76973L9.12418 11.6637C9.05364 11.7342 8.96564 11.7847 8.86918 11.81L5.99743 12.56C5.9025 12.5847 5.80275 12.5842 5.70807 12.5585C5.6134 12.5328 5.52709 12.4828 5.45772 12.4134C5.38835 12.3441 5.33833 12.2578 5.31262 12.1631C5.28692 12.0684 5.28642 11.9687 5.31118 11.8737L6.06118 9.00273C6.08307 8.91655 6.12437 8.83651 6.18193 8.76873L13.1022 1.85298C13.2076 1.74764 13.3506 1.68848 13.4997 1.68848C13.6487 1.68848 13.7917 1.74764 13.8972 1.85298L16.0189 3.97398C16.0458 4.00099 16.07 4.03064 16.0909 4.06248ZM14.8257 4.37148L13.4997 3.04623L7.11118 9.43473L6.64243 11.2295L8.43718 10.7607L14.8257 4.37148Z"
+                          fill="#514F6E"
+                          fill-opacity="0.75"
+                        />
+                        <path
+                          d="M14.7302 12.8697C14.9352 11.1176 15.0006 9.35208 14.9259 7.58967C14.9243 7.54815 14.9313 7.50674 14.9464 7.46803C14.9615 7.42931 14.9844 7.39413 15.0137 7.36467L15.7517 6.62667C15.7718 6.60639 15.7974 6.59236 15.8254 6.58628C15.8533 6.58019 15.8824 6.58231 15.9092 6.59237C15.936 6.60243 15.9593 6.62 15.9763 6.64299C15.9933 6.66597 16.0034 6.69338 16.0052 6.72192C16.1441 8.81535 16.0914 10.9171 15.8477 13.0009C15.6707 14.5174 14.4527 15.7062 12.9429 15.8749C10.3219 16.1652 7.67692 16.1652 5.05593 15.8749C3.54693 15.7062 2.32818 14.5174 2.15118 13.0009C1.84023 10.3425 1.84023 7.65686 2.15118 4.99842C2.32818 3.48192 3.54618 2.29317 5.05593 2.12442C7.04521 1.90383 9.04948 1.8504 11.0477 1.96467C11.0763 1.96672 11.1037 1.97693 11.1267 1.99408C11.1496 2.01123 11.1672 2.0346 11.1773 2.06144C11.1874 2.08827 11.1896 2.11743 11.1837 2.14548C11.1777 2.17352 11.1638 2.19927 11.1437 2.21967L10.3989 2.96367C10.3698 2.99273 10.335 3.01551 10.2966 3.0306C10.2583 3.04569 10.2173 3.05278 10.1762 3.05142C8.50875 2.99474 6.8394 3.05866 5.18118 3.24267C4.69664 3.2963 4.24432 3.51171 3.8973 3.85411C3.55027 4.19651 3.32881 4.64589 3.26868 5.12967C2.96797 7.70091 2.96797 10.2984 3.26868 12.8697C3.32881 13.3535 3.55027 13.8028 3.8973 14.1452C4.24432 14.4876 4.69664 14.703 5.18118 14.7567C7.69743 15.0379 10.3014 15.0379 12.8184 14.7567C13.303 14.703 13.7553 14.4876 14.1023 14.1452C14.4493 13.8028 14.6701 13.3535 14.7302 12.8697Z"
+                          fill="#514F6E"
+                          fill-opacity="0.75"
+                        />
+                      </svg>
+                    )}
                   </span>
-                  <p className="text-[17px] text-n600 leading-[27px]">
-                    {workorder.workorder.description}
-                  </p>
+                  <textarea
+                    className={`text-[17px] text-n600 leading-[27px] rounded-[20px] px-[25px] py-[7px] w-full ${
+                      isEditing_desc
+                        ? "border-n300 border-[1px] shadow-md"
+                        : "bg-white"
+                    }`}
+                    name="description"
+                    disabled={isEditing_desc ? false : true}
+                    value={basicDataWorkorder.description}
+                    rows={isEditing_desc ? 4 : 2}
+                    onChange={(e) => {
+                      handleChange(e);
+                    }}
+                  />
                 </div>
 
                 <div className="flex items-center gap-[4px]">
@@ -928,7 +1216,7 @@ const MissionDetails = () => {
                             type="search"
                             name=""
                             id=""
-                            value={searchQueryCoord}
+                            value={searchQueryCoord!}
                             onChange={(eo) => {
                               setSearchQueryCoord(eo.target.value);
                             }}
@@ -968,33 +1256,41 @@ const MissionDetails = () => {
                                 width="20"
                               />
                             </div>
+                          ) : searchQueryCoord !== "" ? (
+                            searchCoords.length > 0 ? (
+                              searchCoords.map((user, index) => {
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                    onClick={() => {
+                                      handleAddMailedPerson(
+                                        workorder.workorder.id,
+                                        user.email
+                                      );
+                                      setVisibleCoordPopup(false);
+                                    }}
+                                  >
+                                    <img
+                                      src="/avatar.png"
+                                      alt="avatar"
+                                      className="w-[31px] rounded-[50%]"
+                                    />
+                                    <span className="text-[14px] text-n600">
+                                      {user.first_name} {user.last_name}
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <span className="text-n700 w-full flex justify-center text-[14px]">
+                                no result founded
+                              </span>
+                            )
                           ) : (
-                            searchCoords.length !== 0 &&
-                            searchQueryCoord !== "" &&
-                            searchCoords.map((user, index) => {
-                              return (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                  onClick={() => {
-                                    handleAddMailedPerson(
-                                      workorder.workorder.id,
-                                      user.email
-                                    );
-                                    setVisibleCoordPopup(false);
-                                  }}
-                                >
-                                  <img
-                                    src="/avatar.png"
-                                    alt="avatar"
-                                    className="w-[31px] rounded-[50%]"
-                                  />
-                                  <span className="text-[14px] text-n600">
-                                    {user.first_name} {user.last_name}
-                                  </span>
-                                </div>
-                              );
-                            })
+                            <span className="text-n700 w-full flex justify-center text-[14px]">
+                              Search for a coordianter
+                            </span>
                           )}
                         </div>
                       </div>
@@ -1043,7 +1339,7 @@ const MissionDetails = () => {
                               return (
                                 <div
                                   key={index}
-                                  className="relative cursor-pointer w-[48%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px] group"
+                                  className=" cursor-pointer w-[48%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px] group"
                                   onClick={() => {
                                     downloadFile(
                                       attach.id,
@@ -1052,7 +1348,7 @@ const MissionDetails = () => {
                                     );
                                   }}
                                 >
-                                  <div className="flex items-center gap-[9px] w-full">
+                                  <div className="flex items-center gap-[9px] w-[90%]">
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
                                       width="22"
@@ -1080,18 +1376,32 @@ const MissionDetails = () => {
                                     </div>
                                   </div>
                                   <span
-                                    className="absolute right-3 top-[50%] translate-y-[-50%] px-[3px] text-[12px] rounded-[50%] bg-n500 text-white hidden group-hover:block"
+                                    className=" w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
                                     onClick={(e) => {
                                       e.stopPropagation();
 
                                       handleAddOrRemoveAttachement(
                                         workorder.workorder.id,
                                         `${attach.id}`,
-                                        "delete"
+                                        "delete",
+                                        "update-workorder-attachments"
                                       );
                                     }}
                                   >
-                                    🗙
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="17"
+                                      height="18"
+                                      viewBox="0 0 18 20"
+                                      fill="none"
+                                    >
+                                      <path
+                                        fill-rule="evenodd"
+                                        clip-rule="evenodd"
+                                        d="M15.412 4.5L14.611 18.117C14.5812 18.6264 14.3577 19.1051 13.9865 19.4551C13.6153 19.8052 13.1243 20.0001 12.614 20H5.386C4.87575 20.0001 4.38475 19.8052 4.0135 19.4551C3.64226 19.1051 3.41885 18.6264 3.389 18.117L2.59 4.5H0.5V3.5C0.5 3.36739 0.552679 3.24021 0.646447 3.14645C0.740215 3.05268 0.867392 3 1 3H17C17.1326 3 17.2598 3.05268 17.3536 3.14645C17.4473 3.24021 17.5 3.36739 17.5 3.5V4.5H15.412ZM7 0.5H11C11.1326 0.5 11.2598 0.552679 11.3536 0.646447C11.4473 0.740215 11.5 0.867392 11.5 1V2H6.5V1C6.5 0.867392 6.55268 0.740215 6.64645 0.646447C6.74021 0.552679 6.86739 0.5 7 0.5ZM6 7L6.5 16H8L7.6 7H6ZM10.5 7L10 16H11.5L12 7H10.5Z"
+                                        fill="#db2323"
+                                      />
+                                    </svg>
                                   </span>
                                 </div>
                               );
@@ -1141,18 +1451,20 @@ const MissionDetails = () => {
                                 );
                               })}
                             {getRole() !== 2 && (
-                              <div className="flex flex-col w-[48%]"
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const files = e.dataTransfer.files;
-                                // Add the files to the input element
-                                handleWithDragAndDropAttach(files);
-                              }}>
+                              <div
+                                className="flex flex-col w-[48%]"
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const files = e.dataTransfer.files;
+                                  // Add the files to the input element
+                                  handleWithDragAndDropAttach(files);
+                                }}
+                              >
                                 <input
                                   type="file"
                                   name="attachement"
@@ -1212,7 +1524,8 @@ const MissionDetails = () => {
                                 handleAddOrRemoveAttachement(
                                   workorder.workorder.id,
                                   attachFiles,
-                                  "add"
+                                  "add",
+                                  "update-workorder-attachments"
                                 );
                               }}
                             >
@@ -1313,18 +1626,22 @@ const MissionDetails = () => {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-start gap-[8px] w-[100%]"
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const file = e.dataTransfer.files[0];
-                          // Add the files to the input element
-                          handleWithDragAndDropReportAndAccaptence(file,setReportFile);
-                        }}
+                        <div
+                          className="flex flex-col items-start gap-[8px] w-[100%]"
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const file = e.dataTransfer.files[0];
+                            // Add the files to the input element
+                            handleWithDragAndDropReportAndAccaptence(
+                              file,
+                              setReportFile
+                            );
+                          }}
                         >
                           <input
                             type="file"
@@ -1445,17 +1762,22 @@ const MissionDetails = () => {
                               </div>
                             </div>
                           ) : getRole() !== 2 ? (
-                            <div  onDragOver={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const file = e.dataTransfer.files[0];
-                              // Add the files to the input element
-                              handleWithDragAndDropReportAndAccaptence(file,setAcceptenceFile);
-                            }}>
+                            <div
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const file = e.dataTransfer.files[0];
+                                // Add the files to the input element
+                                handleWithDragAndDropReportAndAccaptence(
+                                  file,
+                                  setAcceptenceFile
+                                );
+                              }}
+                            >
                               {" "}
                               <input
                                 type="file"
@@ -1506,6 +1828,37 @@ const MissionDetails = () => {
                   </>
                 )}
               </div>
+              {(isEditing_Title_tic || isEditing_desc) && (
+                <div className="flex items-center justify-end gap-[6px] w-full">
+                  <button
+                    className="px-[23px] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
+                    onClick={() => {
+                      setIsEditing_Title_tic(false);
+                      setIsEditing_desc(false);
+                      setBasicDataWorkorder((prev) => ({
+                        ...prev,
+                        title: workorder.workorder.title,
+                        description: workorder.workorder.description,
+                        ticketNumber: workorder.workorder.ticker_number,
+                      }));
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-[25px] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                    onClick={() => {
+                      handleEditWorkorder(workorder.workorder.id, {
+                        title: basicDataWorkorder.title,
+                        ticker_number: basicDataWorkorder.ticketNumber,
+                        description: basicDataWorkorder.description,
+                      });
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
             </div>
             {workorder.workorder.status === 0 ? (
               <button
@@ -1520,16 +1873,22 @@ const MissionDetails = () => {
                 }}
               >
                 {isLoading ? (
-                    <RotatingLines
-                      visible={true}
-                      width="20"
-                      strokeWidth="3"
-                      strokeColor="white"
-                    />
-                  ) : "Assing"}
+                  <RotatingLines
+                    visible={true}
+                    width="20"
+                    strokeWidth="3"
+                    strokeColor="white"
+                  />
+                ) : (
+                  "Assing"
+                )}
               </button>
             ) : workorder.workorder.status > 0 ? (
-              <div className={`w-full flex items-center ${undoMessageVisible ? "justify-between": "justify-end"} `}>
+              <div
+                className={`w-full flex items-center ${
+                  undoMessageVisible ? "justify-between" : "justify-end"
+                } `}
+              >
                 {undoMessageVisible && (
                   <span className="text-[13px] font-medium leading-[30px] text-n700 flex items-center">
                     This workorder is set to be Executed!{" "}
@@ -1538,7 +1897,7 @@ const MissionDetails = () => {
                       onClick={handleUndo}
                     >
                       {"  "}
-                      Undo This action before 5 seconds
+                      Undo This action before {timeLeft} seconds
                     </span>
                   </span>
                 )}

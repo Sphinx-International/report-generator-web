@@ -1,5 +1,5 @@
 import { useState, forwardRef, MouseEvent, ChangeEvent } from "react";
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
 import generatePassword from "../func/generatePassword";
@@ -9,8 +9,8 @@ interface Userprops {
   fetchUsers?: () => void;
 }
 const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+ // const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+ // const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>("Select a role");
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [visibleEmailErr, setVisibleEmailErr] = useState<boolean>(false);
@@ -55,7 +55,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     }
   };
 
-  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+ /* const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -64,7 +64,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       };
       reader.readAsDataURL(file);
     }
-  };
+  };  */
   const toggleDropdown = () => setIsOpen(!isOpen);
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
@@ -74,7 +74,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;

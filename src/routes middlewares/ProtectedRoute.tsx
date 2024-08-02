@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowedRoles }) => {
   const location = useLocation();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   const userRole = getRole();
 
   if (!token ) {

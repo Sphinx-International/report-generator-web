@@ -95,7 +95,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         }));
       }
     };
-    
+
     const handleAddingFileChangeWithDragAndDrop = (files: FileList) => {
       if (files) {
         setformValues((prevFormValues) => ({
@@ -156,7 +156,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const handleCreateWorkorder = async (e: FormEvent) => {
       e.preventDefault();
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
       if (!token) {
         console.error("No token found");
         return;
@@ -258,12 +258,11 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     const searchForEngs = useCallback(() => {
       if (!searchQueryEng) {
-        console.log("No search query provided");
         return;
       }
       setLoaderAssignSearch(true);
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
       if (!token) {
         console.error("No token found");
         return;
@@ -275,6 +274,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       socket.onopen = () => {
         console.log("WebSocket connection opened");
         const message = `search|${token}|${searchQueryEng}`;
+        console.log(message);
         socket.send(message);
       };
 
@@ -307,12 +307,11 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     const searchForCoords = useCallback(() => {
       if (!searchQueryCoord) {
-        console.log("No search query provided");
         return;
       }
       setLoaderCoordSearch(true);
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       if (!token) {
         console.error("No token found");
         return;
@@ -464,20 +463,20 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                           />
                         </svg>
                         {isFocusedAssignInput && searchQueryEng !== "" && (
-                          <div className="rounded-[20px] p-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
+                          <div className="rounded-[20px] py-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
                             {loaderAssignSearch ? (
-                              <div className="w-full py-[10px] flex items-center justify-center">
+                              <div className="w-full py-[10px] px-[18px] flex items-center justify-center">
                                 <RotatingLines
                                   strokeWidth="4"
                                   strokeColor="#4A3AFF"
                                   width="20"
                                 />
                               </div>
-                            ) : (
+                            ) : searchEngs.length > 0 ? (
                               searchEngs.map((eng) => {
                                 return (
                                   <div
-                                    className="flex items-center gap-[8px] w-full cursor-pointer"
+                                    className="flex items-center gap-[8px] px-[18px] w-full cursor-pointer hover:bg-slate-100"
                                     onClick={() => {
                                       setformValues((prev) => ({
                                         ...prev,
@@ -499,6 +498,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                   </div>
                                 );
                               })
+                            ) : (
+                              <span className="text-n700 w-full flex justify-center text-[14px]">
+                                no result founded
+                              </span>
                             )}
                           </div>
                         )}
@@ -590,7 +593,17 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       />
                     </svg>
 
-                    <div className="flex-grow relative py-[16px] rounded-[100px] bg-[#FEF6FF]">
+                    <div
+                      className={`flex-grow relative py-[16px] rounded-[100px] ${
+                        currentPriorityIndex === 0
+                          ? "bg-[#FEF6FF]"
+                          : currentPriorityIndex === 1
+                          ? "bg-[#FEF6FF]"
+                          : currentPriorityIndex === 2
+                          ? "bg-[#FFF8EC]"
+                          : "bg-[#FFF5F3]"
+                      }`}
+                    >
                       <TransitionGroup>
                         <CSSTransition
                           key={priorities[currentPriorityIndex]}
@@ -598,9 +611,9 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                           classNames="fade"
                         >
                           <span
-                            className={`absolute top-[50%] translate-y-[-50%] inset-0 flex items-center justify-center  font-medium leading-[15px] text-[10px] text-center ${
+                            className={`absolute top-[50%] translate-y-[-50%] inset-0 flex items-center justify-center font-medium leading-[15px] text-[10px] text-center ${
                               currentPriorityIndex === 0
-                                ? "text-primary"
+                                ? "text-primary "
                                 : currentPriorityIndex === 1
                                 ? "text-[#DB2C9F]"
                                 : currentPriorityIndex === 2
@@ -754,20 +767,20 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   </svg>
 
                   {isFocusedMailInput && searchQueryCoord !== "" && (
-                    <div className="rounded-[20px] p-[18px] z-50 bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
+                    <div className="rounded-[20px] py-[18px] z-50 bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
                       {loaderCoordSearch ? (
-                        <div className="w-full py-[10px] flex items-center justify-center">
+                        <div className="w-full px-[18px] py-[10px] flex items-center justify-center">
                           <RotatingLines
                             strokeWidth="4"
                             strokeColor="#4A3AFF"
                             width="20"
                           />
                         </div>
-                      ) : (
+                      ) : searchCoords.length > 0 ? (
                         searchCoords.map((coord) => {
                           return (
                             <div
-                              className="flex items-center gap-[8px] w-full cursor-pointer"
+                              className="flex items-center px-[18px] gap-[8px] w-full cursor-pointer hover:bg-slate-100"
                               onClick={() => {
                                 setformValues((prev) => {
                                   if (!prev.accounts.includes(coord.email)) {
@@ -798,6 +811,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             </div>
                           );
                         })
+                      ) : (
+                        <span className="text-n700 w-full flex justify-center text-[14px]">
+                          no result founded
+                        </span>
                       )}
                     </div>
                   )}
@@ -836,7 +853,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
               </div>
 
               <div
-              className="flex flex-col items-start gap-[8px] w-[100%]"
+                className="flex flex-col items-start gap-[8px] w-[100%]"
                 onDragOver={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

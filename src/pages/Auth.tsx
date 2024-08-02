@@ -17,6 +17,8 @@ const Auth = () => {
 
   const [passwordErr, setPasswordErr] = useState(false);
   const [passwordErrMsg, setPasswordErrMsg] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,6 +48,7 @@ const Auth = () => {
     }
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -63,7 +66,10 @@ const Auth = () => {
         console.log("Form submitted successfully", data);
 
         if (response.status === 200) {
-          localStorage.setItem("token", data.token);
+          if (rememberMe) {
+            localStorage.setItem("token", data.token);
+          }
+          sessionStorage.setItem("token", data.token);
           localStorage.setItem("user_id", data.account.email);
           localStorage.setItem("user", JSON.stringify(data.account));
 
@@ -84,8 +90,6 @@ const Auth = () => {
           console.error("Unexpected error", response.statusText);
         }
 
-        /* setEmail("");
-        setPassword(""); */
       } else {
         console.error("Error submitting form");
       }
@@ -260,6 +264,8 @@ const Auth = () => {
                 name="remember"
                 id="Remember"
                 className="w-[15.75px] h-[15.75px] rounded-[4.5px] border-[1.13px] border-n500"
+                checked={rememberMe} 
+                onChange={() => setRememberMe(!rememberMe)} 
               />
               <span className="text-[14px] leading-[20px] text-n700 ">
                 Remember me
@@ -400,6 +406,8 @@ const Auth = () => {
                 name="remember"
                 id="Remember"
                 className="w-[15.75px] h-[15.75px] rounded-[4.5px] border-[1.13px] border-n500"
+                checked={rememberMe} 
+                onChange={() => setRememberMe(!rememberMe)} 
               />
               <span className=" text-[14px] leading-[20px] text-n700 ">
                 Remember me

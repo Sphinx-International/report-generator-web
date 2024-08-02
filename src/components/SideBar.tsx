@@ -13,7 +13,7 @@ const SideBar = () => {
 
   const handleLogout = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;

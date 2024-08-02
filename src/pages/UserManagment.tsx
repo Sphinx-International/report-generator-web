@@ -91,14 +91,15 @@ const UserManagment = () => {
     }
   };
 
-  const fetchUsers = async (offset = 0, limit = 4) => {
-    const token = localStorage.getItem("token");
+  const fetchUsers = async (offset = 0, limit = 4,role?: string) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return { total: 0, current_offset: 0 };
     }
 
     const url = `/account/get-accounts?offset=${offset}&limit=${limit}`;
+    
     setIsloading(true);
     try {
       const response = await fetch(url, {
@@ -115,10 +116,25 @@ const UserManagment = () => {
         localStorage.clear();
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      setUsers(data.data);
-      setTotal(data.total);
-      return { total: data.total, current_offset: offset };
+      switch (response.status) {
+        case 200:
+          {
+            const data = await response.json();
+            setUsers(data.data);
+            setTotal(data.total);
+            return { total: data.total, current_offset: offset };
+          }
+          break;
+
+        case 204:
+          console.log("here");
+          setUsers(null);
+          break;
+
+        default:
+          break;
+      }
+
     } catch (err) {
       console.error("Error: ", err);
       return { total: 0, current_offset: 0 };
@@ -166,14 +182,12 @@ const UserManagment = () => {
           searchBar={true}
         />
         <Main
-          flitration={["All", "Engineers", "Coordinators", "Clients"]}
+          flitration={["All", "Engineers", "Coordinators"]}
           functionalties={{
             primaryFunc: { name: "Add User +" },
-            secondaryFuncs: [
-              { name: "CSV", iconPath: "/icons/downloadIcon.png" },
-              { name: "Upload", iconPath: "/icons/uploadIcon.png" },
-            ],
           }}
+          FiltrationFunc={fetchUsers}
+          setCurrentPage={setCurrentPage}
           handleAddPrimaryButtonClick={handleAddUserButtonClick}
         >
           <div className="flex flex-col gap-[15px] items-center w-full h-[90%]">

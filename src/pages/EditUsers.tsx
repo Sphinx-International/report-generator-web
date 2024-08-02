@@ -49,7 +49,7 @@ const EditUsers = () => {
   };
 
   const fetchUser = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -90,7 +90,7 @@ const EditUsers = () => {
   const handleSaveGeneralEdit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -140,7 +140,7 @@ const EditUsers = () => {
   const handleSaveRolelEdit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
       console.error("No token found");
       return;
@@ -205,13 +205,13 @@ const EditUsers = () => {
           <div className="w-full flex flex-col gap-[12px]">
             <div className="rounded-[20px] border-n400 border-[1px] py-[20px] px-[21px]">
               <div className="flex items-center gap-[34px]">
-                <img src="/avatar1.png" alt="avatar" className="w-[100px]" />
+                <img src="/avatar2.jpg" alt="avatar" className="w-[100px] rounded-[50%]" />
                 <div className="flex items-start flex-col gap-[6px]">
                   <h2 className="text-[18px] leading-[28.08px] text-n800 font-medium">
-                    Mariem Boukennouche
+                    {firstName} {lastName}
                   </h2>
                   <span className="text-[14px] text-550">
-                    mboukennouche@gmail.com
+                    {email}
                   </span>
                 </div>
               </div>
@@ -248,7 +248,7 @@ const EditUsers = () => {
                   </button>
                 )}
               </div>
-              <form className="flex flex-col gap-[40px]">
+              <form className="flex flex-col gap-[40px] w-full">
                 <div className="flex flex-wrap gap-x-[70px] gap-y-[20px] w-full">
                   <div className="flex flex-col items-start gap-[9px] w-[45%]">
                     <label
@@ -290,6 +290,7 @@ const EditUsers = () => {
                       disabled={isEditingGeneral ? false : true}
                     />
                   </div>
+                  {/* 
                   <div className="flex flex-col items-start gap-[9px] w-[45%]">
                     <label
                       htmlFor="lastName"
@@ -328,7 +329,7 @@ const EditUsers = () => {
                       }`}
                       disabled={isEditingGeneral ? false : true}
                     />
-                  </div>
+                  </div>  */}
                 </div>
                 {isEditingGeneral && (
                   <div className="w-full flex items-center justify-between">
