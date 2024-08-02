@@ -348,7 +348,7 @@ const UserManagment = () => {
                             {user.last_name} {user.first_name} <br />{" "}
                             {user.email} <br /> 10-09-2002 <br /> Engineer
                           </span>
-                          <Link to={`/edit-user/${index}`}>
+                          <Link to={`/edit-user/${user.email}`}>
                             <svg
                               onClick={(e) => {
                                 e.stopPropagation();
