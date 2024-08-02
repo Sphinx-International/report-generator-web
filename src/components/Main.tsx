@@ -13,9 +13,9 @@ type Functionalities = {
 };
 
 interface HeaderProps {
+  page: "workorders" | "accounts"
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
-
   functionalties: Functionalities;
   children: ReactNode;
   handleAddPrimaryButtonClick: () => void;
@@ -43,14 +43,15 @@ const Main: React.FC<HeaderProps> = (props) => {
     setSelectedFilter(item);
      localStorage.setItem('selectedFilter', item.toLowerCase());
      props.setCurrentPage(1);
+     const limit = props.page ==="accounts" ? 4: 8
 
       if (item === "all") {
-        props.FiltrationFunc!(0, 8);
+        props.FiltrationFunc!(0, limit);
       } else if (item === "to do") {
-        props.FiltrationFunc!(0, 8, "assigned");
+        props.FiltrationFunc!(0, limit, "assigned");
 
       }else{
-        props.FiltrationFunc!(0, 8, item.toLowerCase());
+        props.FiltrationFunc!(0, limit, item.toLowerCase());
 
       }
   

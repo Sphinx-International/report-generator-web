@@ -58,7 +58,6 @@ const UserManagment = () => {
   const handleCheckboxChange = (userId: string) => {
     dispatch(toggleUserInTab(userId));
   };
-  console.log(currentPage);
   const handleAddUserButtonClick = () => {
     const dialog = addUserDialogRef.current;
     if (dialog) {
@@ -91,15 +90,21 @@ const UserManagment = () => {
     }
   };
 
-  const fetchUsers = async (offset = 0, limit = 4,role?: string) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  // console.log(currentPage);
+
+  // console.log(Users);
+
+  const fetchUsers = async (offset = 0, limit = 4, role?: string) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return { total: 0, current_offset: 0 };
     }
+    const url = role
+      ? `/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
+      : `/account/get-accounts?offset=${offset}&limit=${limit}`;
 
-    const url = `/account/get-accounts?offset=${offset}&limit=${limit}`;
-    
     setIsloading(true);
     try {
       const response = await fetch(url, {
@@ -134,7 +139,6 @@ const UserManagment = () => {
         default:
           break;
       }
-
     } catch (err) {
       console.error("Error: ", err);
       return { total: 0, current_offset: 0 };
@@ -145,8 +149,13 @@ const UserManagment = () => {
 
   useEffect(() => {
     const offset = (currentPage - 1) * limit;
+    const filter = localStorage.getItem("selectedFilter");
 
-    fetchUsers(offset);
+    if (filter === "all" || !filter) {
+      fetchUsers(offset, limit);
+    } else {
+      fetchUsers(offset, limit, filter);
+    }
 
     const userDialog = addUserDialogRef.current;
     return () => {
@@ -182,7 +191,8 @@ const UserManagment = () => {
           searchBar={true}
         />
         <Main
-          flitration={["All", "Engineers", "Coordinators"]}
+          page="accounts"
+          flitration={["All", "Engineer", "Coordinator"]}
           functionalties={{
             primaryFunc: { name: "Add User +" },
           }}
@@ -272,7 +282,11 @@ const UserManagment = () => {
                             10-09-2002
                           </span>
                           <span className="w-[13%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            Engineer
+                            {user.role === 1
+                              ? "Coordinator"
+                              : user.role === 2
+                              ? "Engineer"
+                              : null}
                           </span>
                           <span className="w-[13%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
                             <Link to={`/edit-user/${user.email}`}>

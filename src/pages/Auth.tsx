@@ -19,7 +19,6 @@ const Auth = () => {
   const [passwordErrMsg, setPasswordErrMsg] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
-
   const [isLoading, setIsLoading] = useState(false);
 
   const [mobilePopUpPosition, setMobilePopUpPosition] = useState(false);

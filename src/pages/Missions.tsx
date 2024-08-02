@@ -64,7 +64,8 @@ const Missions = () => {
   };
 
   const fetchWorkOrders = async (offset = 0, limit = 8, status?: string) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return { total: 0, current_offset: 0 };
@@ -149,6 +150,7 @@ const Missions = () => {
           searchBar={true}
         />
         <Main
+          page="workorders"
           flitration={
             ["0", "1"].includes(localStorage.getItem("role")!)
               ? [

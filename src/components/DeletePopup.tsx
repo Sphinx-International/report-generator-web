@@ -61,6 +61,22 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialData = await initialResponse.json();
         const initialUserCount = initialData.data.length;
     
+        if (props.deleteUrl === "/account/delete-accounts") {
+          const secondResponse = await fetch(`/workorder/delete-workorders-by-account`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Token ${token}`,
+            },
+            body: JSON.stringify({
+              "accounts": props.deleteItems,
+            }),
+          });
+          if (!secondResponse.ok) {
+            console.error("Failed to delete workorders related to this users");
+            throw new Error("Failed to delete workorders related to this users");
+          }
+        }
         // Perform deletion
         const response = await fetch(`${props.deleteUrl}`, {
           method: "DELETE",
@@ -77,8 +93,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
           console.error("Error deleting users:", await response.text());
           alert("Failed to delete users");
           return;
-        }
-    
+        }    
         // Determine if the current page is empty after deletion
         const newUserCount = initialUserCount - props.deleteItems.length;
         if (localStorage.getItem("selectedFilter") === "all" || !localStorage.getItem("selectedFilter") ) {
@@ -96,7 +111,6 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
             await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilter"));
           }
         }
-
 
       } catch (error) {
         console.error("Error deleting users:", error);

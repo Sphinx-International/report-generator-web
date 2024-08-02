@@ -72,6 +72,7 @@ const SideBar = () => {
                     to={item.link}
                     key={index}
                     onClick={() => {
+                      localStorage.removeItem("selectedFilter")
                       dispatch(closeSidebar());
                     }}
                     className={({ isActive, isPending }) =>

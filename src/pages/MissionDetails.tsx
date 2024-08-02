@@ -50,12 +50,12 @@ const MissionDetails = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [undoMessageVisible, setUndoMessageVisible] = useState(false);
+  const [undo_req_acc_MessageVisible, setUndo_req_acc_MessageVisible] = useState(false);
   const undoTimeoutRef = useRef<number | null>(null);
   const undoActionTriggeredRef = useRef(false);
+  const undo_req_acc_ActionTriggeredRef = useRef(false);
   const [timeLeft, setTimeLeft] = useState(5); // Countdown starts at 5 seconds
   const intervalRef = useRef<number | null>(null); // Ref for countdown interval
-
-
 
   const [basicDataWorkorder, setBasicDataWorkorder] = useState({
     title: "",
@@ -63,12 +63,11 @@ const MissionDetails = () => {
     priority: 0 | 1 | 2 | 3,
     description: "",
   });
+  const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
 
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
   const [isEditing_desc, setIsEditing_desc] = useState(false);
   const [showPriority, setShowPriority] = useState(false);
-
-
 
   useEffect(() => {
     // Clear the interval when the component unmounts or when timeLeft is 0
@@ -106,7 +105,8 @@ const MissionDetails = () => {
     workorder_id: number,
     engineer_id: string
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -144,9 +144,11 @@ const MissionDetails = () => {
   };
   const handleExecute = (workorder_id: number) => {
     setUndoMessageVisible(true);
+    setUndo_req_acc_MessageVisible(false)
     setTimeLeft(5); // Set countdown to 5 seconds
     setIsLoading(true);
     undoActionTriggeredRef.current = false;
+    undo_req_acc_ActionTriggeredRef.current = true;
 
 
     if (undoTimeoutRef.current) {
@@ -159,7 +161,7 @@ const MissionDetails = () => {
     }
 
     intervalRef.current = window.setInterval(() => {
-      setTimeLeft(prevTime => {
+      setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(intervalRef.current!);
           return 0;
@@ -176,9 +178,9 @@ const MissionDetails = () => {
     }, 5000);
   };
 
-
   const executeWorkOrder = async (workorder_id: number) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -192,7 +194,7 @@ const MissionDetails = () => {
         },
         body: JSON.stringify({ workorder_id }),
       });
-  
+
       if (response) {
         console.log(response.status);
         switch (response.status) {
@@ -219,7 +221,8 @@ const MissionDetails = () => {
     workorder_id: number,
     workorder_report: File
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -267,7 +270,8 @@ const MissionDetails = () => {
     workorder_id: number,
     acceptenceFile: File
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -319,7 +323,8 @@ const MissionDetails = () => {
     path: string,
     fileName: string | undefined
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -358,7 +363,8 @@ const MissionDetails = () => {
     }
     setLoaderAssignSearch(true);
 
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -407,7 +413,8 @@ const MissionDetails = () => {
     }
     setLoaderCoordSearch(true);
 
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -453,7 +460,8 @@ const MissionDetails = () => {
     workorder_id: number,
     addedEmail: string
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -497,7 +505,8 @@ const MissionDetails = () => {
     workorder_id: number,
     deletedEmailId: number
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -533,7 +542,8 @@ const MissionDetails = () => {
     }
   };
   const fetchOneWorkOrder = useCallback(async () => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -570,6 +580,7 @@ const MissionDetails = () => {
         priority: data.workorder.priority,
         description: data.workorder.description,
       });
+      setReqAcc(data.workorder.require_acceptence);
     } catch (err) {
       console.error("Error: ", err);
     } finally {
@@ -581,7 +592,8 @@ const MissionDetails = () => {
     id: number,
     properties: WorkorderProperties = {}
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -639,9 +651,10 @@ const MissionDetails = () => {
     workorder_id: number,
     file: File[] | string,
     operation: "add" | "delete",
-    path:string
+    path: string
   ) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -696,6 +709,89 @@ const MissionDetails = () => {
     }
   };
 
+
+
+
+
+
+  const handleeditReqAccStatus = (workorder_id: number,new_status: 0 | 1) => {
+    setUndoMessageVisible(false); 
+    setUndo_req_acc_MessageVisible(true)
+    console.log("here");
+    setTimeLeft(5); // Set countdown to 5 seconds
+    undoActionTriggeredRef.current = true; 
+    undo_req_acc_ActionTriggeredRef.current = false; 
+    setIsLoading(false)
+
+    if (undoTimeoutRef.current) {
+      clearTimeout(undoTimeoutRef.current);
+    }
+
+    // Start countdown timer
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = window.setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    undoTimeoutRef.current = window.setTimeout(async () => {
+      if (!undo_req_acc_ActionTriggeredRef.current) {
+        await EditAcceptenceStatus(workorder_id,new_status)
+      }
+      setUndo_req_acc_MessageVisible(false);
+    }, 5000);
+  };
+
+
+
+  const EditAcceptenceStatus = async (
+    id: number,
+    require_acceptance: 0 | 1
+  ) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    try {
+      const response = await fetch("/workorder/update-workorder-acceptence", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, require_acceptance }),
+      });
+
+      if (response) {
+        console.log(response.status);
+        switch (response.status) {
+          case 200:
+            setReqAcc(require_acceptance);
+            break;
+          case 400:
+            console.log("verify your data");
+            break;
+          default:
+            console.log("error");
+            break;
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting form", err);
+    } finally {
+    }
+  };
+
   const handleUndo = () => {
     if (undoTimeoutRef.current !== null) {
       clearTimeout(undoTimeoutRef.current);
@@ -705,8 +801,10 @@ const MissionDetails = () => {
     }
     undoActionTriggeredRef.current = true;
     setUndoMessageVisible(false);
+    setUndo_req_acc_MessageVisible(false);
     setIsLoading(false);
   };
+  
 
   const handleWithDragAndDropAttach = (files: FileList) => {
     if (files) {
@@ -921,6 +1019,25 @@ const MissionDetails = () => {
                       </div>
                     )}
                   </div>
+                  {reqAcc ? (
+                    <span
+                      className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
+                      onClick={() => {
+                        handleeditReqAccStatus(workorder.workorder.id, 0);
+                      }}
+                    >
+                      ✓
+                    </span>
+                  ) : (
+                    <span
+                      className="px-[10px] py-[6px] rounded-[50%] text-[#DB2C2C] bg-[#DB2C2C4D] cursor-pointer"
+                      onClick={() => {
+                        handleeditReqAccStatus(workorder.workorder.id, 1);
+                      }}
+                    >
+                      🗙
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="w-full flex flex-col items-start gap-[12px]">
@@ -1886,12 +2003,24 @@ const MissionDetails = () => {
             ) : workorder.workorder.status > 0 ? (
               <div
                 className={`w-full flex items-center ${
-                  undoMessageVisible ? "justify-between" : "justify-end"
+                  undoMessageVisible || undo_req_acc_MessageVisible ? "justify-between" : "justify-end"
                 } `}
               >
                 {undoMessageVisible && (
                   <span className="text-[13px] font-medium leading-[30px] text-n700 flex items-center">
                     This workorder is set to be Executed!{" "}
+                    <span
+                      className="text-primary font-semibold cursor-pointer"
+                      onClick={handleUndo}
+                    >
+                      {"  "}
+                      Undo This action before {timeLeft} seconds
+                    </span>
+                  </span>
+                )}
+                 {undo_req_acc_MessageVisible && (
+                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex items-center">
+                    Require acceptance is going to be {reqAcc ? "False" : "True"} now!
                     <span
                       className="text-primary font-semibold cursor-pointer"
                       onClick={handleUndo}
