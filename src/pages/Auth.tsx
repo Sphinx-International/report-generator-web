@@ -47,7 +47,6 @@ const Auth = () => {
     }
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -74,10 +73,10 @@ const Auth = () => {
 
           if (data.account.role === 0) {
             navigate("/users");
-            localStorage.setItem('role', data.account.role.toString());
+            localStorage.setItem("role", data.account.role.toString());
           } else {
             navigate("/missions");
-            localStorage.setItem('role', data.account.role.toString());
+            localStorage.setItem("role", data.account.role.toString());
           }
         } else if (response.status === 401) {
           setPasswordErr(true);
@@ -88,7 +87,6 @@ const Auth = () => {
         } else {
           console.error("Unexpected error", response.statusText);
         }
-
       } else {
         console.error("Error submitting form");
       }
@@ -263,8 +261,8 @@ const Auth = () => {
                 name="remember"
                 id="Remember"
                 className="w-[15.75px] h-[15.75px] rounded-[4.5px] border-[1.13px] border-n500"
-                checked={rememberMe} 
-                onChange={() => setRememberMe(!rememberMe)} 
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
               />
               <span className="text-[14px] leading-[20px] text-n700 ">
                 Remember me
@@ -323,7 +321,16 @@ const Auth = () => {
                 id="email"
                 placeholder="Email address"
                 className="w-full h-[46px] rounded-[46px] shadow-md px-[21px] text-n600"
+                value={email}
+                onChange={(eo) => {
+                  setEmail(eo.target.value);
+                }}
               />
+              {emailErr && (
+                <span className="ml-[12px] text-[13px] text-[#DB2C2C] leading-[22px]">
+                  {emailErrMsg}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-col items-start justify-center gap-[15px] w-full">
@@ -340,6 +347,10 @@ const Auth = () => {
                   id="password"
                   placeholder="Password"
                   className="w-full h-[46px] rounded-[46px] shadow-md px-[21px] text-n600 pr-[45px]"
+                  value={password}
+                  onChange={(eo) => {
+                    setPassword(eo.target.value);
+                  }}
                 />
                 <div
                   className="absolute inset-y-0 right-2 pr-3 flex items-center cursor-pointer"
@@ -396,6 +407,11 @@ const Auth = () => {
                   )}
                 </div>
               </div>
+              {passwordErr && (
+                <span className="ml-[12px] text-[13px] text-[#DB2C2C] leading-[22px]">
+                  {passwordErrMsg}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center justify-between w-full">
@@ -405,8 +421,8 @@ const Auth = () => {
                 name="remember"
                 id="Remember"
                 className="w-[15.75px] h-[15.75px] rounded-[4.5px] border-[1.13px] border-n500"
-                checked={rememberMe} 
-                onChange={() => setRememberMe(!rememberMe)} 
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
               />
               <span className=" text-[14px] leading-[20px] text-n700 ">
                 Remember me
@@ -418,13 +434,15 @@ const Auth = () => {
           </div>
           <button
             type="submit"
-            className="py-[13px] w-full text-white rounded-[86px] font-semibold bg-primary flex items-center justify-center"
+            className={`${
+              isLoading ? "py-[12px]" : "py-[15px]"
+            } w-full text-white rounded-[86px] font-semibold bg-primary flex items-center justify-center`}
             onClick={(eo) => {
               check_email_and_password(email, password, eo);
             }}
           >
             {isLoading ? (
-              <ThreeDots color="#fff" width="30" height="20" />
+              <ThreeDots color="#fff" width="50" height="30" />
             ) : (
               "Log in"
             )}

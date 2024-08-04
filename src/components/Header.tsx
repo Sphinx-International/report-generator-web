@@ -100,10 +100,13 @@ const Header: React.FC<headerProps> = (props) => {
               className="w-[35px] rounded-[50%]"
             />
             <div
-              className="lg:flex items-center gap-[6px] text-n800 hidden text-[14px] relative cursor-pointer"
+              className="flex items-center gap-[6px] text-n800  text-[14px] relative cursor-pointer"
               onClick={() => {setshowDropDown(!showDropDown)}}
             >
+              <span className="hidden lg:flex">
               {user?.first_name} {user?.last_name}
+
+              </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
