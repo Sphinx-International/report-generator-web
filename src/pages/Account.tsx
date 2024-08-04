@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import SideBar from "../components/SideBar";
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
 import { useState } from "react";
@@ -15,7 +15,7 @@ const accountNavigation: string[] = [
 
 const Account = () => {
   const [slectedNav, setSlectedNav] = useState<string>("My profile");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  // const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const user: User = JSON.parse(localStorage.getItem("user")!);
@@ -98,12 +98,12 @@ const Account = () => {
           <h2 className="text-[21px] leading-[32px] text-n700 font-semibold">
             Account Settings
           </h2>
-          <div className="flex w-full border-[1px] border-n400 rounded-[30px]">
-            <div className="flex flex-col items-start gap-[16px] px-[22px] py-[46px] border-r-n400 border-r-[1px]">
+          <div className="flex flex-col sm:flex-row w-full border-[1px] border-n400 rounded-[30px]">
+            <div className="flex flex-row flex-wrap sm:flex-col items-start gap-[16px] sm:px-[22px] px-[13px] py-[46px] border-b-n400 border-b-[1px] sm:border-r-n400 sm:border-r-[1px]">
               {accountNavigation.map((nav, index) => {
                 return (
                   <span
-                    className={`flex items-center justify-start gap-[12px] text-[15px] leading-[22.5px] text-nowrap font-medium cursor-pointer ${
+                    className={`flex items-center justify-start gap-[12px] text-[13px] sm:text-[15px] leading-[22.5px] text-nowrap font-medium cursor-pointer ${
                       slectedNav === nav
                         ? "text-primary bg-sec"
                         : "text-n600 hover:bg-slate-50"
@@ -143,12 +143,12 @@ const Account = () => {
               {slectedNav === "My profile" ? (
                 <>
                   <div className="flex items-center justify-between w-full">
-                    <h3 className="text-[20px] text-n800 font-semibold leading-[30px]">
+                    <h3 className="sm:text-[20px] text-[17px] text-n800 font-semibold leading-[30px]">
                       My profile
                     </h3>
                     {!isEditing && (
                       <button
-                        className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] px-[17px] py-[6px] leading text-[13px] font-medium"
+                        className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] sm:px-[17px] sm:py-[6px] px-[14px] py-[3px] leading text-[13px] font-medium"
                         onClick={() => {
                           setIsEditing(true);
                         }}
@@ -178,7 +178,7 @@ const Account = () => {
                       <img
                         src="/avatar1.png"
                         alt="avatar"
-                        className="w-[85px]"
+                        className="sm:w-[85px] w-[60px]"
                       />
                       <div className="flex flex-col items-start gap-[6px]">
                         <h3 className="leading-[28px] text-[18px] font-medium text-n800">
@@ -195,8 +195,8 @@ const Account = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center flex-wrap gap-[37px] w-full">
-                      <div className="flex flex-col items-start gap-[8px] w-[45%]">
+                    <div className="flex items-center flex-wrap lg:gap-[37px] gap-[20px] w-full">
+                      <div className="flex flex-col items-start gap-[8px] sm:w-[45%] w-full">
                         <label
                           htmlFor="firstName"
                           className="pl-[7px] leading-[20px] font-medium "
@@ -216,7 +216,7 @@ const Account = () => {
                           }}
                         />
                       </div>
-                      <div className="flex flex-col items-start gap-[8px] w-[45%]">
+                      <div className="flex flex-col items-start gap-[8px] sm:w-[45%] w-full">
                         <label
                           htmlFor="lastName"
                           className="pl-[7px] leading-[20px] font-medium text-n700"
@@ -236,6 +236,9 @@ const Account = () => {
                           }}
                         />
                       </div>
+                      {/*
+                      
+                      
                       <div className="flex flex-col items-start gap-[8px] w-[45%]">
                         <label
                           htmlFor="birthdate"
@@ -256,7 +259,7 @@ const Account = () => {
                           id="birthdate"
                           calendarClassName="custom-datepicker"
                         />
-                      </div>
+                      </div>  */}
                     </div>
                     {isEditing && (
                       <div className="w-full flex items-center justify-between">
@@ -295,7 +298,7 @@ const Account = () => {
                 </>
               ) : slectedNav === "Email settings" ? (
                 <>
-                  <h3 className="text-[20px] text-n800 font-semibold leading-[30px]">
+                  <h3 className="sm:text-[20px] text-[17px] text-n800 font-semibold leading-[30px]">
                     My email address
                   </h3>
                   <div className="flex items-center gap-[14px]">
@@ -313,14 +316,14 @@ const Account = () => {
                         />
                       </svg>
                     </span>
-                    <span className="text-[18px] text-n700 leading-[27px]">
+                    <span className="sm:text-[18px] text-[15px] text-n700 leading-[27px]">
                       {user?.email}
                     </span>
                   </div>
                 </>
               ) : slectedNav === "Password" ? (
                 <>
-                  <h3 className="text-[20px] text-n800 font-semibold leading-[30px]">
+                  <h3 className="sm:text-[20px] text-[17px] text-n800 font-semibold leading-[30px]">
                     Change password
                   </h3>
                   <span className="cursor-pointer text-[15px] leading-[22.5px] text-primary">

@@ -1,6 +1,5 @@
 import SideBar from "../components/SideBar";
 import Header from "../components/Header";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
 import { useState, useEffect } from "react";
@@ -22,7 +21,6 @@ const EditUsers = () => {
     setSelectedOption(User?.role === 1 ? "Coordinator" : "Engineer");
   };
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isEditingGeneral, setIsEditingGeneral] = useState<boolean>(false);
   const [isEditingRole, setIsEditingRole] = useState<boolean>(false);
   const [isPgaeLoading, setIsPageLoading] = useState<boolean>(true);
@@ -204,13 +202,13 @@ const EditUsers = () => {
         ) : (
           <div className="w-full flex flex-col gap-[12px]">
             <div className="rounded-[20px] border-n400 border-[1px] py-[20px] px-[21px]">
-              <div className="flex items-center gap-[34px]">
-                <img src="/avatar2.jpg" alt="avatar" className="w-[100px] rounded-[50%]" />
+              <div className="flex items-center md:gap-[34px] gap-[15px] ">
+                <img src="/avatar2.jpg" alt="avatar" className="md:w-[100px] rounded-[50%] w-[70px]" />
                 <div className="flex items-start flex-col gap-[6px]">
-                  <h2 className="text-[18px] leading-[28.08px] text-n800 font-medium">
+                  <h2 className="md:text-[18px] text-[15px] leading-[28.08px] text-n800 font-medium">
                     {firstName} {lastName}
                   </h2>
-                  <span className="text-[14px] text-550">
+                  <span className="ms:text-[14px] text-[12px]  text-550">
                     {email}
                   </span>
                 </div>
@@ -218,13 +216,13 @@ const EditUsers = () => {
             </div>
             <div className="rounded-[20px] border-n400 border-[1px] p-[21px] w-full flex items-start flex-col gap-[23px]">
               <div className="w-full flex items-center justify-between">
-                <h3 className="text-n800 text-[17px] leading-[25.5px] font-medium">
+                <h3 className="text-n800 md:text-[17px] text-[15px]  leading-[25.5px] font-medium">
                   Personal information
                 </h3>
 
                 {!isEditingGeneral && (
                   <button
-                    className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] px-[17px] py-[6px] leading text-[13px] font-medium"
+                    className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] md:px-[17px] md:py-[6px] px-[13px] py-[3px] leading text-[13px] font-medium"
                     onClick={() => {
                       setIsEditingGeneral(true);
                     }}
@@ -249,7 +247,7 @@ const EditUsers = () => {
                 )}
               </div>
               <form className="flex flex-col gap-[40px] w-full">
-                <div className="flex flex-wrap gap-x-[70px] gap-y-[20px] w-full">
+                <div className="flex flex-wrap lg:gap-x-[70px] gap-x-[20px] gap-y-[20px] w-full">
                   <div className="flex flex-col items-start gap-[9px] w-[45%]">
                     <label
                       htmlFor="firstName"
@@ -341,14 +339,14 @@ const EditUsers = () => {
                       {" "}
                       <button
                         type="submit"
-                        className="py-[8px] px-[30px] text-n600 rounded-[86px] font-semibold bg-n300 leading-[20px]"
+                        className="md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-n600 rounded-[86px] font-semibold bg-n300 leading-[20px]"
                         onClick={handleCancelGeneral}
                       >
                         cancel
                       </button>
                       <button
                         type="submit"
-                        className=" py-[8px] px-[30px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
+                        className="md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
                         onClick={(eo) => {
                           handleSaveGeneralEdit(eo);
                         }}
@@ -366,13 +364,13 @@ const EditUsers = () => {
             </div>
             <div className="rounded-[20px] border-n400 border-[1px] p-[21px] w-full flex items-start flex-col gap-[23px]">
               <div className="w-full flex items-center justify-between">
-                <h3 className="text-n800 text-[17px] leading-[25.5px] font-medium">
+                <h3 className="text-n800 md:text-[17px] text-[15px] leading-[25.5px] font-medium">
                   Personal information
                 </h3>
 
                 {!isEditingRole && (
                   <button
-                    className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] px-[17px] py-[6px] leading text-[13px] font-medium"
+                    className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] md:px-[17px] md:py-[6px] px-[13px] py-[3px] leading text-[13px] font-medium"
                     onClick={() => {
                       setIsEditingRole(true);
                     }}
@@ -396,7 +394,7 @@ const EditUsers = () => {
                   </button>
                 )}
               </div>
-              <div className="flex flex-col items-start gap-[9px] w-[45%]">
+              <div className="flex flex-col items-start gap-[9px] md:w-[45%] w-[90%]">
                 <label
                   htmlFor="role"
                   className="text-600 text-[15px] leading-[20px] font-medium text-n600"
@@ -462,14 +460,14 @@ const EditUsers = () => {
                       {" "}
                       <button
                         type="submit"
-                        className="py-[8px] px-[30px] text-n600 rounded-[86px] font-semibold bg-n300 leading-[20px]"
+                        className="md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-n600 rounded-[86px] font-semibold bg-n300 leading-[20px]"
                         onClick={handleCancelRole}
                       >
                         cancel
                       </button>
                       <button
                         type="submit"
-                        className=" py-[8px] px-[30px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
+                        className=" md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
                         onClick={(eo) => {
                           handleSaveRolelEdit(eo);
                         }}
