@@ -1,6 +1,5 @@
 import SideBar from "../components/SideBar";
 import Header from "../components/Header";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
 import { useState, useEffect } from "react";
@@ -22,7 +21,6 @@ const EditUsers = () => {
     setSelectedOption(User?.role === 1 ? "Coordinator" : "Engineer");
   };
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isEditingGeneral, setIsEditingGeneral] = useState<boolean>(false);
   const [isEditingRole, setIsEditingRole] = useState<boolean>(false);
   const [isPgaeLoading, setIsPageLoading] = useState<boolean>(true);

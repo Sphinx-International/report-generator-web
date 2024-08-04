@@ -10,7 +10,7 @@ interface DeletePopUpProps {
   deleteUrl: string
   jsonTitle:string
   fetchUrl: string;
-  fetchFunc: (offset: number, limit: number,status?:string | null) => Promise<{ total: number; current_offset: number}>;
+  fetchFunc: (offset: number, limit: number,status?:string) => Promise<{ total: number; current_offset: number} | undefined>;
   currentPage: number;
   setCurrentPage: (page: number) => void;
   limit: number;
@@ -105,10 +105,10 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
           }
         }else{
           if (newUserCount === 0 && props.currentPage > 1) {
-            await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit,localStorage.getItem("selectedFilter"));
+            await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit,localStorage.getItem("selectedFilter")!);
             props.setCurrentPage(props.currentPage - 1);
           } else {
-            await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilter"));
+            await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilter")!);
           }
         }
 

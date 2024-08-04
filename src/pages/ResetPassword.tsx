@@ -6,7 +6,6 @@ import {
 } from "../func/authValidation";
 
 const ResetPassword = () => {
-  const [mobilePopUpPosition, setMobilePopUpPosition] = useState(true);
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState(["", "", "", ""]);
   const [newPassword, setNewPassword] = useState<string>("");
