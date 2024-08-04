@@ -30,13 +30,13 @@ const Pagination: React.FC<PaginationProps> = (props) => {
           {props.currentPage}
           </span>
           <span 
-          className={`font-medium text-primary sm:text-[14px] text-[11px] ${props.currentPage === props.totalPages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`font-medium text-primary sm:text-[14px] text-[11px] ${props.currentPage === props.totalPages || props.totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           onClick={props.onNextPage}>
             {"Next >"}
           </span>
         </div>
         <span 
-        className={`font-medium text-primary sm:text-[14px] text-[11px] ${props.currentPage === props.totalPages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`font-medium text-primary sm:text-[14px] text-[11px] ${props.currentPage === props.totalPages || props.totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         onClick={props.onLastPage}>
           {"Last >>"}
         </span>

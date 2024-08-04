@@ -90,10 +90,6 @@ const UserManagment = () => {
     }
   };
 
-  // console.log(currentPage);
-
-  // console.log(Users);
-
   const fetchUsers = async (offset = 0, limit = 4, role?: string) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -132,7 +128,6 @@ const UserManagment = () => {
           break;
 
         case 204:
-          console.log("here");
           setUsers(null);
           break;
 
@@ -182,6 +177,8 @@ const UserManagment = () => {
     handledeleteUserButtonClick();
   };
 
+  console.log(isloading);
+  
   return (
     <div className="w-full flex md:h-[100vh]">
       <SideBar />
@@ -248,7 +245,82 @@ const UserManagment = () => {
                     );
                   })}
                 </div>
-                {isloading ? (
+                {Users && !isloading ? (
+                  <div className="flex flex-col h-[100%] overflow-y-auto">
+                  {Users.map((user: User, index) => {
+                    const isSelected = selectedUsers.includes(user.email);
+                    return (
+                      <div
+                        key={index}
+                        className="relative flex  items-center w-full h-[50px] border-b-[1px] hover:bg-n200 cursor-pointer group py-[6px]"
+                      >
+                        <div className="w-[13%] flex items-center justify-center">
+                          <img
+                            src="/avatar1.png"
+                            alt="avatar"
+                            className="w-[35px]"
+                          />
+                        </div>
+                        <span className="w-[25%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          {user.last_name} {user.first_name}
+                        </span>
+                        <span className="w-[30%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          {user.email}
+                        </span>
+                        <span className="w-[16%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          10-09-2002
+                        </span>
+                        <span className="w-[13%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          {user.role === 1
+                            ? "Coordinator"
+                            : user.role === 2
+                            ? "Engineer"
+                            : null}
+                        </span>
+                        <span className="w-[13%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
+                          <Link to={`/edit-user/${user.email}`}>
+                            <svg
+                              className="cursor-pointer hover:scale-105"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                            >
+                              <path
+                                d="M10 2.5H4.16667C3.72464 2.5 3.30072 2.67559 2.98816 2.98816C2.67559 3.30072 2.5 3.72464 2.5 4.16667V15.8333C2.5 16.2754 2.67559 16.6993 2.98816 17.0118C3.30072 17.3244 3.72464 17.5 4.16667 17.5H15.8333C16.2754 17.5 16.6993 17.3244 17.0118 17.0118C17.3244 16.6993 17.5 16.2754 17.5 15.8333V10"
+                                stroke="#7C8DB5"
+                                strokeWidth="1.66667"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M15.3125 2.18744C15.644 1.85592 16.0937 1.66968 16.5625 1.66968C17.0313 1.66968 17.481 1.85592 17.8125 2.18744C18.144 2.51897 18.3303 2.9686 18.3303 3.43744C18.3303 3.90629 18.144 4.35592 17.8125 4.68744L10.3017 12.1991C10.1038 12.3968 9.85933 12.5415 9.59083 12.6199L7.19666 13.3199C7.12496 13.3409 7.04895 13.3421 6.97659 13.3236C6.90423 13.305 6.83819 13.2674 6.78537 13.2146C6.73255 13.1618 6.6949 13.0957 6.67637 13.0234C6.65783 12.951 6.65908 12.875 6.68 12.8033L7.38 10.4091C7.45877 10.1408 7.60378 9.89666 7.80166 9.69911L15.3125 2.18744Z"
+                                stroke="#7C8DB5"
+                                strokeWidth="1.66667"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </Link>
+                        </span>
+                        <input
+                          type="checkbox"
+                          name="user"
+                          id={`${index}`}
+                          checked={isSelected}
+                          readOnly
+                          className="absolute left-2 top-1/2 transform -translate-y-1/2 checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCheckboxChange(user.email);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                ) : isloading ? (
                   <div className="w-full flex items-center justify-center py-[40px]">
                     <RotatingLines
                       strokeWidth="4"
@@ -256,82 +328,18 @@ const UserManagment = () => {
                       width="60"
                     />
                   </div>
-                ) : Users !== null ? (
-                  <div className="flex flex-col h-[100%] overflow-y-auto">
-                    {Users.map((user: User, index) => {
-                      const isSelected = selectedUsers.includes(user.email);
-                      return (
-                        <div
-                          key={index}
-                          className="relative flex  items-center w-full h-[50px] border-b-[1px] hover:bg-n200 cursor-pointer group py-[6px]"
-                        >
-                          <div className="w-[13%] flex items-center justify-center">
-                            <img
-                              src="/avatar1.png"
-                              alt="avatar"
-                              className="w-[35px]"
-                            />
-                          </div>
-                          <span className="w-[25%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            {user.last_name} {user.first_name}
-                          </span>
-                          <span className="w-[30%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            {user.email}
-                          </span>
-                          <span className="w-[16%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            10-09-2002
-                          </span>
-                          <span className="w-[13%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            {user.role === 1
-                              ? "Coordinator"
-                              : user.role === 2
-                              ? "Engineer"
-                              : null}
-                          </span>
-                          <span className="w-[13%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
-                            <Link to={`/edit-user/${user.email}`}>
-                              <svg
-                                className="cursor-pointer hover:scale-105"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="18"
-                                height="18"
-                                viewBox="0 0 20 20"
-                                fill="none"
-                              >
-                                <path
-                                  d="M10 2.5H4.16667C3.72464 2.5 3.30072 2.67559 2.98816 2.98816C2.67559 3.30072 2.5 3.72464 2.5 4.16667V15.8333C2.5 16.2754 2.67559 16.6993 2.98816 17.0118C3.30072 17.3244 3.72464 17.5 4.16667 17.5H15.8333C16.2754 17.5 16.6993 17.3244 17.0118 17.0118C17.3244 16.6993 17.5 16.2754 17.5 15.8333V10"
-                                  stroke="#7C8DB5"
-                                  strokeWidth="1.66667"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M15.3125 2.18744C15.644 1.85592 16.0937 1.66968 16.5625 1.66968C17.0313 1.66968 17.481 1.85592 17.8125 2.18744C18.144 2.51897 18.3303 2.9686 18.3303 3.43744C18.3303 3.90629 18.144 4.35592 17.8125 4.68744L10.3017 12.1991C10.1038 12.3968 9.85933 12.5415 9.59083 12.6199L7.19666 13.3199C7.12496 13.3409 7.04895 13.3421 6.97659 13.3236C6.90423 13.305 6.83819 13.2674 6.78537 13.2146C6.73255 13.1618 6.6949 13.0957 6.67637 13.0234C6.65783 12.951 6.65908 12.875 6.68 12.8033L7.38 10.4091C7.45877 10.1408 7.60378 9.89666 7.80166 9.69911L15.3125 2.18744Z"
-                                  stroke="#7C8DB5"
-                                  strokeWidth="1.66667"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </Link>
-                          </span>
-                          <input
-                            type="checkbox"
-                            name="user"
-                            id={`${index}`}
-                            checked={isSelected}
-                            readOnly
-                            className="absolute left-2 top-1/2 transform -translate-y-1/2 checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCheckboxChange(user.email);
-                            }}
-                          />
-                        </div>
-                      );
-                    })}
+                ) : (
+                  <div className="flex flex-col gap-6 items-center justify-center">
+                    <img
+                      src="/astronaut/astronaut.png"
+                      alt="astro"
+                      className="w-[300px]"
+                    />
+                    <h3 className="text-[36px] font-bold text-n800">
+                      No User Founded
+                    </h3>
                   </div>
-                ) : null}
+                )}
               </div>
 
               <div className="lg:hidden flex flex-wrap w-full gap-[11px] ">

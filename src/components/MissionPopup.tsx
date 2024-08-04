@@ -268,7 +268,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         return;
       }
 
-      const url = `ws://89.116.110.42:8000/ws/search-account/engineer`;
+      const url = `wss://auto-reporting-server.sphinx-international.online/ws/search-account/engineer`;
       const socket = new WebSocket(url);
 
       socket.onopen = () => {
@@ -317,7 +317,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         return;
       }
 
-      const url = `ws://89.116.110.42:8000/ws/search-account/coordinator`;
+      const url = `wss://auto-reporting-server.sphinx-international.online/ws/search-account/coordinator`;
       const socket = new WebSocket(url);
 
       socket.onopen = () => {

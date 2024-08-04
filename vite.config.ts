@@ -6,19 +6,19 @@ export default defineConfig({
   server: {
     proxy: {
       '/account': {
-        target: 'http://89.116.110.42:8000',
+        target: 'https://auto-reporting-server.sphinx-international.online',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/account/, '/account')
       },
       '/workorder': {
-        target: 'http://89.116.110.42:8000',
+        target: 'https://auto-reporting-server.sphinx-international.online',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/workorder/, '/workorder')
       },
       '/ws': {
-        target: 'ws://89.116.110.42:8000',
+        target: 'wss://auto-reporting-server.sphinx-international.online',
         changeOrigin: true,
         ws: true, // Enable WebSocket proxying
         rewrite: (path) => path.replace(/^\/ws/, '/ws')
