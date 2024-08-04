@@ -130,7 +130,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
       <dialog
         ref={ref}
         id="User-popup"
-        className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] px-[26px] pb-[35px] pt-[25px]  flex-col items-center gap-[27px] rounded-[20px] w-[30vw]`}
+        className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] px-[26px] pb-[35px] pt-[25px]  flex-col items-center gap-[27px] rounded-[20px] w-[280px] sm:w-[340px]`}
       >
         <div className="flex items-center flex-col gap-[17px]">
           <svg
@@ -145,13 +145,13 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
               fill="#F24E1E"
             />
           </svg>
-          <p className="text-[18px] font-semibold text-center text-[#25282B]">
-            Are you sure you want to delete this {props.jsonTitle}?
+          <p className="sm:text-[18px] text-[15px] font-semibold text-center text-[#25282B]">
+            Are you sure you want to delete this {props.jsonTitle} {props.jsonTitle ==="accounts" ? "and their associated workorders" :null}?
           </p>
         </div>
         <div className="flex items-center gap-[6px]">
           <button
-            className="text-white px-[56px] py-[12.5px] rounded-[86px] bg-[#FF3B30] text-[14px] flex items-center"
+            className="text-white sm:px-[56px] sm:py-[12.5px] px-[40px] py-[8px] rounded-[86px] bg-[#FF3B30] text-[14px] flex items-center"
             onClick={(e) => {
               handleDeleteItems(e);
             }}
@@ -160,7 +160,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
             
           </button>
           <button
-            className="text-n600 px-[56px] py-[12.5px] rounded-[86px] bg-n300 text-[14px] border-[1px] border-n400"
+            className="text-n600 sm:px-[56px] sm:py-[12.5px] px-[40px] py-[8px] rounded-[86px] bg-n300 text-[14px] border-[1px] border-n400"
             onClick={(e) => {
               closeDialog(e);
             }}

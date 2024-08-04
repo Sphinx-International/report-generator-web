@@ -141,7 +141,7 @@ const Main: React.FC<HeaderProps> = (props) => {
           </h3>
 
           {isOpen && (
-            <ul className="absolute sm:w-[300px] w-[190px] bg-white rounded-[30px] shadow-lg mt-2 z-10">
+            <ul className="absolute sm:w-[300px] w-[190px] bg-white rounded-[30px] shadow-lg mt-2 z-30">
               {props.flitration.map((option) => (
                 <li
                   key={option}
@@ -151,7 +151,7 @@ const Main: React.FC<HeaderProps> = (props) => {
                   onClick={() => {
                     setSelectedFilter(option);
                     setIsOpen(false);
-                  }}
+                    handleFilterClick(option.toLowerCase())                  }}
                 >
                   {option}
                 </li>

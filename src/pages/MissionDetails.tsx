@@ -788,7 +788,8 @@ const MissionDetails = () => {
       }
     } catch (err) {
       console.error("Error submitting form", err);
-    } finally {
+    } finally {(false)
+      setIsLoading
     }
   };
 
@@ -849,15 +850,15 @@ const MissionDetails = () => {
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
-      <div className=" md:pt-[60px] pt-[20px] pr-[60px] pl-[36px] md:pb-[38px] flex flex-col gap-[58px] w-full h-full overflow-auto">
+      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header pageSentence="Here is workorder details" searchBar={false} />
         {workorder && (
-          <div className="flex flex-col items-end gap-[40px] w-full px-[25px] ">
-            <div className="flex flex-col w-full gap-[31px] border-[1px] border-n400 rounded-[20px] px-[25px] py-[32px]">
-              <div className="w-full flex justify-between items-start gap-[14px] pl-[6px]">
-                <div className="flex items-center gap-[12px] w-full text-primary font-semibold text-[24px]">
+          <div className="flex flex-col items-end gap-[40px] w-full sm:px-[25px] px-[14px]">
+            <div className="flex flex-col w-full gap-[31px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
+              <div className="w-full flex flex-col lg:flex-row md:justify-between items-start gap-[14px] md:pl-[6px]">
+                <div className="flex items-center gap-[12px] w-full text-primary font-semibold md:text-[24px] text-[17px]">
                   <input
-                    className={`text-primary font-semibold text-[24px] w-[60%] rounded-[20px] py-[7px] px-[25px] ${
+                    className={`text-primary font-semibold md:text-[24px] text-[17px] lg:w-[55%] w-[70%] rounded-[20px] py-[7px] sm:px-[20px] px-[16px] ${
                       isEditing_Title_tic
                         ? "border-n300 border-[1px] shadow-md"
                         : ""
@@ -872,7 +873,7 @@ const MissionDetails = () => {
                   />
                   #
                   <input
-                    className={`text-primary font-semibold text-[24px] w-[18%] rounded-[20px] py-[7px] px-[25px] ${
+                    className={`text-primary font-semibold md:text-[24px] text-[17px] w-[23%] rounded-[20px] py-[7px] sm:px-[20px] px-[8px] ${
                       isEditing_Title_tic
                         ? "border-n300 border-[1px] shadow-md"
                         : ""
@@ -895,7 +896,7 @@ const MissionDetails = () => {
                       height="18"
                       viewBox="0 0 18 18"
                       fill="none"
-                      className="cursor-pointer"
+                      className="cursor-pointer w-[18px]"
                     >
                       <path
                         fill-rule="evenodd"
@@ -947,7 +948,7 @@ const MissionDetails = () => {
                         : "Urgent"}
                     </span>
                     {showPriority && (
-                      <div className="p-[20px] rounded-tl-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-md absolute flex flex-col items-start gap-[27px] right-3 top-10">
+                      <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-md z-30 absolute flex flex-col items-start gap-[27px] md:right-3 left-3 top-10">
                         <div className="flex flex-col items-start gap-[16px]">
                           <span className="text-[14px] text-n700 font-medium">
                             Priority
@@ -1069,7 +1070,7 @@ const MissionDetails = () => {
                       {selectedEng}
                     </span>
                     {visibleEngPopup && (
-                      <div className="w-[400px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                      <div className="sm:w-[400px] w-[280px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
                         <div className=" relative w-full">
                           <input
                             type="search"
@@ -1079,7 +1080,7 @@ const MissionDetails = () => {
                             onChange={(eo) => {
                               setSearchQueryEng(eo.target.value);
                             }}
-                            className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md md:px-[35px] md:text-[13px] text-[11px]"
+                            className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
                             placeholder="Search"
                           />
                           <svg
@@ -1185,7 +1186,7 @@ const MissionDetails = () => {
                       Assign user
                     </span>
                     {visibleEngPopup && (
-                      <div className="w-[400px] z-30 absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                      <div className="sm:w-[400px] w-[280px] z-30 absolute bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
                         <div className=" relative w-full">
                           <input
                             type="search"
@@ -1195,7 +1196,7 @@ const MissionDetails = () => {
                             onChange={(eo) => {
                               setSearchQueryEng(eo.target.value);
                             }}
-                            className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md md:px-[35px] md:text-[13px] text-[11px]"
+                            className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
                             placeholder="Search"
                           />
                           <svg
@@ -1308,7 +1309,7 @@ const MissionDetails = () => {
                     )}
                   </span>
                   <textarea
-                    className={`text-[17px] text-n600 leading-[27px] rounded-[20px] px-[25px] py-[7px] w-full ${
+                    className={`sm:text-[17px] text-[14px] text-n600 leading-[27px] rounded-[20px] px-[25px] py-[7px] w-full ${
                       isEditing_desc
                         ? "border-n300 border-[1px] shadow-md"
                         : "bg-white"
@@ -1316,7 +1317,7 @@ const MissionDetails = () => {
                     name="description"
                     disabled={isEditing_desc ? false : true}
                     value={basicDataWorkorder.description}
-                    rows={isEditing_desc ? 4 : 2}
+                    rows={isEditing_desc ? 4 : 3}
                     onChange={(e) => {
                       handleChange(e);
                     }}
@@ -1335,7 +1336,7 @@ const MissionDetails = () => {
                     </span> }
 
                     {visibleCoordPopup && (
-                      <div className="w-[400px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                      <div className="sm:w-[400px] w-[280px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
                         <div className=" relative w-full">
                           <input
                             type="search"
@@ -1345,7 +1346,7 @@ const MissionDetails = () => {
                             onChange={(eo) => {
                               setSearchQueryCoord(eo.target.value);
                             }}
-                            className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md md:px-[35px] md:text-[13px] text-[11px]"
+                            className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
                             placeholder="Search"
                           />
                           <svg
@@ -1465,7 +1466,7 @@ const MissionDetails = () => {
                               return (
                                 <div
                                   key={index}
-                                  className=" cursor-pointer w-[48%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px] group"
+                                  className=" cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px] group"
                                   onClick={() => {
                                     downloadFile(
                                       attach.id,
@@ -1538,7 +1539,7 @@ const MissionDetails = () => {
                             {attachFiles.length !== 0 &&
                               attachFiles.map((attach) => {
                                 return (
-                                  <div className="relative w-[48%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-[#48C1B5] rounded-[15px] group">
+                                  <div className="relative sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-[#48C1B5] rounded-[15px] group">
                                     <div className="flex items-center gap-[9px]">
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -1581,7 +1582,7 @@ const MissionDetails = () => {
                               })}
                             {getRole() !== 2 && (
                               <div
-                                className="flex flex-col w-[48%]"
+                                className="flex flex-col sm:w-[46%] w-full"
                                 onDragOver={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -1687,7 +1688,7 @@ const MissionDetails = () => {
                       </label>
                       {workorder.report ? (
                         <div
-                          className="cursor-pointer w-[50%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]"
+                          className="cursor-pointer sm:w-[50%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]"
                           onClick={() => {
                             downloadFile(
                               workorder.report?.id,
@@ -1725,7 +1726,7 @@ const MissionDetails = () => {
                           </div>
                         </div>
                       ) : reportFile ? (
-                        <div className="w-[50%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]">
+                        <div className="sm:w-[50%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]">
                           <div className="flex items-center gap-[9px]">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1802,7 +1803,7 @@ const MissionDetails = () => {
                                 fill="#6F6C8F"
                               />
                             </svg>
-                            <span className="text-[13px] text-n600 font-medium leading-[13px]">
+                            <span className="text-[13px] text-n600 font-medium leading-[13px] px-[5px] text-center">
                               Drag & drop your files here or{" "}
                               <span className="text-primary">
                                 chooses files
@@ -1823,7 +1824,7 @@ const MissionDetails = () => {
                           </label>
                           {workorder.acceptance_certificate ? (
                             <div
-                              className="cursor-pointer w-[50%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]"
+                              className="cursor-pointer sm:w-[50%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]"
                               onClick={() => {
                                 downloadFile(
                                   workorder.acceptance_certificate?.id,
@@ -1861,7 +1862,7 @@ const MissionDetails = () => {
                               </div>
                             </div>
                           ) : acceptenceFile ? (
-                            <div className="w-[50%] flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]">
+                            <div className="sm:w-[50%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px]">
                               <div className="flex items-center gap-[9px]">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -2008,11 +2009,11 @@ const MissionDetails = () => {
             ) : workorder.workorder.status > 0 ? (
               <div
                 className={`w-full flex items-center ${
-                  undoMessageVisible || undo_req_acc_MessageVisible ? "justify-between" : "justify-end"
+                  undoMessageVisible || undo_req_acc_MessageVisible ? "justify-between lg:flex-row flex-col " : "justify-end"
                 } `}
               >
                 {undoMessageVisible && (
-                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex items-center">
+                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex sm:flex-row flex-col items-center text-center lg:pb-4">
                     This workorder is set to be Executed!{" "}
                     <span
                       className="text-primary font-semibold cursor-pointer"
@@ -2024,7 +2025,7 @@ const MissionDetails = () => {
                   </span>
                 )}
                  {undo_req_acc_MessageVisible && (
-                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex items-center">
+                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex sm:flex-row flex-col items-center text-center lg:pb-4">
                     Require acceptance is going to be {reqAcc ? "False" : "True"} now!
                     <span
                       className="text-primary font-semibold cursor-pointer"
@@ -2037,7 +2038,7 @@ const MissionDetails = () => {
                 )}
 
                 <button
-                  className={`py-[12px] px-[48px] rounded-[30px]  text-white  border-[2px] leading-[20px] font-semibold text-[14px] ${
+                  className={`py-[12px] px-[48px] w-full md:w-auto rounded-[30px]  text-white  border-[2px] leading-[20px] font-semibold text-[14px] ${
                     (workorder.workorder.status === 2 &&
                       reportFile === undefined) ||
                     (workorder.workorder.status === 3 &&

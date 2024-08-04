@@ -156,7 +156,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const handleCreateWorkorder = async (e: FormEvent) => {
       e.preventDefault();
 
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
         console.error("No token found");
         return;
@@ -262,7 +263,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
       setLoaderAssignSearch(true);
 
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
         console.error("No token found");
         return;
@@ -311,7 +313,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
       setLoaderCoordSearch(true);
 
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
         console.error("No token found");
         return;
@@ -371,8 +374,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           <form className="w-full flex flex-col gap-[30px]">
             <div className="flex items-center flex-col gap-[17.5px] w-full">
               {props.title && (
-                <div className="flex items-start gap-[17px] w-full">
-                  <div className="flex flex-col items-start gap-[8px] w-[50%]">
+                <div className="flex flex-col sm:flex-row items-start gap-[17px] w-full">
+                  <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                     <label
                       htmlFor="title"
                       className="leading-[21px] font-medium ml-[9px] text-n700"
@@ -396,7 +399,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col items-start gap-[8px] w-[50%]">
+                  <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                     <label
                       htmlFor="title"
                       className="leading-[21px] font-medium ml-[9px] text-n700"
@@ -535,8 +538,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 )}
               </div>
 
-              <div className="flex items-start gap-[17px] w-full">
-                <div className="flex flex-col items-start gap-[8px] w-[50%]">
+              <div className="flex flex-col-reverse sm:flex-row items-start gap-[17px] w-full">
+                <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                   <label
                     htmlFor="title"
                     className="leading-[21px] font-medium ml-[9px] text-n700"
@@ -560,7 +563,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     </span>
                   )}
                 </div>
-                <div className="flex flex-col items-start gap-[8px] w-[50%]">
+                <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                   <label
                     htmlFor="title"
                     className="leading-[21px] font-medium ml-[9px] text-n700"
@@ -679,7 +682,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   Next
                 </button>
               </div>
-              <div className="flex items-center gap-[7px]">
+              <div className="items-center gap-[7px] hidden sm:flex">
                 <input
                   type="checkbox"
                   id="acceptance"
@@ -721,7 +724,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           </form>
         ) : (
           <>
-            <div className="flex items-center flex-col gap-[20px] w-full">
+            <div className="flex items-start flex-col gap-[20px] w-full">
               <div className="flex flex-col items-start gap-[8px] w-[100%]">
                 <label
                   htmlFor="mailed_users"
@@ -948,6 +951,45 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     </div>
                   )
                 : null}
+
+              <div className="items-center gap-[7px] sm:hidden flex">
+                <input
+                  type="checkbox"
+                  id="acceptance"
+                  className="hidden peer"
+                  checked={formValues.require_acceptence ? true : false}
+                  onChange={(e) => {
+                    setformValues((prev) => ({
+                      ...prev,
+                      require_acceptence: e.target.checked,
+                    }));
+                  }}
+                />
+                <label
+                  htmlFor="acceptance"
+                  className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
+                >
+                  <svg
+                    className="text-white hidden"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="10"
+                    viewBox="0 0 12 10"
+                    fill="none"
+                  >
+                    <path
+                      d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
+                      fill="white"
+                    />
+                  </svg>
+                </label>
+                <label
+                  htmlFor="acceptance"
+                  className="text-550 text-[14px] leading-[20px] font-medium"
+                >
+                  Require acceptance
+                </label>
+              </div>
             </div>
 
             <div className="flex items-center gap-[6px]">

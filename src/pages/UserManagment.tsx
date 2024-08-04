@@ -335,57 +335,70 @@ const UserManagment = () => {
               </div>
 
               <div className="lg:hidden flex flex-wrap w-full gap-[11px] ">
-                {Users !== null
-                  ? Users.map((user: User, index) => {
-                      const isSelected = selectedUsers.includes(user.email);
-                      return (
-                        <div
-                          key={index}
-                          className={`relative p-[9px] flex items-center gap-[9px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow ${
-                            isSelected ? "bg-primary" : ""
+                {isloading ? (
+                  <div className="w-full flex items-center justify-center py-[40px]">
+                    <RotatingLines
+                      strokeWidth="4"
+                      strokeColor="#4A3AFF"
+                      width="60"
+                    />
+                  </div>
+                ) : Users !== null ? (
+                  Users.map((user: User, index) => {
+                    const isSelected = selectedUsers.includes(user.email);
+                    return (
+                      <div
+                        key={index}
+                        className={`relative p-[9px] flex items-center gap-[9px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow ${
+                          isSelected ? "bg-primary" : ""
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCheckboxChange(user.email);
+                        }}
+                      >
+                        <img
+                          src="/avatar.png"
+                          alt="avatar"
+                          className="w-[52.5px] rounded-[11px]"
+                        />
+                        <span
+                          className={` text-[12px] leading-[18px] ${
+                            isSelected ? "text-white" : "text-n600"
                           }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCheckboxChange(user.email);
-                          }}
                         >
-                          <img
-                            src="/avatar.png"
-                            alt="avatar"
-                            className="w-[52.5px] rounded-[11px]"
-                          />
-                          <span
-                            className={` text-[12px] leading-[18px] ${
-                              isSelected ? "text-white" : "text-n600"
-                            }`}
+                          {user.last_name} {user.first_name} <br /> {user.email}{" "}
+                          <br /> 10-09-2002 <br />{" "}
+                          {user.role === 1
+                            ? "Coordinator"
+                            : user.role === 2
+                            ? "Engineer"
+                            : null}
+                        </span>
+                        <Link to={`/edit-user/${user.email}`}>
+                          <svg
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                            className="absolute top-[12px] right-[12px] sm:w-[16px] sm:h-[16px]"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none"
                           >
-                            {user.last_name} {user.first_name} <br />{" "}
-                            {user.email} <br /> 10-09-2002 <br /> Engineer
-                          </span>
-                          <Link to={`/edit-user/${user.email}`}>
-                            <svg
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="absolute top-[12px] right-[12px] sm:w-[16px] sm:h-[16px]"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="12"
-                              height="12"
-                              viewBox="0 0 12 12"
-                              fill="none"
-                            >
-                              <path
-                                d="M8.16876 1.42914C8.44354 1.15437 8.81621 1 9.20481 1C9.5934 1 9.96608 1.15437 10.2409 1.42914C10.5156 1.70392 10.67 2.0766 10.67 2.46519C10.67 2.85379 10.5156 3.22646 10.2409 3.50124L4.01559 9.7272C3.85158 9.89106 3.64897 10.011 3.42642 10.076L1.44205 10.6562C1.38261 10.6735 1.31961 10.6746 1.25964 10.6592C1.19967 10.6438 1.14493 10.6126 1.10115 10.5689C1.05737 10.5251 1.02617 10.4703 1.0108 10.4104C0.99544 10.3504 0.996479 10.2874 1.01381 10.228L1.594 8.24358C1.65929 8.02121 1.77948 7.81884 1.94349 7.6551L8.16876 1.42914Z"
-                                stroke="#A0A3BD"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              />
-                            </svg>
-                          </Link>
-                        </div>
-                      );
-                    })
-                  : null}
+                            <path
+                              d="M8.16876 1.42914C8.44354 1.15437 8.81621 1 9.20481 1C9.5934 1 9.96608 1.15437 10.2409 1.42914C10.5156 1.70392 10.67 2.0766 10.67 2.46519C10.67 2.85379 10.5156 3.22646 10.2409 3.50124L4.01559 9.7272C3.85158 9.89106 3.64897 10.011 3.42642 10.076L1.44205 10.6562C1.38261 10.6735 1.31961 10.6746 1.25964 10.6592C1.19967 10.6438 1.14493 10.6126 1.10115 10.5689C1.05737 10.5251 1.02617 10.4703 1.0108 10.4104C0.99544 10.3504 0.996479 10.2874 1.01381 10.228L1.594 8.24358C1.65929 8.02121 1.77948 7.81884 1.94349 7.6551L8.16876 1.42914Z"
+                              stroke="#A0A3BD"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </Link>
+                      </div>
+                    );
+                  })
+                ) : null}
               </div>
             </div>
 
