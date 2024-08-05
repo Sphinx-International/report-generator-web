@@ -51,7 +51,7 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch("https://89.116.110.42:8000/account/login", {
+      const response = await fetch("/account/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
