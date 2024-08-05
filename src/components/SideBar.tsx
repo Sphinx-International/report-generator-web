@@ -29,6 +29,7 @@ const SideBar = () => {
       if ((await response).status === 200) {
         navigate("/login")
          localStorage.clear()
+         sessionStorage.clear()
       }
     } catch (error) {
       console.error("Error deleting users:", error);
