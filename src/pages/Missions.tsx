@@ -74,8 +74,8 @@ const Missions = () => {
     setIsLoading(true);
 
     const url = status
-      ? `/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
-      : `/workorder/get-workorders?offset=${offset}&limit=${limit}`;
+      ? `https://auto-reporting-server.sphinx-international.online/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
+      : `https://auto-reporting-server.sphinx-international.online/workorder/get-workorders?offset=${offset}&limit=${limit}`;
 
     try {
       const response = await fetch(url, {
@@ -286,10 +286,10 @@ const Missions = () => {
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedWorkorders}
-        deleteUrl="/workorder/delete-workorders"
+        deleteUrl="https://auto-reporting-server.sphinx-international.online/workorder/delete-workorders"
         jsonTitle="workorders"
         fetchFunc={fetchWorkOrders}
-        fetchUrl="/workorder/get-workorders"
+        fetchUrl="https://auto-reporting-server.sphinx-international.online/workorder/get-workorders"
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

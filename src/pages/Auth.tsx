@@ -51,7 +51,7 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch("/account/login", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

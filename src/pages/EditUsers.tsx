@@ -53,7 +53,7 @@ const EditUsers = () => {
       return;
     }
 
-    const url = `/account/get-account/${id}`;
+    const url = `https://auto-reporting-server.sphinx-international.online/account/get-account/${id}`;
     setIsPageLoading(true);
     try {
       const response = await fetch(url, {
@@ -96,7 +96,7 @@ const EditUsers = () => {
     setIsLoadingGeneral(true);
     setErrGeneral("");
     try {
-      const response = await fetch("/account/update-account/generals", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/generals", {
         // Added a leading slash
         method: "PUT",
         headers: {
@@ -146,7 +146,7 @@ const EditUsers = () => {
     setIsLoadingRole(true);
     setErrRole("");
     try {
-      const response = await fetch("/account/update-account/role", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/role", {
         // Added a leading slash
         method: "PUT",
         headers: {

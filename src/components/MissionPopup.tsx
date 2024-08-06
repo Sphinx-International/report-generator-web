@@ -197,7 +197,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setIsLoading(true);
 
       try {
-        const response = await fetch("/workorder/create-workorder", {
+        const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/create-workorder", {
           method: "POST",
           headers: {
             Authorization: `Token ${token}`,

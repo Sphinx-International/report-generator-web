@@ -98,8 +98,8 @@ const UserManagment = () => {
       return { total: 0, current_offset: 0 };
     }
     const url = role
-      ? `/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
-      : `/account/get-accounts?offset=${offset}&limit=${limit}`;
+      ? `https://auto-reporting-server.sphinx-international.online/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
+      : `https://auto-reporting-server.sphinx-international.online/account/get-accounts?offset=${offset}&limit=${limit}`;
 
     setIsloading(true);
     try {
@@ -431,10 +431,10 @@ const UserManagment = () => {
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedUsers}
-        deleteUrl="/account/delete-accounts"
+        deleteUrl="https://auto-reporting-server.sphinx-international.online/account/delete-accounts"
         jsonTitle="accounts"
         fetchFunc={fetchUsers}
-        fetchUrl="/account/get-accounts"
+        fetchUrl="https://auto-reporting-server.sphinx-international.online/account/get-accounts"
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

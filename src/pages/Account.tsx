@@ -42,7 +42,7 @@ const Account = () => {
     setIsLoading(true);
     setErr("")
     try {
-      const response = await fetch("/account/update-account/generals", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/generals", {
         // Added a leading slash
         method: "PUT",
         headers: {

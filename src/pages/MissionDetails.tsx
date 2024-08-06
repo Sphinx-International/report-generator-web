@@ -113,7 +113,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("/workorder/assign-workorder", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/assign-workorder", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -186,7 +186,7 @@ const MissionDetails = () => {
       return;
     }
     try {
-      const response = await fetch("/workorder/execute-workorder", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/execute-workorder", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +236,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("/workorder/validate-workorder", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/validate-workorder", {
         method: "PUT",
         headers: {
           Authorization: `Token ${token}`,
@@ -285,7 +285,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("/workorder/accept-workorder", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/accept-workorder", {
         method: "PUT",
         headers: {
           Authorization: `Token ${token}`,
@@ -330,7 +330,7 @@ const MissionDetails = () => {
       return;
     }
     try {
-      const response = await fetch(`/workorder/${path}/${attachmentId}`, {
+      const response = await fetch(`https://auto-reporting-server.sphinx-international.online/workorder/${path}/${attachmentId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/octet-stream",
@@ -468,7 +468,7 @@ const MissionDetails = () => {
     }
     console.log(JSON.stringify({ workorder_id, add: [addedEmail] }));
     try {
-      const response = await fetch("/workorder/update-workorder-mails", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder-mails", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -513,7 +513,7 @@ const MissionDetails = () => {
     }
     console.log(JSON.stringify({ workorder_id, delete: [deletedEmailId] }));
     try {
-      const response = await fetch("/workorder/update-workorder-mails", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder-mails", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -549,7 +549,7 @@ const MissionDetails = () => {
       return;
     }
 
-    const url = `/workorder/get-workorder/${id}`;
+    const url = `https://auto-reporting-server.sphinx-international.online/workorder/get-workorder/${id}`;
 
     try {
       const response = await fetch(url, {
@@ -611,7 +611,7 @@ const MissionDetails = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch("/workorder/update-workorder", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder", {
         method: "PATCH",
         headers: {
           Authorization: `Token ${token}`,
@@ -675,7 +675,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`/workorder/${path}`, {
+      const response = await fetch(`https://auto-reporting-server.sphinx-international.online/workorder/${path}`, {
         method: "PUT",
         headers: {
           Authorization: `Token ${token}`,
@@ -763,7 +763,7 @@ const MissionDetails = () => {
       return;
     }
     try {
-      const response = await fetch("/workorder/update-workorder-acceptence", {
+      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder-acceptence", {
         method: "PATCH",
         headers: {
           Authorization: `Token ${token}`,

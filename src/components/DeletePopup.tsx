@@ -62,7 +62,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialUserCount = initialData.data.length;
     
         if (props.deleteUrl === "/account/delete-accounts") {
-          const secondResponse = await fetch(`/workorder/delete-workorders-by-account`, {
+          const secondResponse = await fetch(`https://auto-reporting-server.sphinx-international.online/workorder/delete-workorders-by-account`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",

@@ -19,7 +19,7 @@ const SideBar = () => {
       return;
     }
     try {
-    const response =  fetch(`/account/logout`, {
+    const response =  fetch(`https://auto-reporting-server.sphinx-international.online/account/logout`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
