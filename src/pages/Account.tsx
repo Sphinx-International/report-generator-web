@@ -6,6 +6,7 @@ import "../styles/CustomDatePicker.css";
 import { useState } from "react";
 import { User } from "../assets/types/User";
 import { ThreeDots } from "react-loader-spinner";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const accountNavigation: string[] = [
   "My profile",
@@ -42,7 +43,11 @@ const Account = () => {
     setIsLoading(true);
     setErr("")
     try {
+<<<<<<< Updated upstream
       const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/generals", {
+=======
+      const response = await fetch(`${baseUrl}/account/update-account/generals`, {
+>>>>>>> Stashed changes
         // Added a leading slash
         method: "PUT",
         headers: {

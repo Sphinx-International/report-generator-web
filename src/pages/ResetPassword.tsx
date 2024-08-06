@@ -4,6 +4,7 @@ import {
   check4DigitCode,
   isValidPassword,
 } from "../func/authValidation";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const ResetPassword = () => {
   const [email, setEmail] = useState<string>("");
@@ -71,7 +72,11 @@ const ResetPassword = () => {
     e.preventDefault();
 
     try {
+<<<<<<< Updated upstream
       const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/forget-password", {
+=======
+      const response = await fetch(`${baseUrl}/account/forget-password`, {
+>>>>>>> Stashed changes
         method: "POST",
         headers: {
           "Content-Type": "application/json",

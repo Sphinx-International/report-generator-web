@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ThreeDots, RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const EditUsers = () => {
   const { id } = useParams();
@@ -53,7 +54,11 @@ const EditUsers = () => {
       return;
     }
 
+<<<<<<< Updated upstream
     const url = `https://auto-reporting-server.sphinx-international.online/account/get-account/${id}`;
+=======
+    const url = `${baseUrl}/account/get-account/${id}`;
+>>>>>>> Stashed changes
     setIsPageLoading(true);
     try {
       const response = await fetch(url, {
@@ -96,7 +101,11 @@ const EditUsers = () => {
     setIsLoadingGeneral(true);
     setErrGeneral("");
     try {
+<<<<<<< Updated upstream
       const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/generals", {
+=======
+      const response = await fetch(`${baseUrl}/account/update-account/generals`, {
+>>>>>>> Stashed changes
         // Added a leading slash
         method: "PUT",
         headers: {
@@ -146,7 +155,11 @@ const EditUsers = () => {
     setIsLoadingRole(true);
     setErrRole("");
     try {
+<<<<<<< Updated upstream
       const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/role", {
+=======
+      const response = await fetch(`${baseUrl}/account/update-account/role`, {
+>>>>>>> Stashed changes
         // Added a leading slash
         method: "PUT",
         headers: {

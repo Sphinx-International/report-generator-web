@@ -4,6 +4,7 @@ import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
 import { deleteSelectedWorkorders } from "../Redux/slices/selectedWorkordersSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface DeletePopUpProps {
   deleteItems: string[];
@@ -61,8 +62,13 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialData = await initialResponse.json();
         const initialUserCount = initialData.data.length;
     
+<<<<<<< Updated upstream
         if (props.deleteUrl === "/account/delete-accounts") {
           const secondResponse = await fetch(`https://auto-reporting-server.sphinx-international.online/workorder/delete-workorders-by-account`, {
+=======
+        if (props.deleteUrl === `${baseUrl}/account/delete-accounts`) {
+          const secondResponse = await fetch(`${baseUrl}/workorder/delete-workorders-by-account`, {
+>>>>>>> Stashed changes
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
