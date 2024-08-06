@@ -18,6 +18,8 @@ import {
 import { formatFileSize } from "../func/formatFileSize";
 import { RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 interface MissionPopupProps {
   title: boolean;
   textAreaTitle: string;
@@ -197,7 +199,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setIsLoading(true);
 
       try {
-        const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/create-workorder", {
+        const response = await fetch(`${baseUrl}/workorder/create-workorder`, {
           method: "POST",
           headers: {
             Authorization: `Token ${token}`,

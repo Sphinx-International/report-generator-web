@@ -3,8 +3,13 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { isValidEmail, isValidPassword } from "../func/authValidation";
 import { ThreeDots } from "react-loader-spinner";
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 const Auth = () => {
+
+
+  
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +56,7 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/login", {
+      const response = await fetch(`${baseUrl}/account/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

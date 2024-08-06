@@ -16,6 +16,8 @@ import { useDispatch } from "react-redux";
 import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 const Missions = () => {
   const navigate = useNavigate();
@@ -74,8 +76,8 @@ const Missions = () => {
     setIsLoading(true);
 
     const url = status
-      ? `https://auto-reporting-server.sphinx-international.online/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
-      : `https://auto-reporting-server.sphinx-international.online/workorder/get-workorders?offset=${offset}&limit=${limit}`;
+      ? `${baseUrl}/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
+      : `${baseUrl}/workorder/get-workorders?offset=${offset}&limit=${limit}`;
 
     try {
       const response = await fetch(url, {
@@ -286,10 +288,10 @@ const Missions = () => {
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedWorkorders}
-        deleteUrl="https://auto-reporting-server.sphinx-international.online/workorder/delete-workorders"
+        deleteUrl={`${baseUrl}/workorder/delete-workorders`}
         jsonTitle="workorders"
         fetchFunc={fetchWorkOrders}
-        fetchUrl="https://auto-reporting-server.sphinx-international.online/workorder/get-workorders"
+        fetchUrl={`${baseUrl}/workorder/get-workorders`}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

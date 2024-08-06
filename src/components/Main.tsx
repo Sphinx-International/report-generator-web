@@ -13,7 +13,7 @@ type Functionalities = {
 };
 
 interface HeaderProps {
-  page: "workorders" | "accounts"
+  page: "workorders" | "accounts";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
   functionalties: Functionalities;
@@ -41,25 +41,22 @@ const Main: React.FC<HeaderProps> = (props) => {
 
   const handleFilterClick = (item: string) => {
     setSelectedFilter(item);
-     localStorage.setItem('selectedFilter', item.toLowerCase());
-     props.setCurrentPage(1);
-     const limit = props.page ==="accounts" ? 4: 8
+    localStorage.setItem("selectedFilter", item.toLowerCase());
+    props.setCurrentPage(1);
+    const limit = props.page === "accounts" ? 4 : 8;
 
-      if (item === "all") {
-        props.FiltrationFunc!(0, limit);
-      } else if (item === "to do") {
-        props.FiltrationFunc!(0, limit, "assigned");
-
-      }else{
-        props.FiltrationFunc!(0, limit, item.toLowerCase());
-
-      }
-  
+    if (item === "all") {
+      props.FiltrationFunc!(0, limit);
+    } else if (item === "to do") {
+      props.FiltrationFunc!(0, limit, "assigned");
+    } else {
+      props.FiltrationFunc!(0, limit, item.toLowerCase());
+    }
   };
 
   return (
     <main className="flex items-center flex-col  gap-[10px] lg:pr-[16px] w-full h-fit">
-      <div className="pl-[24px] lg:flex items-center justify-between w-full hidden ">
+      <div className="pl-[24px] lg:flex items-center justify-between w-full hidden">
         <div className="flex items-center xl:gap-[27px] gap-[15px]">
           {props.flitration.map((item, index) => (
             <span
@@ -151,7 +148,8 @@ const Main: React.FC<HeaderProps> = (props) => {
                   onClick={() => {
                     setSelectedFilter(option);
                     setIsOpen(false);
-                    handleFilterClick(option.toLowerCase())                  }}
+                    handleFilterClick(option.toLowerCase());
+                  }}
                 >
                   {option}
                 </li>
@@ -159,12 +157,28 @@ const Main: React.FC<HeaderProps> = (props) => {
             </ul>
           )}
         </div>
-        <button
-          className=" hidden md:inline-block capitalize lg:lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[20px] px-[16px]  py-[12px] text-white rounded-[21px] bg-primary"
-          onClick={props.handleAddPrimaryButtonClick}
-        >
-          {props.functionalties.primaryFunc.name}
-        </button>
+        <div className="flex items-center gap-3 flex-row-reverse">
+          <button
+            className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+            onClick={props.handleAddPrimaryButtonClick}
+          >
+            {props.functionalties.primaryFunc.name}
+          </button>
+          {props.functionalties.secondaryFuncs?.some(
+            (func) => func.name === "Delete"
+          ) && (
+            <button
+              className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                selectedWorkorders.length === 0
+                  ? "text-n600 border-n400"
+                  : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
+              }`}
+              onClick={props.handleSecondaryButtonClick}
+            >
+              Delete
+            </button>
+          )}
+        </div>
       </div>
 
       {props.children}

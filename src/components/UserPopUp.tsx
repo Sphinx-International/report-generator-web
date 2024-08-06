@@ -4,6 +4,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
 import generatePassword from "../func/generatePassword";
 import { ThreeDots } from "react-loader-spinner";
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 interface Userprops {
   fetchUsers?: () => void;
@@ -81,7 +83,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/create-account", {
+      const response = await fetch(`${baseUrl}/account/create-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

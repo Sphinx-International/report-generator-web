@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { closeSidebar } from "../Redux/slices/sideBarSlice";
 import { RootState } from "../Redux/store";
 import { AppDispatch } from "../Redux/store";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const SideBar = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -19,7 +20,7 @@ const SideBar = () => {
       return;
     }
     try {
-    const response =  fetch(`https://auto-reporting-server.sphinx-international.online/account/logout`, {
+    const response =  fetch(`${baseUrl}/account/logout`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

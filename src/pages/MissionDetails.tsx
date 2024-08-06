@@ -11,6 +11,8 @@ import { RotatingLines } from "react-loader-spinner";
 import { formatFileSize } from "../func/formatFileSize";
 import { getRole } from "../func/getUserRole";
 import Page404 from "./Page404";
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 type WorkorderProperties = {
   title?: string;
@@ -113,7 +115,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/assign-workorder", {
+      const response = await fetch(`${baseUrl}/workorder/assign-workorder`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -186,7 +188,7 @@ const MissionDetails = () => {
       return;
     }
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/execute-workorder", {
+      const response = await fetch(`${baseUrl}/workorder/execute-workorder`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +238,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/validate-workorder", {
+      const response = await fetch(`${baseUrl}/workorder/validate-workorder`, {
         method: "PUT",
         headers: {
           Authorization: `Token ${token}`,
@@ -285,7 +287,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/accept-workorder", {
+      const response = await fetch(`${baseUrl}/workorder/accept-workorder`, {
         method: "PUT",
         headers: {
           Authorization: `Token ${token}`,
@@ -330,7 +332,7 @@ const MissionDetails = () => {
       return;
     }
     try {
-      const response = await fetch(`https://auto-reporting-server.sphinx-international.online/workorder/${path}/${attachmentId}`, {
+      const response = await fetch(`${baseUrl}/workorder/${path}/${attachmentId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/octet-stream",
@@ -468,7 +470,7 @@ const MissionDetails = () => {
     }
     console.log(JSON.stringify({ workorder_id, add: [addedEmail] }));
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder-mails", {
+      const response = await fetch(`${baseUrl}/workorder/update-workorder-mails`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -513,7 +515,7 @@ const MissionDetails = () => {
     }
     console.log(JSON.stringify({ workorder_id, delete: [deletedEmailId] }));
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder-mails", {
+      const response = await fetch(`${baseUrl}/workorder/update-workorder-mails`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -549,7 +551,7 @@ const MissionDetails = () => {
       return;
     }
 
-    const url = `https://auto-reporting-server.sphinx-international.online/workorder/get-workorder/${id}`;
+    const url = `${baseUrl}/workorder/get-workorder/${id}`;
 
     try {
       const response = await fetch(url, {
@@ -611,7 +613,7 @@ const MissionDetails = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder", {
+      const response = await fetch(`${baseUrl}/workorder/update-workorder`, {
         method: "PATCH",
         headers: {
           Authorization: `Token ${token}`,
@@ -675,7 +677,7 @@ const MissionDetails = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`https://auto-reporting-server.sphinx-international.online/workorder/${path}`, {
+      const response = await fetch(`${baseUrl}/workorder/${path}`, {
         method: "PUT",
         headers: {
           Authorization: `Token ${token}`,
@@ -763,7 +765,7 @@ const MissionDetails = () => {
       return;
     }
     try {
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/workorder/update-workorder-acceptence", {
+      const response = await fetch(`${baseUrl}/workorder/update-workorder-acceptence`, {
         method: "PATCH",
         headers: {
           Authorization: `Token ${token}`,
