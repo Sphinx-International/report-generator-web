@@ -83,7 +83,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`${baseUrl}/account/create-account`, {
+      const response = await fetch(`https://auto-reporting-server.sphinx-international.online/account/create-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
