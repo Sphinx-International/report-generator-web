@@ -13,6 +13,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 import { Link } from "react-router-dom";
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 const titlesRow = [
   {
@@ -98,8 +100,8 @@ const UserManagment = () => {
       return { total: 0, current_offset: 0 };
     }
     const url = role
-      ? `https://auto-reporting-server.sphinx-international.online/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
-      : `https://auto-reporting-server.sphinx-international.online/account/get-accounts?offset=${offset}&limit=${limit}`;
+      ? `http://${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
+      : `http://${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
 
     setIsloading(true);
     try {
@@ -442,10 +444,10 @@ const UserManagment = () => {
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedUsers}
-        deleteUrl= {`https://auto-reporting-server.sphinx-international.online/account/delete-accounts`}
+        deleteUrl= {`http://${baseUrl}/account/delete-accounts`}
         jsonTitle="accounts"
         fetchFunc={fetchUsers}
-        fetchUrl={`https://auto-reporting-server.sphinx-international.online/account/get-accounts`}
+        fetchUrl={`http://${baseUrl}/account/get-accounts`}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}
