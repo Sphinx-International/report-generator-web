@@ -4,8 +4,6 @@ import {
   ChangeEvent,
   FormEvent,
   MouseEvent,
-  useEffect,
-  useCallback,
 } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import "../styles/PrioritySelector.css";
@@ -18,6 +16,8 @@ import {
 import { formatFileSize } from "../func/formatFileSize";
 import { RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
+import useWebSocketSearch from "../hooks/useWebSocketSearch";
+import handleChange from "../func/handleChangeFormsInput";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface MissionPopupProps {
@@ -127,13 +127,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       });
     };
 
-    const handleChange = (
-      e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-      const { name, value } = e.target;
-      setformValues((prev) => ({ ...prev, [name]: value }));
-    };
-
     const removeEng = () => {
       setSelectedEng(null);
       setformValues((prev) => ({
@@ -199,13 +192,16 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setIsLoading(true);
 
       try {
-        const response = await fetch(`http://${baseUrl}/workorder/create-workorder`, {
-          method: "POST",
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-          body: formData,
-        });
+        const response = await fetch(
+          `http://${baseUrl}/workorder/create-workorder`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+            body: formData,
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -259,112 +255,19 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
     };
 
-    const searchForEngs = useCallback(() => {
-      if (!searchQueryEng) {
-        return;
-      }
-      setLoaderAssignSearch(true);
+    useWebSocketSearch({
+      searchQuery: searchQueryEng,
+      endpointPath: "engineer",
+      setResults: setSearchEngs,
+      setLoader: setLoaderAssignSearch,
+    });
 
-      const token =
-        localStorage.getItem("token") || sessionStorage.getItem("token");
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-
-      const url = `wss://auto-reporting-server.sphinx-international.online/ws/search-account/engineer`;
-      const socket = new WebSocket(url);
-
-      socket.onopen = () => {
-        console.log("WebSocket connection opened");
-        const message = `search|${token}|${searchQueryEng}`;
-        console.log(message);
-        socket.send(message);
-      };
-
-      socket.onmessage = (event) => {
-        console.log("WebSocket message received");
-        try {
-          const data = event.data;
-          setSearchEngs(JSON.parse(data));
-        } catch (error) {
-          console.error("Error processing WebSocket message:", error);
-        } finally {
-          setLoaderAssignSearch(false);
-        }
-      };
-
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-
-      socket.onclose = () => {
-        console.log("WebSocket connection closed");
-      };
-
-      return () => {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close();
-        }
-      };
-    }, [searchQueryEng]);
-
-    const searchForCoords = useCallback(() => {
-      if (!searchQueryCoord) {
-        return;
-      }
-      setLoaderCoordSearch(true);
-
-      const token =
-        localStorage.getItem("token") || sessionStorage.getItem("token");
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-
-      const url = `wss://auto-reporting-server.sphinx-international.online/ws/search-account/coordinator`;
-      const socket = new WebSocket(url);
-
-      socket.onopen = () => {
-        console.log("WebSocket connection opened");
-        const message = `search|${token}|${searchQueryCoord}`;
-        socket.send(message);
-      };
-
-      socket.onmessage = (event) => {
-        console.log("WebSocket message received");
-        try {
-          const data = event.data;
-          setSearchCoords(JSON.parse(data));
-        } catch (error) {
-          console.error("Error processing WebSocket message:", error);
-        } finally {
-          setLoaderCoordSearch(false);
-        }
-      };
-
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-
-      socket.onclose = () => {
-        console.log("WebSocket connection closed");
-      };
-
-      return () => {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close();
-        }
-      };
-    }, [searchQueryCoord]);
-
-    useEffect(() => {
-      searchForEngs();
-    }, [searchForEngs]);
-
-    useEffect(() => {
-      searchForCoords();
-    }, [searchForCoords]);
+    useWebSocketSearch({
+      searchQuery: searchQueryCoord,
+      endpointPath: "coordinator",
+      setResults: setSearchCoords,
+      setLoader: setLoaderCoordSearch,
+    });
 
     return (
       <dialog
@@ -392,7 +295,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       placeholder="Enter title"
                       className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
                       onChange={(e) => {
-                        handleChange(e);
+                        handleChange(e, setformValues);
                       }}
                     />
                     {formErrs.title !== "" && formErrs.title !== undefined && (
@@ -530,7 +433,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   placeholder={props.textAreaPlaceholder}
                   className="rounded-[21px] border-[1px] border-n400 w-full p-[20px] h-[140px] max-h-[300px]"
                   onChange={(e) => {
-                    handleChange(e);
+                    handleChange(e, setformValues);
                   }}
                 />
                 {formErrs.description !== "" && (
@@ -556,7 +459,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     placeholder="0000"
                     className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
                     onChange={(e) => {
-                      handleChange(e);
+                      handleChange(e, setformValues);
                     }}
                   />
                   {formErrs.ticker_number !== "" && (

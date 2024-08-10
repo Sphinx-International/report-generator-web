@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
 import generatePassword from "../func/generatePassword";
 import { ThreeDots } from "react-loader-spinner";
+import handleChange from "../func/handleChangeFormsInput";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 
@@ -35,11 +36,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     password: "",
     role: null,
   });
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
 
   const closeDialog = (eo: MouseEvent<HTMLButtonElement> | React.FormEvent) => {
     eo.preventDefault();
@@ -201,7 +197,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 id="first_name"
                 className="px-[18px] w-full sm:h-[48px] sm:text-[16px] text-[14px] h-[44px] rounded-[46px] shadow-lg"
                 onChange={(e) => {
-                  handleChange(e);
+                  handleChange(e,setFormData);
                 }}
               />
             </div>
@@ -220,7 +216,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 id="last_name"
                 className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
                 onChange={(e) => {
-                  handleChange(e);
+                  handleChange(e,setFormData);
                 }}
               />
             </div>
@@ -241,7 +237,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 id="email"
                 className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
                 onChange={(e) => {
-                  handleChange(e);
+                  handleChange(e,setFormData);
                 }}
               />
             </div>
@@ -261,7 +257,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                   id="password"
                   className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
                   onChange={(e) => {
-                    handleChange(e);
+                    handleChange(e,setFormData);
                   }}
                 />
                 {formData.password === "" ? (

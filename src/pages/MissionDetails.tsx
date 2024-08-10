@@ -19,6 +19,7 @@ import {
 } from "../func/changeWorkorderStatus";
 import { downloadFile } from "../func/donwloadFile";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
+import handleChange from "../func/handleChangeFormsInput";
 
 type WorkorderProperties = {
   title?: string;
@@ -86,13 +87,6 @@ const MissionDetails = () => {
       }
     };
   }, []);
-
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setBasicDataWorkorder((prev) => ({ ...prev, [name]: value }));
-  };
 
   const handleFileChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -482,7 +476,7 @@ const MissionDetails = () => {
                     disabled={isEditing_Title_tic ? false : true}
                     value={basicDataWorkorder.title}
                     onChange={(e) => {
-                      handleChange(e);
+                      handleChange(e,setBasicDataWorkorder);
                     }}
                   />
                   #
@@ -497,7 +491,7 @@ const MissionDetails = () => {
                     disabled={isEditing_Title_tic ? false : true}
                     value={`${basicDataWorkorder.ticketNumber}`}
                     onChange={(e) => {
-                      handleChange(e);
+                      handleChange(e,setBasicDataWorkorder);
                     }}
                   />
                   {!isEditing_Title_tic && getRole() !== 2 && (
@@ -932,7 +926,7 @@ const MissionDetails = () => {
                     value={basicDataWorkorder.description}
                     rows={isEditing_desc ? 4 : 3}
                     onChange={(e) => {
-                      handleChange(e);
+                      handleChange(e,setBasicDataWorkorder);
                     }}
                   />
                 </div>
