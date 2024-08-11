@@ -15,7 +15,6 @@ import { RotatingLines } from "react-loader-spinner";
 import { Link } from "react-router-dom";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-
 const titlesRow = [
   {
     title: "Picture",

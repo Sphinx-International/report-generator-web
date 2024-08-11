@@ -522,13 +522,13 @@ const MissionDetails = () => {
                   )}
                 </div>
 
-                <div className="flex items-center gap-[8px]">
+                <div className="flex items-center gap-[8px] relative">
                   <WorkOrderStatus
                     status={workorder.workorder.status}
                     styles={{ fontSize: 13, px: 28, py: 9.5 }}
                   />
 
-                  <div className="relative">
+                  <div className="">
                     {" "}
                     <span
                       className={`cursor-pointer rounded-[100px] text-[13px] font-medium leading-[15px] bg-[#FEF6FF] py-[9.5px] px-[28px] ${
@@ -555,16 +555,16 @@ const MissionDetails = () => {
                         : "Urgent"}
                     </span>
                     {showPriority && (
-                      <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-md z-30 absolute flex flex-col items-start gap-[27px] md:right-3 left-3 top-10">
+                      <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-lg z-30 absolute flex flex-col items-start gap-[27px] lg:-left-36 left-3 top-12">
                         <div className="flex flex-col items-start gap-[16px]">
-                          <span className="text-[14px] text-n700 font-medium">
+                          <span className=" text-n700 font-medium md:text-[14px] text-[12px]">
                             Priority
                           </span>
                           <div className="flex items-center gap-[4px]">
                             {Array.from({ length: 4 }).map((_, index) => {
                               return (
                                 <span
-                                  className={`cursor-pointer rounded-[100px] py-[4.5px] px-[20px] leading-[15px] text-[10px] font-medium ${
+                                  className={`cursor-pointer rounded-[100px] py-[4.5px] sm:px-[20px] px-[15px] leading-[15px] sm:text-[10px] text-[9px] font-medium ${
                                     index === 0
                                       ? index === basicDataWorkorder.priority
                                         ? "text-primary bg-[#FFF5F3] border-[1px] border-primary"
@@ -1038,7 +1038,7 @@ const MissionDetails = () => {
                   {workorder.mail_to &&
                     workorder.mail_to.map((mail, index) => {
                       return (
-                        <div className="relative" key={index}>
+                        <div className="relative group" key={index}>
                           <img
                             src="/avatar1.png"
                             alt="avatar"
@@ -1058,6 +1058,10 @@ const MissionDetails = () => {
                           >
                             🗙
                           </span>
+                                {/* Tooltip */}
+      <div className="absolute left-[%65] transform -translate-x-1/3 bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-60">
+        {mail.account}
+      </div>
                         </div>
                       );
                     })}

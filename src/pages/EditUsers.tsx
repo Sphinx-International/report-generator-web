@@ -78,7 +78,6 @@ const EditUsers = () => {
       setLastName(data.last_name);
       setEmail(data.email);
       setSelectedOption(data.role === 1 ? "Coordinator" : "Engineer");
-      console.log(data);
     } catch (err) {
       console.error("Error: ", err);
     } finally {

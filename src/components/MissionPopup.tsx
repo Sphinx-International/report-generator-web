@@ -62,9 +62,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       attachments: [],
     });
 
-    if (formValues.assigned_to) {
-      console.log(formValues.assigned_to);
-    }
     const [isLoading, setIsLoading] = useState(false);
 
     const [formErrs, setFormErrs] = useState<FormErrors>({});
@@ -184,11 +181,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         });
       }
 
-      // Log formData contents
-      for (const pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-      }
-
       setIsLoading(true);
 
       try {
@@ -232,7 +224,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       if (Object.keys(formErrors).length === 0) {
         setCurrentSliderIndex(2);
         setFormErrs({});
-        console.log(formValues);
         // Handle form submission logic here
       } else {
         setFormErrs(formErrors);
@@ -390,7 +381,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                         ...prev,
                                         assigned_to: eng.email,
                                       }));
-                                      console.log(eng.email);
                                       setSelectedEng(eng.email);
                                       setSearchQueryEng("");
                                     }}
@@ -736,21 +726,23 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     <div className="flex items-center gap-[5px] pl-4">
                       {selectedCoord.map((coord, index) => {
                         return (
-                          <div className="" key={index}>
-                            <div className="relative">
-                              <img
-                                src="avatar1.png"
-                                alt="avatar"
-                                className="w-[35px]"
-                              />
-                              <span
-                                className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
-                                onClick={() => {
-                                  removeCoord(coord);
-                                }}
-                              >
-                                🗙
-                              </span>
+                          <div className="relative group" key={index}>
+                            <img
+                              src="avatar1.png"
+                              alt="avatar"
+                              className="w-[35px]"
+                            />
+                            <span
+                              className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
+                              onClick={() => {
+                                removeCoord(coord);
+                              }}
+                            >
+                              🗙
+                            </span>
+                            {/* Tooltip */}
+                            <div className="absolute left-[%65] transform -translate-x-1/3 bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-60">
+                              {coord}
                             </div>
                           </div>
                         );
