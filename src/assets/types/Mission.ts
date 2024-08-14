@@ -1,13 +1,20 @@
+ export type TheUploadingFile= {
+  id?:number,
+  progress?:  number ,
+  file?: File
+ }
+
 export interface ReqMission {
   title: string;
-  ticker_number: number | undefined;
+  id: number | undefined;
   priority: 0 | 1 | 2 | 3;
   description: string;
   require_acceptence: boolean; // False by default | Not required
   assigned_to?: string;
   accounts: string[],
-  attachments:File[]
+  attachments:TheUploadingFile[]
 }
+
 
 export interface ResMission {
   id: number;
@@ -49,6 +56,6 @@ export interface ResOfOneMission {
   };
   mail_to: MailTo[],
   attachments: ResFile[]
-  report?:ResFile
-  acceptance_certificate?:ResFile
+  reports?:ResFile[]
+  acceptance_certificates?:ResFile[]
 }

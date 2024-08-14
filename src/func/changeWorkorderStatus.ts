@@ -54,8 +54,6 @@ export const handle_Assignment_and_execute = async (
 
 export const handle_Validate_and_Acceptence = async (
   workorder_id: number,
-  workorder_file: File,
-  file_type: "report" | "acceptance",
   endPointPah: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void
@@ -66,41 +64,20 @@ export const handle_Validate_and_Acceptence = async (
     console.error("No token found");
     return;
   }
-
-  const formData = new FormData();
-  formData.append("workorder_id", workorder_id.toString());
-
-  switch (file_type) {
-    case "report":
-      formData.append("workorder_report", workorder_file);
-      break;
-    case "acceptance":
-      formData.append("acceptance_certificate", workorder_file);
-      break;
-    default:
-      console.log("need to send a file type");
-      break;
-  }
-
-  for (const pair of formData.entries()) {
-    console.log(`${pair[0]}: ${pair[1]}`);
-  }
-
+  console.log(JSON.stringify({workorder_id}))
   setIsLoading(true);
-
   try {
     const response = await fetch(`http://${baseUrl}/workorder/${endPointPah}`, {
       method: "PUT",
       headers: {
+        "Content-Type": "application/json", 
         Authorization: `Token ${token}`,
       },
-      body: formData,
+      body: JSON.stringify({workorder_id}),
     });
 
     if (response) {
-      const data = await response.json();
-      console.log("Form submitted successfully", data);
-
+      console.log(response.status);
       switch (response.status) {
         case 200:
           fetchOneWorkOrder();

@@ -4,7 +4,6 @@ import Header from "../components/Header";
 import Main from "../components/Main";
 import Pagination from "../components/Pagination";
 import MissionPopup from "../components/MissionPopup";
-import SuccessPopup from "../components/SuccessPopup";
 import WorkOrderStatus from "../components/WorkOrderStatus";
 import WorkOrderpriority from "../components/WorkOrderPriorities";
 import DeletePopup from "../components/DeletePopup";
@@ -284,7 +283,6 @@ const Missions = () => {
         textAreaPlaceholder="Description"
         fetchWorkOrders={fetchWorkOrders}
       />
-      <SuccessPopup ref={submitMissionDialogRef} />
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedWorkorders}

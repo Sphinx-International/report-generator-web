@@ -3,7 +3,7 @@ import { ReqMission } from "../assets/types/Mission";
 export interface FormErrors {
     title?: string;
     description?: string;
-    ticker_number?: string;
+    id?: string;
     accounts?: string
   }
 
@@ -11,7 +11,7 @@ export const validateForm1 = (formValues:ReqMission): FormErrors => {
     const formErrors:FormErrors = {};
     if (formValues.title === "") formErrors.title = 'Title is required';
     if (formValues.description === "") formErrors.description = 'Description is required';
-    if (formValues.ticker_number === undefined) formErrors.ticker_number = 'Ticket number is required';
+    if (formValues.id === undefined || String(formValues.id) === "") formErrors.id = 'ID is required';
     return formErrors;
   };
 
