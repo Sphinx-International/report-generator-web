@@ -4,7 +4,7 @@ export interface FormErrors {
     title?: string;
     description?: string;
     id?: string;
-    accounts?: string
+    emails?: string
   }
 
 export const validateForm1 = (formValues:ReqMission): FormErrors => {
@@ -17,6 +17,6 @@ export const validateForm1 = (formValues:ReqMission): FormErrors => {
 
   export const validateForm2 = (formValues:ReqMission): FormErrors => {
     const formErrors:FormErrors = {};
-    if (formValues.accounts.length === 0) formErrors.accounts = 'At least enter someone to receive mail';
+    if (formValues.emails.length === 0) formErrors.emails = 'At least enter someone to receive mail';
     return formErrors;
   };

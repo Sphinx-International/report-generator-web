@@ -101,6 +101,7 @@ export const handle_add_or_delete_mailedPerson = async (
   workorder_id: number,
   Email: string | number,
   mail_method: "add" | "delete",
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setVisibleCoordPopup: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void
 ) => {
@@ -109,9 +110,8 @@ export const handle_add_or_delete_mailedPerson = async (
   if (!token) {
     console.error("No token found");
     return;
-  }
-
-  console.log(JSON.stringify({ workorder_id, [mail_method]: [Email] }))
+  } 
+  setIsLoading(true)
   try {
     const response = await fetch(
       `http://${baseUrl}/workorder/update-workorder-mails`,
@@ -142,5 +142,7 @@ export const handle_add_or_delete_mailedPerson = async (
     }
   } catch (err) {
     console.error("Error submitting form", err);
+  } finally{
+    setIsLoading(false)
   }
 };

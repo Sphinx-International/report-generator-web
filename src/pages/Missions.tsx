@@ -278,9 +278,6 @@ const Missions = () => {
       </div>
       <MissionPopup
         ref={missionDialogRef}
-        title={true}
-        textAreaTitle="Description"
-        textAreaPlaceholder="Description"
         fetchWorkOrders={fetchWorkOrders}
       />
       <DeletePopup

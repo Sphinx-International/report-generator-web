@@ -10,11 +10,14 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Missions from "./pages/Missions.tsx";
 import MissionDetails from "./pages/MissionDetails.tsx";
 import EditUsers from "./pages/EditUsers.tsx";
+import Groups from "./pages/Groups.tsx";
+import Individuals from "./pages/Individuals.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx"; 
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 
 const router = createBrowserRouter([
   {
@@ -52,6 +55,20 @@ const router = createBrowserRouter([
   {
     path: "/missions/:id",
     element: <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]}/>,
+  },
+
+  {
+    path: "/mails",
+    element: <ProtectedRoute element={<Groups />} allowedRoles={[0]}/>,
+  },
+
+  {
+    path: "/mails/groups",
+    element: <ProtectedRoute element={<Groups />} allowedRoles={[0]}/>,
+  },
+  {
+    path: "/mails/individuals",
+    element: <ProtectedRoute element={<Individuals />} allowedRoles={[0]}/>,
   },
   {
     path: "*",

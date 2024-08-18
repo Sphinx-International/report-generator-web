@@ -60,12 +60,13 @@ export const upload_or_delete_workorder_files_for_attachements = async (
 
 
 
-export const upload_workorder_files = async (
+  export const upload_workorder_files = async (
     workorder_id: number,
     file_id: number,
     endPointPath: string,
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-    fetchOneWorkOrder: () => void
+    fetchOneWorkOrder: () => void,
+    certificateType?: 1 | 2 | 3 ,
   ) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -74,28 +75,38 @@ export const upload_workorder_files = async (
       return;
     }
     setIsLoading(true);
+    
     try {
+      const body = certificateType 
+        ? JSON.stringify({ workorder_id, file_id, type: certificateType }) 
+        : JSON.stringify({ workorder_id, file_id });
+
+
+
+
+        console.log(body)
+  
       const response = await fetch(`http://${baseUrl}/workorder/upload-workorder-${endPointPath}`, {
-        method: "POST",
+        method: endPointPath === "report" ? "POST" : "PUT",
         headers: {
-            "Content-Type": "application/json", 
-            Authorization: `Token ${token}`,
-          },
-        body: JSON.stringify({workorder_id,file_id}),
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body, 
       });
   
       if (response) {
-        console.log(response.status)
+        console.log(await response.json());
   
         switch (response.status) {
           case 200:
             fetchOneWorkOrder();
             break;
           case 400:
-            console.log("verify your data");
+            console.log("Verify your data");
             break;
           default:
-            console.log("error");
+            console.log("Error");
             break;
         }
       }
@@ -190,7 +201,8 @@ export const handle_chunck = async (
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setFiles: React.Dispatch<React.SetStateAction<TheUploadingFile[]>>,
-  fetchOneWorkOrder: () => void
+  fetchOneWorkOrder: () => void,
+  certificateType?: 1 | 2 | 3 
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -198,7 +210,6 @@ export const handle_chunck = async (
     console.error("No token found");
     return;
   }
-
   const chunkSize = 512 * 1024; // 512 KB
   const fileSize = file.size; // File size in bytes
 
@@ -233,7 +244,7 @@ export const handle_chunck = async (
       if (fileType === "attachements") {
         upload_or_delete_workorder_files_for_attachements(workorder_id,fileId,"add",setIsLoading,fetchOneWorkOrder)
       } else {
-        await upload_workorder_files(workorder_id,fileId,fileType,setIsLoading,fetchOneWorkOrder)
+        await upload_workorder_files(workorder_id,fileId,fileType,setIsLoading,fetchOneWorkOrder,certificateType)
 
       }
       if (chunks > 1) {
@@ -242,7 +253,7 @@ export const handle_chunck = async (
       setFiles((prevFiles) =>
         prevFiles.filter((file) => file.id !== fileId)
       );
-
+       
     } else {
       console.error("Failed to upload first chunk");
     }

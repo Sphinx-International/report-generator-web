@@ -5,7 +5,7 @@ import { formatFileSize } from "../func/formatFileSize"
 const uploadingFile: React.FC<TheUploadingFile> = (props) => {
   return (
     <div
-    className="w-full flex flex-col gap-[8px] items-start px-[12px] py-[8px] border-[1px] border-n300 rounded-[15px]"
+    className="w-full flex flex-col items-start px-[12px] py-[1px] bg-white shadow-lg rounded-[15px]"
   >
     <div className="flex items-center gap-[7px]">
       <svg
@@ -35,17 +35,17 @@ const uploadingFile: React.FC<TheUploadingFile> = (props) => {
       </div>
     </div>
     <div className="flex items-center gap-[13px] w-full">
-      <div className="w-full border-[4px] border-n400 rounded-[25px] overflow-hidden">
+      <div className="w-full border-[2.5px] border-n400 rounded-[25px] overflow-hidden">
         <div
-          className="h-full rounded-[25px] border-[4px] border-primary transition-all duration-300 "
+          className="h-full rounded-[25px] border-[2.5px] border-primary transition-all duration-300 "
           style={{
-            width: `${props.progress}%`,
+            width: `${props.progress !== undefined ? `${props.progress}%` :`100%`}`,
             // transition: "width 0.3s ease",
           }}
         />
       </div>
       <span className="text-[10px] font-semibold leading-[20px] text-primary">
-        {props.progress}
+      {props.progress !== undefined ? props.progress : "100.00"}
       </span>
     </div>
   </div>

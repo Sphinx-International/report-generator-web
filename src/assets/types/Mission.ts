@@ -11,7 +11,7 @@ export interface ReqMission {
   description: string;
   require_acceptence: boolean; // False by default | Not required
   assigned_to?: string;
-  accounts: string[],
+  emails: string[],
   attachments:TheUploadingFile[]
 }
 
@@ -19,7 +19,6 @@ export interface ReqMission {
 export interface ResMission {
   id: number;
   title: string;
-  ticker_number: number | undefined;
   priority: 0 | 1 | 2 | 3;
   status: 0 | 1 | 2 | 3 | 4 | 5;
   description: string;
@@ -30,7 +29,7 @@ export interface ResMission {
  type MailTo ={
     id:number,
     workorder: number,
-    account:string
+    email:string
 }
 export type ResFile ={
     id:number,
@@ -39,14 +38,17 @@ export type ResFile ={
     workorder: number,
 }
 
+type ReqAccFile = ResFile & {
+  type: 1 | 2 | 3;
+};
+
 
 
 export interface ResOfOneMission {
   workorder: {
     id: number;
     title: string;
-    ticker_number: number;
-    priority: 0 | 1 | 2 | 3;
+    priority: 0 | 1 | 2 | 3 |number;
     status: 0 | 1 | 2 | 3 | 4 | 5;
     description: string;
     require_acceptence?: boolean;
@@ -57,5 +59,5 @@ export interface ResOfOneMission {
   mail_to: MailTo[],
   attachments: ResFile[]
   reports?:ResFile[]
-  acceptance_certificates?:ResFile[]
+  acceptance_certificates?:ReqAccFile[]
 }

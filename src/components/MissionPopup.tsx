@@ -22,9 +22,6 @@ import handleChange from "../func/handleChangeFormsInput";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface MissionPopupProps {
-  title: boolean;
-  textAreaTitle: string;
-  textAreaPlaceholder: string;
   fetchWorkOrders?: () => void;
 }
 
@@ -59,7 +56,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       description: "",
       id: undefined,
       require_acceptence: false,
-      accounts: [],
+      emails: [],
       attachments: [],
     });
 
@@ -76,7 +73,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         description: "",
         id: undefined,
         require_acceptence: false,
-        accounts: [],
+        emails: [],
         attachments: [],
       });
       setCurrentPriorityIndex(1);
@@ -143,13 +140,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
       setformValues((prev) => ({
         ...prev,
-        accounts: prev.accounts.filter((item) => item !== deletedItem),
+        emails: prev.emails.filter((item) => item !== deletedItem),
       }));
     };
 
     const handleFocusMailedUsersInput = () => {
       setIsFocusedMailInput(true);
-      setFormErrs((prev) => ({ ...prev, accounts: "" }));
+      setFormErrs((prev) => ({ ...prev, emails: "" }));
     };
 
     const handleCreateWorkorder = async (e: FormEvent) => {
@@ -178,8 +175,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         formData.append("assigned_to", formValues.assigned_to);
       }
 
-      formValues.accounts.forEach((account) => {
-        formData.append("accounts", account);
+      formValues.emails.forEach((mail) => {
+        formData.append("emails", mail);
       });
 
       if (formValues.attachments) {
@@ -396,7 +393,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         {currentSliderIndex === 1 ? (
           <form className="w-full flex flex-col gap-[30px]">
             <div className="flex items-center flex-col gap-[17.5px] w-full">
-              {props.title && (
+              
                 <div className="flex flex-col sm:flex-row items-start gap-[17px] w-full">
                                     <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                     <label
@@ -449,20 +446,20 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     )}
                   </div>
                 </div>
-              )}
+              
 
               <div className="flex flex-col items-start gap-[8px] w-full">
                 <label
                   htmlFor="description"
                   className="leading-[21px] font-medium ml-[9px] text-n700"
                 >
-                  {props.textAreaTitle}
+                  Description
                 </label>
                 <textarea
                   name="description"
                   id="description"
                   value={formValues.description}
-                  placeholder={props.textAreaPlaceholder}
+                  placeholder="Description"
                   className="rounded-[21px] border-[1px] border-n400 w-full p-[20px] h-[140px] max-h-[300px]"
                   onChange={(e) => {
                     handleChange(e, setformValues);
@@ -812,10 +809,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                               className="flex items-center px-[18px] gap-[8px] w-full cursor-pointer hover:bg-slate-100"
                               onClick={() => {
                                 setformValues((prev) => {
-                                  if (!prev.accounts.includes(coord.email)) {
+                                  if (!prev.emails.includes(coord.email)) {
                                     return {
                                       ...prev,
-                                      accounts: [...prev.accounts, coord.email],
+                                      emails: [...prev.emails, coord.email],
                                     };
                                   }
                                   return prev;
@@ -848,9 +845,9 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     </div>
                   )}
                 </div>
-                {formErrs.accounts !== "" && formErrs.accounts !== undefined ? (
+                {formErrs.emails !== "" && formErrs.emails !== undefined ? (
                   <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                    {formErrs.accounts}
+                    {formErrs.emails}
                   </span>
                 ) : (
                   selectedCoord && (

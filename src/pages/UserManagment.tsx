@@ -178,8 +178,6 @@ const UserManagment = () => {
     handledeleteUserButtonClick();
   };
 
-  console.log(isloading);
-
   return (
     <div className="w-full flex md:h-[100vh]">
       <SideBar />
