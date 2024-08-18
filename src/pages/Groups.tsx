@@ -2,7 +2,7 @@ import SideBar from "../components/SideBar";
 import Header from "../components/Header";
 import CreateGroupPopup from "../components/mails/CreateGroupPopup";
 import View_edit_groupPopup from "../components/mails/View_edit_groupPopup";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { handleOpenDialog } from "../func/openDialog";
 
 const selectedGroups = [];
@@ -10,21 +10,6 @@ const selectedGroups = [];
 const Groups = () => {
   const createGroupDialogRef = useRef<HTMLDialogElement>(null);
   const view_edit_GroupDialogRef = useRef<HTMLDialogElement>(null);
-
-
-  useEffect(() => {
-    const createDialog = createGroupDialogRef.current;
-    const viewDialog = view_edit_GroupDialogRef.current;
-
-    return () => {
-      if (createDialog) {
-        createDialog.style.display = "none";
-      }
-      if (viewDialog) {
-        viewDialog.style.display = "none";
-      }
-    };
-  }, []);
 
   return (
     <div className="w-full flex md:h-[100vh]">

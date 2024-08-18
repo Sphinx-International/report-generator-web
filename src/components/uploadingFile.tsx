@@ -7,7 +7,7 @@ const uploadingFile: React.FC<TheUploadingFile> = (props) => {
     <div
     className="w-full flex flex-col items-start px-[12px] py-[1px] bg-white shadow-lg rounded-[15px]"
   >
-    <div className="flex items-center gap-[7px]">
+    <div className="flex items-center gap-[7px] w-full">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="22"
@@ -25,8 +25,8 @@ const uploadingFile: React.FC<TheUploadingFile> = (props) => {
           fill="#6F6C8F"
         />
       </svg>
-      <div className="flex flex-col items-start">
-        <span className="text-[13px] font-medium leading-[20px] text-n600">
+      <div className="flex flex-col items-start w-full">
+        <span className="text-[13px] font-medium leading-[20px] text-n600 overflow-hidden w-[90%] text-ellipsis text-nowrap">
           {props.file!.name}
         </span>
         <span className="text-[12px] leading-[20px] text-n600">

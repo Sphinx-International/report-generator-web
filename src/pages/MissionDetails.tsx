@@ -26,10 +26,10 @@ import { TheUploadingFile } from "../assets/types/Mission";
 import { formatDate } from "../func/formatDatr&Time";
 import AddCertificatPopup from "../components/AddCertificatPopup";
 import { handleOpenDialog } from "../func/openDialog";
-
+import CircularProgress from "../components/CircleProgress";
 type WorkorderProperties = {
   title?: string;
-  id?: number;
+  id?: string;
   priority?: 0 | 1 | 2 | 3 | number;
   description?: string;
 };
@@ -76,12 +76,12 @@ const MissionDetails = () => {
 
   const [basicDataWorkorder, setBasicDataWorkorder] = useState<{
     title: string;
-    id: number;
+    id: string;
     priority: 0 | 1 | 2 | 3 | number;
     description: string;
   }>({
     title: "",
-    id: -1,
+    id: "",
     priority: 0,
     description: "",
   });
@@ -105,7 +105,7 @@ const MissionDetails = () => {
     };
   }, []);
 
-  const handleExecute = (workorder_id: number) => {
+  const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
     setTimeLeft(5); // Set countdown to 5 seconds
@@ -277,7 +277,7 @@ const MissionDetails = () => {
     fetchOneWorkOrder();
   }, [fetchOneWorkOrder]);
 
-  const handleeditReqAccStatus = (workorder_id: number, new_status: 0 | 1) => {
+  const handleeditReqAccStatus = (workorder_id: string, new_status: 0 | 1) => {
     setUndoMessageVisible(false);
     setUndo_req_acc_MessageVisible(true);
     console.log("here");
@@ -314,7 +314,7 @@ const MissionDetails = () => {
   };
 
   const EditAcceptenceStatus = async (
-    id: number,
+    id: string,
     require_acceptance: 0 | 1
   ) => {
     const token =
@@ -415,7 +415,7 @@ const MissionDetails = () => {
                         handleChange(e, setBasicDataWorkorder);
                       }}
                     />
-                    #
+                    |
                     <span
                       className={`text-primary font-semibold md:text-[24px] text-[17px] w-[23%] rounded-[20px] py-[7px] sm:px-[20px] px-[8px]`}
                     >
@@ -1021,89 +1021,142 @@ const MissionDetails = () => {
                         </label>
                         <div className="flex gap-[20px] flex-wrap">
                           {workorder.attachments.length > 0 &&
-                            workorder.attachments.map((attach, index) => {
-                              return (
-                                <div
-                                  key={index}
-                                  className=" cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px] group"
-                                  onClick={() => {
-                                    downloadFile(
-                                      attach.id,
-                                      "download-workorder-attachment",
-                                      attach.file_name
-                                    );
-                                  }}
-                                >
-                                  <div className="flex items-center gap-[9px] w-[90%]">
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="22"
-                                      height="26"
-                                      viewBox="0 0 22 26"
-                                      fill="none"
-                                    >
-                                      <path
-                                        opacity="0.2"
-                                        d="M20.375 6.33984V19.4648C20.375 19.7135 20.2762 19.9519 20.1004 20.1278C19.9246 20.3036 19.6861 20.4023 19.4375 20.4023H16.625V10.0898L11.9375 5.40234H5.375V2.58984C5.375 2.3412 5.47377 2.10275 5.64959 1.92693C5.8254 1.75112 6.06386 1.65234 6.3125 1.65234H15.6875L20.375 6.33984Z"
-                                        fill="#6F6C8F"
-                                      />
-                                      <path
-                                        d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
-                                        fill="#6F6C8F"
-                                      />
-                                    </svg>
-                                    <div className="flex flex-col items-start w-full">
-                                      <span className="text-[13px] font-medium leading-[20px] text-n600 overflow-hidden w-[90%] text-ellipsis text-nowrap">
-                                        {attach.file_name}
-                                      </span>
-                                      <span className="text-[12px] leading-[20px] text-n600">
-                                        {"22.5 mb"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  {getRole() !== 2 && (
-                                    <span
-                                      className=" w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
+                            workorder.attachments
+                              .filter((attach) =>
+                                attachFiles.every((af) => af.id !== attach.id)
+                              )
+                              .map((attach, index) => {
+                                return (
+                                  <div
+                                    key={index}
+                                    className=" cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px] group"
+                                    onClick={() => {
+                                      downloadFile(
+                                        attach.id,
+                                        "download-workorder-attachment",
+                                        attach.file_name,
+                                        (progress) => {
+                                          setWorkorder((prev) => {
+                                            if (!prev) return null;
 
-                                        upload_or_delete_workorder_files_for_attachements(
-                                          workorder.workorder.id,
-                                          attach.id,
-                                          "delete",
-                                          setIsLoading,
-                                          fetchOneWorkOrder
-                                        );
-                                      }}
-                                    >
+                                            return {
+                                              ...prev,
+                                              attachments: prev.attachments.map(
+                                                (att) =>
+                                                  att.id === attach.id
+                                                    ? {
+                                                        ...att,
+                                                        downloadProgress: `${progress.toFixed(
+                                                          0
+                                                        )}`,
+                                                      }
+                                                    : att
+                                              ),
+                                            };
+                                          });
+                                        },
+                                        () => {
+                                          // Reset progress to 0% after download is complete
+                                          setWorkorder((prev) => {
+                                            if (!prev) return null;
+
+                                            return {
+                                              ...prev,
+                                              attachments: prev.attachments.map(
+                                                (att) =>
+                                                  att.id === attach.id
+                                                    ? {
+                                                        ...att,
+                                                        downloadProgress: `0`,
+                                                      }
+                                                    : att
+                                              ),
+                                            };
+                                          });
+                                        }
+                                      );
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-[9px] w-[90%]">
+                                      {attach.downloadProgress &&
+                                        attach.downloadProgress !== "0" && (
+                                          <CircularProgress
+                                            progress={parseFloat(
+                                              attach.downloadProgress || "0"
+                                            )}
+                                          />
+                                        )}
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
-                                        width="17"
-                                        height="18"
-                                        viewBox="0 0 18 20"
+                                        width="22"
+                                        height="26"
+                                        viewBox="0 0 22 26"
                                         fill="none"
                                       >
                                         <path
-                                          fill-rule="evenodd"
-                                          clip-rule="evenodd"
-                                          d="M15.412 4.5L14.611 18.117C14.5812 18.6264 14.3577 19.1051 13.9865 19.4551C13.6153 19.8052 13.1243 20.0001 12.614 20H5.386C4.87575 20.0001 4.38475 19.8052 4.0135 19.4551C3.64226 19.1051 3.41885 18.6264 3.389 18.117L2.59 4.5H0.5V3.5C0.5 3.36739 0.552679 3.24021 0.646447 3.14645C0.740215 3.05268 0.867392 3 1 3H17C17.1326 3 17.2598 3.05268 17.3536 3.14645C17.4473 3.24021 17.5 3.36739 17.5 3.5V4.5H15.412ZM7 0.5H11C11.1326 0.5 11.2598 0.552679 11.3536 0.646447C11.4473 0.740215 11.5 0.867392 11.5 1V2H6.5V1C6.5 0.867392 6.55268 0.740215 6.64645 0.646447C6.74021 0.552679 6.86739 0.5 7 0.5ZM6 7L6.5 16H8L7.6 7H6ZM10.5 7L10 16H11.5L12 7H10.5Z"
-                                          fill="#db2323"
+                                          opacity="0.2"
+                                          d="M20.375 6.33984V19.4648C20.375 19.7135 20.2762 19.9519 20.1004 20.1278C19.9246 20.3036 19.6861 20.4023 19.4375 20.4023H16.625V10.0898L11.9375 5.40234H5.375V2.58984C5.375 2.3412 5.47377 2.10275 5.64959 1.92693C5.8254 1.75112 6.06386 1.65234 6.3125 1.65234H15.6875L20.375 6.33984Z"
+                                          fill="#6F6C8F"
+                                        />
+                                        <path
+                                          d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
+                                          fill="#6F6C8F"
                                         />
                                       </svg>
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })}
+                                      <div className="flex flex-col items-start w-full">
+                                        <span className="text-[13px] font-medium leading-[20px] text-n600 overflow-hidden w-[90%] text-ellipsis text-nowrap">
+                                          {attach.file_name}
+                                        </span>
+                                        <span className="text-[12px] leading-[20px] text-n600">
+                                          {"22.5 mb"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    {getRole() !== 2 && (
+                                      <span
+                                        className=" w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+
+                                          upload_or_delete_workorder_files_for_attachements(
+                                            workorder.workorder.id,
+                                            attach.id,
+                                            "delete",
+                                            setIsLoading,
+                                            fetchOneWorkOrder
+                                          );
+                                        }}
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="17"
+                                          height="18"
+                                          viewBox="0 0 18 20"
+                                          fill="none"
+                                        >
+                                          <path
+                                            fill-rule="evenodd"
+                                            clip-rule="evenodd"
+                                            d="M15.412 4.5L14.611 18.117C14.5812 18.6264 14.3577 19.1051 13.9865 19.4551C13.6153 19.8052 13.1243 20.0001 12.614 20H5.386C4.87575 20.0001 4.38475 19.8052 4.0135 19.4551C3.64226 19.1051 3.41885 18.6264 3.389 18.117L2.59 4.5H0.5V3.5C0.5 3.36739 0.552679 3.24021 0.646447 3.14645C0.740215 3.05268 0.867392 3 1 3H17C17.1326 3 17.2598 3.05268 17.3536 3.14645C17.4473 3.24021 17.5 3.36739 17.5 3.5V4.5H15.412ZM7 0.5H11C11.1326 0.5 11.2598 0.552679 11.3536 0.646447C11.4473 0.740215 11.5 0.867392 11.5 1V2H6.5V1C6.5 0.867392 6.55268 0.740215 6.64645 0.646447C6.74021 0.552679 6.86739 0.5 7 0.5ZM6 7L6.5 16H8L7.6 7H6ZM10.5 7L10 16H11.5L12 7H10.5Z"
+                                            fill="#db2323"
+                                          />
+                                        </svg>
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
 
                           {attachFiles.length !== 0 &&
                             attachFiles.map((attach, index) => {
                               return (
-                                <UploadingFile
-                                  key={index}
-                                  progress={attach.progress}
-                                  file={attach.file}
-                                />
+                                <div className="sm:w-[46%]" key={index}>
+                                  <UploadingFile
+                                    key={index}
+                                    progress={attach.progress}
+                                    file={attach.file}
+                                  />
+                                </div>
                               );
                             })}
                           {getRole() !== 2 && (
@@ -1243,16 +1296,67 @@ const MissionDetails = () => {
                             .map((report) => {
                               return (
                                 <div
-                                  className="cursor-pointer sm:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px]"
+                                  className="cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px]"
                                   onClick={() => {
                                     downloadFile(
                                       report.id,
                                       "download-workorder-report",
-                                      report.file_name
+                                      report.file_name,
+                                      (progress) => {
+                                        console.log(
+                                          `Download progress: ${progress.toFixed(
+                                            2
+                                          )}%`
+                                        );
+                                        // You can update the progress in the state to show it in the UI
+                                        setWorkorder((prev) => {
+                                          if (!prev) return null;
+
+                                          return {
+                                            ...prev,
+                                            reports: prev.reports?.map((rep) =>
+                                              rep.id === report.id
+                                                ? {
+                                                    ...rep,
+                                                    downloadProgress: `${progress.toFixed(
+                                                      0
+                                                    )}`,
+                                                  }
+                                                : rep
+                                            ),
+                                          };
+                                        });
+                                      },
+                                      () => {
+                                        // Reset progress to 0% after download is complete
+                                        setWorkorder((prev) => {
+                                          if (!prev) return null;
+
+                                          return {
+                                            ...prev,
+                                            reports: prev.reports?.map((rep) =>
+                                              rep.id === report.id
+                                                ? {
+                                                    ...rep,
+                                                    downloadProgress: `0`,
+                                                  }
+                                                : rep
+                                            ),
+                                          };
+                                        });
+                                      }
                                     );
                                   }}
                                 >
                                   <div className="flex items-center gap-[9px] w-full">
+                                    {report.downloadProgress &&
+                                      report.downloadProgress !== "0" && (
+                                        <CircularProgress
+                                          progress={parseFloat(
+                                            report.downloadProgress || "0"
+                                          )}
+                                        />
+                                      )}
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
                                       width="22"
@@ -1297,7 +1401,7 @@ const MissionDetails = () => {
                         {workorder.workorder.status !== 3 &&
                           workorder.workorder.status !== 5 && (
                             <div
-                              className="flex flex-col items-start gap-[8px]"
+                              className="flex flex-col items-start gap-[8px] w-full sm:w-fit"
                               onDragOver={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -1346,7 +1450,7 @@ const MissionDetails = () => {
                               />
                               <label
                                 htmlFor="report"
-                                className="cursor-pointer w-fit py-[16px] px-[28px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
+                                className="cursor-pointer w-full sm:w-fit py-[16px] px-[28px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
                               >
                                 <span className="text-[12px] text-n600 font-medium leading-[13px] px-[5px] text-center flex flex-col items-center">
                                   Drag & drop your files here or{" "}
@@ -1411,16 +1515,71 @@ const MissionDetails = () => {
                               .map((certificate) => {
                                 return (
                                   <div
-                                    className="cursor-pointer sm:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px]"
+                                    className="cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px]"
                                     onClick={() => {
                                       downloadFile(
                                         certificate.id,
-                                        "download-workorder-report",
-                                        certificate.file_name
+                                        "download-workorder-acceptance-certificate",
+                                        certificate.file_name,
+                                        (progress) => {
+                                          console.log(
+                                            `Download progress: ${progress.toFixed(
+                                              2
+                                            )}%`
+                                          );
+                                          setWorkorder((prev) => {
+                                            if (!prev) return null;
+
+                                            return {
+                                              ...prev,
+                                              acceptance_certificates:
+                                                prev.acceptance_certificates?.map(
+                                                  (cert) =>
+                                                    cert.id === certificate.id
+                                                      ? {
+                                                          ...cert,
+                                                          downloadProgress: `${progress.toFixed(
+                                                            0
+                                                          )}`,
+                                                        }
+                                                      : cert
+                                                ),
+                                            };
+                                          });
+                                        },
+                                        () => {
+                                          setWorkorder((prev) => {
+                                            if (!prev) return null;
+
+                                            return {
+                                              ...prev,
+                                              acceptance_certificates:
+                                                prev.acceptance_certificates?.map(
+                                                  (cert) =>
+                                                    cert.id === certificate.id
+                                                      ? {
+                                                          ...cert,
+                                                          downloadProgress: `0`,
+                                                        }
+                                                      : cert
+                                                ),
+                                            };
+                                          });
+                                        }
                                       );
                                     }}
                                   >
-                                    <div className="flex items-center gap-[9px]">
+                                    <div className="flex items-center gap-[9px] w-full">
+                                      {certificate.downloadProgress &&
+                                        certificate.downloadProgress !==
+                                          "0" && (
+                                          <CircularProgress
+                                            progress={parseFloat(
+                                              certificate.downloadProgress ||
+                                                "0"
+                                            )}
+                                          />
+                                        )}
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="22"
@@ -1438,8 +1597,8 @@ const MissionDetails = () => {
                                           fill="#6F6C8F"
                                         />
                                       </svg>
-                                      <div className="flex flex-col items-start">
-                                        <span className="text-[13px] font-medium leading-[20px] text-n600 mb-2">
+                                      <div className="flex flex-col items-start w-full">
+                                        <span className="text-[13px] font-medium leading-[20px] text-n600 mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap">
                                           {certificate.file_name}
                                         </span>
                                         <span
@@ -1471,7 +1630,7 @@ const MissionDetails = () => {
                           {acceptenceFile?.length > 0 &&
                             acceptenceFile.map((acceptence, index) => {
                               return (
-                                <div className="w-[25%]" key={index}>
+                                <div className="sm:w-[48%] lg:w-[24%]" key={index}>
                                   <UploadingFile
                                     progress={acceptence.progress}
                                     file={acceptence.file}
@@ -1481,12 +1640,12 @@ const MissionDetails = () => {
                             })}
                           {workorder.workorder.status < 4 && (
                             <div
-                              className="cursor-pointer w-fit py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
+                              className="cursor-pointer w-full sm:w-fit py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
                               onClick={() => {
                                 handleOpenDialog(addCertificatDialogRef);
                               }}
                             >
-                              <span className="text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
+                              <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
                                 Add new certificat
                               </span>
                             </div>

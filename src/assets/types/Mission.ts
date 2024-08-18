@@ -6,7 +6,7 @@
 
 export interface ReqMission {
   title: string;
-  id: number | undefined;
+  id: string | undefined;
   priority: 0 | 1 | 2 | 3;
   description: string;
   require_acceptence: boolean; // False by default | Not required
@@ -17,7 +17,7 @@ export interface ReqMission {
 
 
 export interface ResMission {
-  id: number;
+  id: string;
   title: string;
   priority: 0 | 1 | 2 | 3;
   status: 0 | 1 | 2 | 3 | 4 | 5;
@@ -36,9 +36,10 @@ export type ResFile ={
     file_name: string,
     uploaded_at:Date,
     workorder: number,
+    downloadProgress?: string
 }
 
-type ReqAccFile = ResFile & {
+export type ReqAccFile = ResFile & {
   type: 1 | 2 | 3;
 };
 
@@ -46,7 +47,7 @@ type ReqAccFile = ResFile & {
 
 export interface ResOfOneMission {
   workorder: {
-    id: number;
+    id: string;
     title: string;
     priority: 0 | 1 | 2 | 3 |number;
     status: 0 | 1 | 2 | 3 | 4 | 5;

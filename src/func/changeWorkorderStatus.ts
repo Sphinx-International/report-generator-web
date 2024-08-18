@@ -1,7 +1,7 @@
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 export const handle_Assignment_and_execute = async (
-  workorder_id: number,
+  workorder_id: string,
   endPointPah:string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
@@ -53,7 +53,7 @@ export const handle_Assignment_and_execute = async (
 };
 
 export const handle_Validate_and_Acceptence = async (
-  workorder_id: number,
+  workorder_id: string,
   endPointPah: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void
@@ -98,7 +98,7 @@ export const handle_Validate_and_Acceptence = async (
 };
 
 export const handle_add_or_delete_mailedPerson = async (
-  workorder_id: number,
+  workorder_id: string,
   Email: string | number,
   mail_method: "add" | "delete",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,

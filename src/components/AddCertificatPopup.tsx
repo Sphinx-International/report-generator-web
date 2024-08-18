@@ -19,7 +19,7 @@ const certeficatTypes: CerteficatType[] = [
 ];
 
 interface AddCertificatProps {
-  workorderId: number;
+  workorderId: string;
   acceptenceFile: TheUploadingFile[];
   setAcceptenceFile: React.Dispatch<React.SetStateAction<TheUploadingFile[]>>;
   fetchOneWorkOrder: () => void;

@@ -5,7 +5,7 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, object>((_, ref) => {
   return (
     <dialog
       ref={ref}
-      className="bg-white rounded-[40px] p-[32px] flex flex-col items-center gap-[20px] sm:w-[40%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"
+      className="bg-white rounded-[40px] p-[32px] hidden flex-col items-center gap-[20px] sm:w-[40%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"
     >
       <h6 className="text-[20px] leading-[20px] font-semibold text-n800">
         Create group

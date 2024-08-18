@@ -13,7 +13,7 @@ import {
   validateForm2,
   FormErrors,
 } from "../func/missionsValidation";
-import { formatFileSize } from "../func/formatFileSize";
+// import { formatFileSize } from "../func/formatFileSize";
 import UploadingFile from "./uploadingFile";
 import { RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
@@ -403,7 +403,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       ID
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="id"
                       id="id"
                       value={formValues.id}

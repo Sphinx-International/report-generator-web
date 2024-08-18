@@ -4,7 +4,7 @@ import { TheUploadingFile } from "../assets/types/Mission";
 
   
 export const upload_or_delete_workorder_files_for_attachements = async (
-    workorder_id: number,
+    workorder_id: string,
     file_id: number,
     method: "add" | "delete",
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
@@ -196,7 +196,7 @@ const uploadRemainingChunks = async (
 
 
 export const handle_chunck = async (
-  workorder_id: number,
+  workorder_id: string,
   fileType: "attachements" |"report" |"certificate",
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,

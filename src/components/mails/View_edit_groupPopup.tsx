@@ -8,7 +8,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, object>((_, ref) => {
   return (
     <dialog
       ref={ref}
-      className="bg-white rounded-[40px] p-[32px] flex flex-col items-center gap-[20px] sm:w-[48%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"
+      className="bg-white rounded-[40px] p-[32px] hidden flex-col items-center gap-[20px] sm:w-[48%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"
     >
       <div className="flex flex-col gap-[25px] w-full">
         <div className="flex items-center justify-between w-full">
