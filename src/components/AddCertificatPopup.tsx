@@ -5,23 +5,15 @@ import { useState } from "react";
 import { TheUploadingFile } from "../assets/types/Mission";
 import UploadingFile from "./uploadingFile";
 import { RotatingLines } from "react-loader-spinner";
+import { certeficatTypes } from "../assets/CertificatTypes";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Redux/store";
+import { useSelector } from "react-redux";
+import { RootState } from "../Redux/store";
 
- type CerteficatType ={
-  name:string,
-  color:string,
-  type: 1 | 2 | 3
-}
-
-const certeficatTypes: CerteficatType[] = [
-  { name: "Rejected", color: "#DB2C2C", type:3 },
-  { name: "Accepted with reserve", color: "#FFAA29", type:2 },
-  { name: "Accepted", color: "#48C1B5", type:1 },
-];
 
 interface AddCertificatProps {
   workorderId: string;
-  acceptenceFile: TheUploadingFile[];
-  setAcceptenceFile: React.Dispatch<React.SetStateAction<TheUploadingFile[]>>;
   fetchOneWorkOrder: () => void;
 }
 
@@ -31,9 +23,13 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
     const [isLoading, setIsLoading] = useState(false);
     const [file, setFile] = useState<TheUploadingFile>();
     const [certType, setCertType] = useState<1| 2 | 3>(1);
+    const dispatch = useDispatch<AppDispatch>();
+
+    const uploadingacceptenceFiles = useSelector(
+      (state: RootState) => state.uploadingFiles.acceptenceFiles
+    );
 
 
-   // console.log(props.acceptenceFile)
 
     return (
       <dialog
@@ -48,9 +44,10 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
             Choose certeficat type
           </span>
           <div className="flex items-center gap-[7px]">
-            {certeficatTypes.map((type) => {
+            {certeficatTypes.map((type, index) => {
               return (
                 <span
+                  key={index}
                   className={`cursor-pointer px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`
                 }
                 style={{backgroundColor: type.type === certType ?  `${type.color}`: "white", color: type.type === certType ? "white": `${type.color}`, border: `solid 1px ${type.color}`}}
@@ -65,7 +62,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
         {file && !isLoading ? (
           <UploadingFile
             progress={
-              props.acceptenceFile[props.acceptenceFile.length - 1]?.progress
+              uploadingacceptenceFiles[uploadingacceptenceFiles.length - 1]?.progress
             } 
             file={file.file}
           />
@@ -86,12 +83,13 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                 Array.from(files).forEach((file) => {
                   setFile({ file });
                   handle_chunck(
+                    dispatch,
                     props.workorderId,
                     "certificate",
                     file,
                     setIsLoading,
-                    props.setAcceptenceFile,
-                    props.fetchOneWorkOrder
+                    props.fetchOneWorkOrder,
+                    certType
                   );
                 });
               }
@@ -108,11 +106,11 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                 if (file) {
                   setFile({ file });
                   handle_chunck(
+                    dispatch,
                     props.workorderId,
                     "certificate",
                     file,
                     setIsLoading,
-                    props.setAcceptenceFile,
                     props.fetchOneWorkOrder,
                     certType
                   );

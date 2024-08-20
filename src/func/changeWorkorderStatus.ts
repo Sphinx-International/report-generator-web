@@ -2,9 +2,10 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 
 export const handle_Assignment_and_execute = async (
   workorder_id: string,
-  endPointPah:string,
+  endPointPah: string,
+  method: "PUT" | "PATCH",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  fetchOneWorkOrder: () => void,
+  fetchOneWorkOrder?: () => void,
   engineer_id?: string
 ) => {
   const token =
@@ -16,12 +17,15 @@ export const handle_Assignment_and_execute = async (
   setIsLoading(true);
 
   // Create the request body based on the presence of engineer_id
-  const requestBody = engineer_id
-    ? JSON.stringify({ workorder_id, engineer_id })
-    : JSON.stringify({ workorder_id });
+  const requestBody =
+    method === "PATCH"
+      ? JSON.stringify({ id: workorder_id, assign_to: engineer_id })
+      : engineer_id
+      ? JSON.stringify({ workorder_id, engineer_id })
+      : JSON.stringify({ workorder_id });
   try {
     const response = await fetch(`http://${baseUrl}/workorder/${endPointPah}`, {
-      method: "PUT",
+      method,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Token ${token}`,
@@ -29,13 +33,13 @@ export const handle_Assignment_and_execute = async (
       body: requestBody,
     });
 
-
-
-      console.log(requestBody)
+    console.log(requestBody);
     if (response) {
       switch (response.status) {
         case 200:
-          fetchOneWorkOrder();
+          if (fetchOneWorkOrder) {
+            fetchOneWorkOrder();
+          }
           break;
         case 400:
           console.log("verify your data");
@@ -64,16 +68,16 @@ export const handle_Validate_and_Acceptence = async (
     console.error("No token found");
     return;
   }
-  console.log(JSON.stringify({workorder_id}))
+  console.log(JSON.stringify({ workorder_id }));
   setIsLoading(true);
   try {
     const response = await fetch(`http://${baseUrl}/workorder/${endPointPah}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
         Authorization: `Token ${token}`,
       },
-      body: JSON.stringify({workorder_id}),
+      body: JSON.stringify({ workorder_id }),
     });
 
     if (response) {
@@ -110,8 +114,8 @@ export const handle_add_or_delete_mailedPerson = async (
   if (!token) {
     console.error("No token found");
     return;
-  } 
-  setIsLoading(true)
+  }
+  setIsLoading(true);
   try {
     const response = await fetch(
       `http://${baseUrl}/workorder/update-workorder-mails`,
@@ -126,7 +130,7 @@ export const handle_add_or_delete_mailedPerson = async (
     );
     if (response) {
       console.log(response.status);
-      
+
       switch (response.status) {
         case 200:
           setVisibleCoordPopup(false);
@@ -142,7 +146,7 @@ export const handle_add_or_delete_mailedPerson = async (
     }
   } catch (err) {
     console.error("Error submitting form", err);
-  } finally{
-    setIsLoading(false)
+  } finally {
+    setIsLoading(false);
   }
 };

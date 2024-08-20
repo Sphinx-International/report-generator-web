@@ -1,8 +1,9 @@
 const baseUrl = import.meta.env.VITE_BASE_URL;
-import { TheUploadingFile } from "../assets/types/Mission";
-
-
+import { AppDispatch } from "../Redux/store";
+import { addUploadingFile,removeUploadingFile,updateFileProgress } from "../Redux/slices/uploadingFilesSlice";
   
+
+
 export const upload_or_delete_workorder_files_for_attachements = async (
     workorder_id: string,
     file_id: number,
@@ -57,11 +58,8 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   };
 
 
-
-
-
   export const upload_workorder_files = async (
-    workorder_id: number,
+    workorder_id: string,
     file_id: number,
     endPointPath: string,
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
@@ -118,12 +116,12 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   };
 
 
-
 const uploadRemainingChunks = async (
+  dispatch: AppDispatch,
   file: File,
+  fileType: "attachements" |"report" |"certificate",
   fileId: number,
   totalChunks: number,
-  setFiles: React.Dispatch<React.SetStateAction<TheUploadingFile[]>>
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -153,18 +151,10 @@ const uploadRemainingChunks = async (
           body: formData,
         }
       );
-      console.log("------------------------------------")
-      console.log(response.status)
       if (response.status === 200) {
         const progress = ((index + 1) / totalChunks) * 100;
 
-        setFiles((prevFiles) =>
-          prevFiles.map((file) =>
-            file.id === fileId
-              ? { ...file, progress: Number(progress.toFixed(2)) }
-              : file
-          )
-        );
+         dispatch(updateFileProgress({ type:fileType , fileId , progress}))
 
         console.log(
           `Chunk ${
@@ -174,13 +164,8 @@ const uploadRemainingChunks = async (
           )}%`
         );
       } else if (response.status === 201) {
-        setFiles((prevFiles) =>
-            prevFiles.map((file) =>
-              file.id === fileId
-                ? { ...file, progress: 100.00 }
-                : file
-            )
-          );
+
+        dispatch(updateFileProgress({ type:fileType , fileId , progress: 100.00}))
         break;
       } else {
         console.error("Failed to upload chunk");
@@ -193,14 +178,12 @@ const uploadRemainingChunks = async (
   }
 };
 
-
-
 export const handle_chunck = async (
+  dispatch: AppDispatch,  // Add dispatch as a parameter
   workorder_id: string,
   fileType: "attachements" |"report" |"certificate",
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  setFiles: React.Dispatch<React.SetStateAction<TheUploadingFile[]>>,
   fetchOneWorkOrder: () => void,
   certificateType?: 1 | 2 | 3 
 ) => {
@@ -236,10 +219,9 @@ export const handle_chunck = async (
     if (response.ok) {
       const data = await response.json();
       const fileId = data.id;
-      setFiles((prevFormValues) => [
-        ...prevFormValues,
-        { id: fileId, progress: 0, file },
-      ]);
+
+      // here 
+      dispatch(addUploadingFile({type:fileType,file:{ id: fileId, progress: 0, file }}))
       setIsLoading(false);
       if (fileType === "attachements") {
         upload_or_delete_workorder_files_for_attachements(workorder_id,fileId,"add",setIsLoading,fetchOneWorkOrder)
@@ -248,11 +230,10 @@ export const handle_chunck = async (
 
       }
       if (chunks > 1) {
-        await uploadRemainingChunks(file, fileId, chunks,setFiles);
+        await uploadRemainingChunks( dispatch, file, fileType, fileId, chunks);
       }
-      setFiles((prevFiles) =>
-        prevFiles.filter((file) => file.id !== fileId)
-      );
+      dispatch(removeUploadingFile({type:fileType,fileId}))
+
        
     } else {
       console.error("Failed to upload first chunk");

@@ -22,11 +22,17 @@ import {
   upload_or_delete_workorder_files_for_attachements,
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
-import { TheUploadingFile } from "../assets/types/Mission";
 import { formatDate } from "../func/formatDatr&Time";
 import AddCertificatPopup from "../components/AddCertificatPopup";
 import { handleOpenDialog } from "../func/openDialog";
 import CircularProgress from "../components/CircleProgress";
+import { certeficatTypes } from "../assets/CertificatTypes";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Redux/store";
+import { RootState } from "../Redux/store";
+
+
 type WorkorderProperties = {
   title?: string;
   id?: string;
@@ -37,6 +43,11 @@ type WorkorderProperties = {
 const MissionDetails = () => {
   const { id } = useParams();
 
+  const dispatch = useDispatch<AppDispatch>();
+  const uploadingFiles = useSelector(
+    (state: RootState) => state.uploadingFiles
+  );
+console.log(uploadingFiles)
   const [visibleEngPopup, setVisibleEngPopup] = useState<boolean>(false);
   const [visibleCoordPopup, setVisibleCoordPopup] = useState<boolean>(false);
   const addCertificatDialogRef = useRef<HTMLDialogElement>(null);
@@ -44,10 +55,6 @@ const MissionDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingFinalize, setisLoadingFinalize] = useState(false);
   const [isLoadingMaildPersons, setIsLoadingMaildPersons] = useState(false);
-
-  const [attachFiles, setAttachFiles] = useState<TheUploadingFile[]>([]);
-  const [reportFile, setReportFile] = useState<TheUploadingFile[]>([]);
-  const [acceptenceFile, setAcceptenceFile] = useState<TheUploadingFile[]>([]);
 
   const [searchQueryEng, setSearchQueryEng] = useState<string>("");
   const [searchQueryCoord, setSearchQueryCoord] = useState<string>("");
@@ -90,6 +97,9 @@ const MissionDetails = () => {
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
   const [isEditing_desc, setIsEditing_desc] = useState(false);
   const [showPriority, setShowPriority] = useState(false);
+
+  const [certType, setCertType] = useState<1 | 2 | 3>(1);
+  const [showEditCertificatType, setShowEditCertificatType] = useState(false);
 
   useEffect(() => {
     const certfDialog = addCertificatDialogRef.current;
@@ -137,6 +147,7 @@ const MissionDetails = () => {
         await handle_Assignment_and_execute(
           workorder_id,
           "execute-workorder",
+          "PUT",
           setIsLoading,
           fetchOneWorkOrder
         );
@@ -272,7 +283,6 @@ const MissionDetails = () => {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchOneWorkOrder();
   }, [fetchOneWorkOrder]);
@@ -583,13 +593,143 @@ const MissionDetails = () => {
                     )}
                   </div>
                 </div>
+
                 <div className="w-full flex flex-col items-start gap-[12px]">
                   {workorder.workorder.assigned_to !== null ? (
-                    <div className="flex items-center gap-[12px]">
-                      <img src="/avatar.png" alt="avatar" />
+                    <div className="flex items-center gap-[12px] relative">
+                      <div
+                        className="relative w-[41px] h-[41px] rounded-[50%]"
+                        onClick={() => {
+                          setVisibleEngPopup(!visibleEngPopup);
+                        }}
+                      >
+                        <img
+                          src="/avatar.png"
+                          alt="avatar"
+                          className="rounded-[50%] w-full h-full relative z-0"
+                        />
+                        <span className="bg-550 bg-opacity-0 w-full h-full absolute z-30 top-0 group rounded-[50%] hover:bg-opacity-40 cursor-pointer flex items-center justify-center">
+                          <svg
+                            className="opacity-0 transition-opacity duration-100 ease-in-out group-hover:opacity-100"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="white"
+                          >
+                            <title>reassign</title>
+                            <path d="M15.65 4.35A8 8 0 1 0 17.4 13h-2.22a6 6 0 1 1-1-7.22L11 9h7V2z" />
+                          </svg>
+                        </span>
+                      </div>
                       <span className="text-[18px] text-n600 font-medium leading-[27px]">
                         {workorder.workorder.assigned_to}
                       </span>
+                      {visibleEngPopup && (
+                        <div className="sm:w-[400px] w-[280px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
+                          <div className=" relative w-full">
+                            <input
+                              type="search"
+                              name=""
+                              id=""
+                              value={searchQueryEng}
+                              onChange={(eo) => {
+                                setSearchQueryEng(eo.target.value);
+                              }}
+                              className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
+                              placeholder="Search"
+                            />
+                            <svg
+                              className="absolute left-[14px] top-[50%] translate-y-[-50%]"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="15"
+                              height="15"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <path
+                                d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
+                                stroke="#6F6C8F"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                              <path
+                                d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
+                                stroke="#6F6C8F"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex flex-col items-start gap-[12px] w-full">
+                            <div className="flex items-center gap-[5px] w-full">
+                              <span className="px-[9px] rounded-[50%] bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[21px] font-semibold">
+                                +
+                              </span>
+                              <span className="text-[14px] text-n600">
+                                Create new user
+                              </span>
+                            </div>
+                            {loaderAssignSearch ? (
+                              <div className="w-full py-[10px] flex items-center justify-center">
+                                <RotatingLines
+                                  strokeWidth="4"
+                                  strokeColor="#4A3AFF"
+                                  width="20"
+                                />
+                              </div>
+                            ) : searchQueryEng !== "" ? (
+                              searchEngs.length > 0 ? (
+                                searchEngs.map((user, index) => {
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                      onClick={() => {
+                                        handle_Assignment_and_execute(
+                                          workorder.workorder.id,
+                                          "reassign-workorder",
+                                          "PATCH",
+                                          setIsLoading,
+                                          undefined,
+                                          user.email
+                                        );
+                                        setWorkorder((prevState) => ({
+                                          ...prevState!,
+                                          workorder: {
+                                            ...prevState!.workorder,
+                                            assigned_to: user.email,
+                                          },
+                                        }));
+                                        setVisibleEngPopup(false);
+                                      }}
+                                    >
+                                      <img
+                                        src="/avatar.png"
+                                        alt="avatar"
+                                        className="w-[31px] rounded-[50%]"
+                                      />
+                                      <span className="text-[14px] text-n600">
+                                        {user.first_name} {user.last_name}
+                                      </span>
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <span className="text-n700 w-full flex justify-center text-[14px]">
+                                  no result founded
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-n700 w-full flex justify-center text-[14px]">
+                                search for engineer
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : selectedEng ? (
                     <div className="relative flex items-center gap-[12px]">
@@ -1023,7 +1163,7 @@ const MissionDetails = () => {
                           {workorder.attachments.length > 0 &&
                             workorder.attachments
                               .filter((attach) =>
-                                attachFiles.every((af) => af.id !== attach.id)
+                                uploadingFiles.attachFiles.every((af) => af.id !== attach.id)
                               )
                               .map((attach, index) => {
                                 return (
@@ -1147,8 +1287,8 @@ const MissionDetails = () => {
                                 );
                               })}
 
-                          {attachFiles.length !== 0 &&
-                            attachFiles.map((attach, index) => {
+                          {uploadingFiles.attachFiles.length !== 0 &&
+                            uploadingFiles.attachFiles.map((attach, index) => {
                               return (
                                 <div className="sm:w-[46%]" key={index}>
                                   <UploadingFile
@@ -1175,11 +1315,11 @@ const MissionDetails = () => {
                                 if (files) {
                                   Array.from(files).forEach((file) => {
                                     handle_chunck(
+                                      dispatch,
                                       workorder.workorder.id,
                                       "attachements",
                                       file,
                                       setIsLoading,
-                                      setAttachFiles,
                                       fetchOneWorkOrder
                                     );
                                   });
@@ -1197,11 +1337,11 @@ const MissionDetails = () => {
                                     : null;
                                   if (file) {
                                     handle_chunck(
+                                      dispatch,
                                       workorder.workorder.id,
                                       "attachements",
                                       file,
                                       setIsLoading,
-                                      setAttachFiles,
                                       fetchOneWorkOrder
                                     );
                                   }
@@ -1291,7 +1431,7 @@ const MissionDetails = () => {
                           workorder.reports.length > 0 &&
                           workorder.reports
                             .filter((report) =>
-                              reportFile.every((rf) => rf.id !== report.id)
+                              uploadingFiles.reportFiles.every((rf) => rf.id !== report.id)
                             )
                             .map((report) => {
                               return (
@@ -1387,8 +1527,8 @@ const MissionDetails = () => {
                               );
                             })}
 
-                        {reportFile.length > 0 &&
-                          reportFile.map((report, index) => {
+                        {uploadingFiles.reportFiles.length > 0 &&
+                          uploadingFiles.reportFiles.map((report, index) => {
                             return (
                               <div className="w-[25%]" key={index}>
                                 <UploadingFile
@@ -1416,11 +1556,11 @@ const MissionDetails = () => {
                                 if (files) {
                                   Array.from(files).forEach((file) => {
                                     handle_chunck(
+                                      dispatch,
                                       workorder.workorder.id,
                                       "report",
                                       file,
                                       setIsLoading,
-                                      setAttachFiles,
                                       fetchOneWorkOrder
                                     );
                                   });
@@ -1437,11 +1577,11 @@ const MissionDetails = () => {
                                     : null;
                                   if (file) {
                                     handle_chunck(
+                                      dispatch,
                                       workorder.workorder.id,
                                       "report",
                                       file,
                                       setIsLoading,
-                                      setReportFile,
                                       fetchOneWorkOrder
                                     );
                                   }
@@ -1508,13 +1648,14 @@ const MissionDetails = () => {
                             workorder.acceptance_certificates.length > 0 &&
                             workorder.acceptance_certificates
                               .filter((certificate) =>
-                                acceptenceFile.every(
+                                uploadingFiles.acceptenceFiles.every(
                                   (af) => af.id !== certificate.id
                                 )
                               )
-                              .map((certificate) => {
+                              .map((certificate, index) => {
                                 return (
                                   <div
+                                    key={index}
                                     className="cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px]"
                                     onClick={() => {
                                       downloadFile(
@@ -1597,7 +1738,7 @@ const MissionDetails = () => {
                                           fill="#6F6C8F"
                                         />
                                       </svg>
-                                      <div className="flex flex-col items-start w-full">
+                                      <div className="flex flex-col items-start w-full relative">
                                         <span className="text-[13px] font-medium leading-[20px] text-n600 mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap">
                                           {certificate.file_name}
                                         </span>
@@ -1621,16 +1762,78 @@ const MissionDetails = () => {
                                             `${certificate.uploaded_at}`
                                           )}
                                         </span>
+                                        {workorder.acceptance_certificates
+                                          ?.length === ++index && (
+                                          <div
+                                            className="absolute right-2 top-[80%] translate-y-[-50%]"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                            }}
+                                          >
+                                            <svg
+                                              className="hover:scale-110 transition-all duration-100"
+                                              onClick={() => {
+                                                setShowEditCertificatType(
+                                                  !showEditCertificatType
+                                                );
+                                              }}
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="14"
+                                              height="14"
+                                              viewBox="0 0 14 14"
+                                              fill="none"
+                                            >
+                                              <path
+                                                d="M8.87471 2.55459L11.0224 4.70224M7.44294 12.5769H13.17M1.71588 9.71341L1 12.5769L3.86353 11.8611L12.1577 3.56685C12.4262 3.29835 12.5769 2.93424 12.5769 2.55459C12.5769 2.17494 12.4262 1.81083 12.1577 1.54233L12.0346 1.4192C11.7661 1.15079 11.402 1 11.0224 1C10.6427 1 10.2786 1.15079 10.0101 1.4192L1.71588 9.71341Z"
+                                                stroke="#797C93"
+                                                stroke-width="1.2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                              />
+                                            </svg>
+                                            {showEditCertificatType && (
+                                              <div className="bg-white p-[15px] rounded-[20px] shadow-xl flex items-center flex-col md:flex-row gap-[6px] absolute right-0 top-6">
+                                                {certeficatTypes.map((type) => {
+                                                  return (
+                                                    <span
+                                                      key={index}
+                                                      className={`cursor-pointer text-nowrap px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
+                                                      style={{
+                                                        backgroundColor:
+                                                          type.type === certType
+                                                            ? `${type.color}`
+                                                            : "white",
+                                                        color:
+                                                          type.type === certType
+                                                            ? "white"
+                                                            : `${type.color}`,
+                                                        border: `solid 1px ${type.color}`,
+                                                      }}
+                                                      onClick={() => {
+                                                        setCertType(type.type);
+                                                      }}
+                                                    >
+                                                      {type.name}
+                                                    </span>
+                                                  );
+                                                })}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
                                 );
                               })}
 
-                          {acceptenceFile?.length > 0 &&
-                            acceptenceFile.map((acceptence, index) => {
+                          {uploadingFiles.acceptenceFiles?.length > 0 &&
+                            uploadingFiles.acceptenceFiles.map((acceptence, index) => {
                               return (
-                                <div className="sm:w-[48%] lg:w-[24%]" key={index}>
+                                <div
+                                  className="sm:w-[48%] lg:w-[24%]"
+                                  key={index}
+                                >
                                   <UploadingFile
                                     progress={acceptence.progress}
                                     file={acceptence.file}
@@ -1638,18 +1841,23 @@ const MissionDetails = () => {
                                 </div>
                               );
                             })}
-                          {workorder.workorder.status < 4 && (
-                            <div
-                              className="cursor-pointer w-full sm:w-fit py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
-                              onClick={() => {
-                                handleOpenDialog(addCertificatDialogRef);
-                              }}
-                            >
-                              <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
-                                Add new certificat
-                              </span>
-                            </div>
-                          )}
+                          {(workorder.workorder.status < 4 &&
+  workorder.acceptance_certificates !== undefined &&
+  (workorder.acceptance_certificates === null ||
+    (workorder.acceptance_certificates.length > 0 &&
+     workorder.acceptance_certificates[workorder.acceptance_certificates.length - 1].type !== 1)
+  )) && (
+    <div
+                                  className="cursor-pointer w-full sm:w-fit py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
+                                  onClick={() => {
+                                    handleOpenDialog(addCertificatDialogRef);
+                                  }}
+                                >
+                                  <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
+                                    Add new certificat
+                                  </span>
+                                </div>
+                              )}
                         </div>
                         <div className="flex justify-end w-full">
                           {workorder.workorder.status < 4 && (
@@ -1715,6 +1923,7 @@ const MissionDetails = () => {
                     handle_Assignment_and_execute(
                       workorder.workorder.id,
                       "assign-workorder",
+                      "PUT",
                       setIsLoading,
                       fetchOneWorkOrder,
                       selectedEng!
@@ -1726,7 +1935,7 @@ const MissionDetails = () => {
                       visible={true}
                       width="20"
                       strokeWidth="3"
-                      strokeColor="white"
+                      strokeColor="#4A3AFF"
                     />
                   ) : (
                     "Assing"
@@ -1807,8 +2016,6 @@ const MissionDetails = () => {
       <AddCertificatPopup
         ref={addCertificatDialogRef}
         workorderId={workorder!.workorder.id}
-        setAcceptenceFile={setAcceptenceFile}
-        acceptenceFile={acceptenceFile}
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
     </div>

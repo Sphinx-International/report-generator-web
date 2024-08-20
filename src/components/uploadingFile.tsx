@@ -45,7 +45,7 @@ const uploadingFile: React.FC<TheUploadingFile> = (props) => {
         />
       </div>
       <span className="text-[10px] font-semibold leading-[20px] text-primary">
-      {props.progress !== undefined ? props.progress : "100.00"}
+      {props.progress !== undefined ? props.progress : "100%"}
       </span>
     </div>
   </div>

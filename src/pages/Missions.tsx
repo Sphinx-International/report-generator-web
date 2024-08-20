@@ -7,10 +7,10 @@ import MissionPopup from "../components/MissionPopup";
 import WorkOrderStatus from "../components/WorkOrderStatus";
 import WorkOrderpriority from "../components/WorkOrderPriorities";
 import DeletePopup from "../components/DeletePopup";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../Redux/store";
 import { ResMission } from "../assets/types/Mission";
+import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
 import { AppDispatch } from "../Redux/store";
@@ -27,11 +27,9 @@ const Missions = () => {
   );
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
-  const submitMissionDialogRef = useRef<HTMLDialogElement>(null);
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
   const [workorders, setWorkorders] = useState<ResMission[] | null>(null);
-  const isDialogOpen = useSelector((state: RootState) => state.dialog.isOpen);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [totalWorkorders, setTotalWorkorders] = useState(0);
@@ -135,12 +133,8 @@ const Missions = () => {
     } else {
       fetchWorkOrders((currentPage - 1) * limit, limit, filter);
     }
-    const dialog = submitMissionDialogRef.current;
-    if (dialog && isDialogOpen) {
-      dialog.style.display = "flex";
-      dialog.showModal();
-    }
-  }, [isDialogOpen, currentPage]);
+
+  }, [currentPage]);
 
   return (
     <div className="flex w-full md:h-[100vh]">
