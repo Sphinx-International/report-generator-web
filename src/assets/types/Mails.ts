@@ -1,4 +1,4 @@
 export interface Resmail{
-    mail_id:number,
+    id:number,
     email:string
 }

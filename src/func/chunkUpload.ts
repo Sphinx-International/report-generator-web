@@ -197,6 +197,8 @@ export const handle_chunck = async (
   const fileSize = file.size; // File size in bytes
 
   const chunks = Math.ceil(fileSize / chunkSize);
+
+  console.log(chunks)
   // Extract the first chunk
   const firstChunk = file.slice(0, chunkSize);
   const formData = new FormData();

@@ -19,6 +19,10 @@ import { RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
 import handleChange from "../func/handleChangeFormsInput";
+import { addUploadingFile,updateFileProgress,removeUploadingFile } from "../Redux/slices/uploadingFilesSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Redux/store";
+
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface MissionPopupProps {
@@ -29,6 +33,8 @@ type PriorityIndex = 0 | 1 | 2 | 3;
 
 const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
   (props, ref) => {
+    const dispatch = useDispatch<AppDispatch>();
+
     const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2>(1);
 
     const [searchQueryEng, setSearchQueryEng] = useState("");
@@ -301,6 +307,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
           if (response.status === 200) {
             const progress = ((index + 1) / totalChunks) * 100;
+            dispatch(updateFileProgress({ type:"attachements" , fileId , progress}))
 
             updateAttachmentProgress(fileId, Number(progress.toFixed(2)));
             console.log(
@@ -311,6 +318,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
               )}%`
             );
           } else if (response.status === 201) {
+            dispatch(updateFileProgress({ type:"attachements" , fileId , progress: 100.00}))
+
             updateAttachmentProgress(fileId, 100.0);
             break;
           } else {
@@ -372,8 +381,12 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
               { id: fileId, progress: chunks === 1 ? 100.00 : 0, file },
             ],
           }));
+          dispatch(addUploadingFile({type:"attachements",file:{ id: fileId, progress: 0, file }}))
           setIsLoading(false);
           await uploadRemainingChunks(file, fileId, chunks);
+
+          dispatch(removeUploadingFile({type:"attachements",fileId}))
+
         } else {
           console.error("Failed to upload first chunk");
         }

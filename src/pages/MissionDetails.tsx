@@ -32,7 +32,6 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 import { RootState } from "../Redux/store";
 
-
 type WorkorderProperties = {
   title?: string;
   id?: string;
@@ -47,7 +46,7 @@ const MissionDetails = () => {
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
   );
-console.log(uploadingFiles)
+  console.log(uploadingFiles);
   const [visibleEngPopup, setVisibleEngPopup] = useState<boolean>(false);
   const [visibleCoordPopup, setVisibleCoordPopup] = useState<boolean>(false);
   const addCertificatDialogRef = useRef<HTMLDialogElement>(null);
@@ -1163,7 +1162,9 @@ console.log(uploadingFiles)
                           {workorder.attachments.length > 0 &&
                             workorder.attachments
                               .filter((attach) =>
-                                uploadingFiles.attachFiles.every((af) => af.id !== attach.id)
+                                uploadingFiles.attachFiles.every(
+                                  (af) => af.id !== attach.id
+                                )
                               )
                               .map((attach, index) => {
                                 return (
@@ -1288,17 +1289,23 @@ console.log(uploadingFiles)
                               })}
 
                           {uploadingFiles.attachFiles.length !== 0 &&
-                            uploadingFiles.attachFiles.map((attach, index) => {
-                              return (
-                                <div className="sm:w-[46%]" key={index}>
-                                  <UploadingFile
-                                    key={index}
-                                    progress={attach.progress}
-                                    file={attach.file}
-                                  />
-                                </div>
-                              );
-                            })}
+                            uploadingFiles.attachFiles
+                              .filter((attach) =>
+                                workorder.attachments.some(
+                                  (attachment) => attachment.id === attach.id
+                                )
+                              )
+                              .map((attach, index) => {
+                                return (
+                                  <div className="sm:w-[46%]" key={index}>
+                                    <UploadingFile
+                                      key={index}
+                                      progress={attach.progress}
+                                      file={attach.file}
+                                    />
+                                  </div>
+                                );
+                              })}
                           {getRole() !== 2 && (
                             <div
                               className="flex flex-col sm:w-[46%] w-full"
@@ -1431,7 +1438,9 @@ console.log(uploadingFiles)
                           workorder.reports.length > 0 &&
                           workorder.reports
                             .filter((report) =>
-                              uploadingFiles.reportFiles.every((rf) => rf.id !== report.id)
+                              uploadingFiles.reportFiles.every(
+                                (rf) => rf.id !== report.id
+                              )
                             )
                             .map((report) => {
                               return (
@@ -1560,7 +1569,7 @@ console.log(uploadingFiles)
                                       workorder.workorder.id,
                                       "report",
                                       file,
-                                      setIsLoading,
+                                      setisLoadingFinalize,
                                       fetchOneWorkOrder
                                     );
                                   });
@@ -1581,7 +1590,7 @@ console.log(uploadingFiles)
                                       workorder.workorder.id,
                                       "report",
                                       file,
-                                      setIsLoading,
+                                      setisLoadingFinalize,
                                       fetchOneWorkOrder
                                     );
                                   }
@@ -1828,36 +1837,39 @@ console.log(uploadingFiles)
                               })}
 
                           {uploadingFiles.acceptenceFiles?.length > 0 &&
-                            uploadingFiles.acceptenceFiles.map((acceptence, index) => {
-                              return (
-                                <div
-                                  className="sm:w-[48%] lg:w-[24%]"
-                                  key={index}
-                                >
-                                  <UploadingFile
-                                    progress={acceptence.progress}
-                                    file={acceptence.file}
-                                  />
-                                </div>
-                              );
-                            })}
-                          {(workorder.workorder.status < 4 &&
-  workorder.acceptance_certificates !== undefined &&
-  (workorder.acceptance_certificates === null ||
-    (workorder.acceptance_certificates.length > 0 &&
-     workorder.acceptance_certificates[workorder.acceptance_certificates.length - 1].type !== 1)
-  )) && (
-    <div
-                                  className="cursor-pointer w-full sm:w-fit py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
-                                  onClick={() => {
-                                    handleOpenDialog(addCertificatDialogRef);
-                                  }}
-                                >
-                                  <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
-                                    Add new certificat
-                                  </span>
-                                </div>
-                              )}
+                            uploadingFiles.acceptenceFiles.map(
+                              (acceptence, index) => {
+                                return (
+                                  <div
+                                    className="sm:w-[48%] lg:w-[24%]"
+                                    key={index}
+                                  >
+                                    <UploadingFile
+                                      progress={acceptence.progress}
+                                      file={acceptence.file}
+                                    />
+                                  </div>
+                                );
+                              }
+                            )}
+                          {workorder.workorder.status < 4 &&
+                            workorder.acceptance_certificates !== undefined &&
+                            (workorder.acceptance_certificates === null ||
+                              (workorder.acceptance_certificates.length > 0 &&
+                                workorder.acceptance_certificates[
+                                  workorder.acceptance_certificates.length - 1
+                                ].type !== 1)) && (
+                              <div
+                                className="cursor-pointer w-full sm:w-fit py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
+                                onClick={() => {
+                                  handleOpenDialog(addCertificatDialogRef);
+                                }}
+                              >
+                                <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
+                                  Add new certificat
+                                </span>
+                              </div>
+                            )}
                         </div>
                         <div className="flex justify-end w-full">
                           {workorder.workorder.status < 4 && (
