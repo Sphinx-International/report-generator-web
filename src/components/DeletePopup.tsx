@@ -6,7 +6,6 @@ import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-
 interface DeletePopUpProps {
   deleteItems: string[];
   deleteUrl: string
@@ -65,6 +64,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
     
         if (props.deleteUrl === `http://${baseUrl}/account/delete-accounts`) {
           const secondResponse = await fetch(`http://${baseUrl}/workorder/delete-workorders-by-account`, {
+
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",

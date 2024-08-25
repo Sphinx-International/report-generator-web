@@ -6,7 +6,6 @@ import {
 } from "../func/authValidation";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-
 const ResetPassword = () => {
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState(["", "", "", ""]);
@@ -74,6 +73,7 @@ const ResetPassword = () => {
 
     try {
       const response = await fetch(`http://${baseUrl}/account/forget-password`, {
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",

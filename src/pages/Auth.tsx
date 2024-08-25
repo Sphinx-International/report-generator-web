@@ -56,6 +56,7 @@ const Auth = () => {
     setIsLoading(true);
     try {
       const response = await fetch(`http://${baseUrl}/account/login`, {
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",

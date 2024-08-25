@@ -210,6 +210,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           }
         );
 
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+          body: formData,
+        });
+
         if (response.ok) {
           const data = await response.json();
           console.log("Form submitted successfully", data);

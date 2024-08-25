@@ -21,6 +21,7 @@ const SideBar = () => {
     }
     try {
       const response = fetch(`http://${baseUrl}/account/logout`, {
+
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
