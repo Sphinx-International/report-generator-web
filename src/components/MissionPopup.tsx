@@ -19,7 +19,11 @@ import { RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
 import handleChange from "../func/handleChangeFormsInput";
-import { addUploadingFile,updateFileProgress,removeUploadingFile } from "../Redux/slices/uploadingFilesSlice";
+import {
+  addUploadingFile,
+  updateFileProgress,
+  removeUploadingFile,
+} from "../Redux/slices/uploadingFilesSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 
@@ -93,7 +97,11 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       const file = event.target.files?.[0];
 
       if (file) {
-        handle_chunck(file);
+        if (file.size <= 20 * 1024 * 1024) {
+          handle_chunck(file);
+        } else {
+          alert(`${file.name} exceeds the 20MB limit.`);
+        }
       }
     };
 
@@ -167,10 +175,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
       const formData = new FormData();
       formData.append("title", formValues.title);
-      formData.append(
-        "id",
-        formValues.id?.toString() || ""
-      );
+      formData.append("id", formValues.id?.toString() || "");
       formData.append("priority", formValues.priority.toString());
       formData.append("description", formValues.description);
       formData.append(
@@ -258,14 +263,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     useWebSocketSearch({
       searchQuery: searchQueryEng,
-      endpointPath: "engineer",
+      endpointPath: "search-account/engineer",
       setResults: setSearchEngs,
       setLoader: setLoaderAssignSearch,
     });
 
     useWebSocketSearch({
       searchQuery: searchQueryCoord,
-      endpointPath: "coordinator",
+      endpointPath: "search-account/coordinator",
       setResults: setSearchCoords,
       setLoader: setLoaderCoordSearch,
     });
@@ -305,26 +310,43 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             }
           );
 
-          if (response.status === 200) {
-            const progress = ((index + 1) / totalChunks) * 100;
-            dispatch(updateFileProgress({ type:"attachements" , fileId , progress}))
+          switch (response.status) {
+            case 200:
+              {
+                const progress = ((index + 1) / totalChunks) * 100;
+                dispatch(
+                  updateFileProgress({ type: "attachements", fileId, progress })
+                );
 
-            updateAttachmentProgress(fileId, Number(progress.toFixed(2)));
-            console.log(
-              `Chunk ${
-                index + 1
-              } of ${totalChunks} uploaded successfully. Progress: ${progress.toFixed(
-                2
-              )}%`
-            );
-          } else if (response.status === 201) {
-            dispatch(updateFileProgress({ type:"attachements" , fileId , progress: 100.00}))
+                updateAttachmentProgress(fileId, Number(progress.toFixed(2)));
+              }
+              break;
+            case 201:
+              dispatch(
+                updateFileProgress({
+                  type: "attachements",
+                  fileId,
+                  progress: 100.0,
+                })
+              );
 
-            updateAttachmentProgress(fileId, 100.0);
-            break;
-          } else {
-            console.error("Failed to upload chunk");
-            break;
+              updateAttachmentProgress(fileId, 100.0);
+              break;
+
+            case 404:
+              {
+                setformValues((prevValues) => ({
+                  ...prevValues,
+                  attachments: prevValues.attachments.filter(
+                    (attachment) => attachment.id !== fileId
+                  ),
+                }));
+                return;
+              }
+
+            default:
+              console.error("Failed to upload chunk");
+              break;
           }
         } catch (err) {
           console.error(`Error uploading chunk ${index + 1}:`, err);
@@ -370,7 +392,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             body: formData,
           }
         );
-
+        console.log(response.status);
         if (response.ok) {
           const data = await response.json();
           const fileId = data.id;
@@ -378,15 +400,19 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             ...prevFormValues,
             attachments: [
               ...(prevFormValues.attachments || []),
-              { id: fileId, progress: chunks === 1 ? 100.00 : 0, file },
+              { id: fileId, progress: chunks === 1 ? 100.0 : 0, file },
             ],
           }));
-          dispatch(addUploadingFile({type:"attachements",file:{ id: fileId, progress: 0, file }}))
+          dispatch(
+            addUploadingFile({
+              type: "attachements",
+              file: { id: fileId, progress: 0, file },
+            })
+          );
           setIsLoading(false);
           await uploadRemainingChunks(file, fileId, chunks);
 
-          dispatch(removeUploadingFile({type:"attachements",fileId}))
-
+          dispatch(removeUploadingFile({ type: "attachements", fileId }));
         } else {
           console.error("Failed to upload first chunk");
         }
@@ -406,60 +432,57 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         {currentSliderIndex === 1 ? (
           <form className="w-full flex flex-col gap-[30px]">
             <div className="flex items-center flex-col gap-[17.5px] w-full">
-              
-                <div className="flex flex-col sm:flex-row items-start gap-[17px] w-full">
-                                    <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
-                    <label
-                      htmlFor="id"
-                      className="leading-[21px] font-medium ml-[9px] text-n700"
-                    >
-                      ID
-                    </label>
-                    <input
-                      type="text"
-                      name="id"
-                      id="id"
-                      value={formValues.id}
-                      placeholder="Enter id"
-                      className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
-                      onChange={(e) => {
-                        handleChange(e, setformValues);
-                      }}
-                    />
-                    {formErrs.id !== "" && formErrs.title !== undefined && (
-                      <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                        {formErrs.id}
-                      </span>
-                    )}
-                  </div>
-
-
-                  <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
-                    <label
-                      htmlFor="title"
-                      className="leading-[21px] font-medium ml-[9px] text-n700"
-                    >
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      id="title"
-                      value={formValues.title}
-                      placeholder="Enter title"
-                      className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
-                      onChange={(e) => {
-                        handleChange(e, setformValues);
-                      }}
-                    />
-                    {formErrs.title !== "" && formErrs.title !== undefined && (
-                      <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                        {formErrs.title}
-                      </span>
-                    )}
-                  </div>
+              <div className="flex flex-col sm:flex-row items-start gap-[17px] w-full">
+                <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
+                  <label
+                    htmlFor="id"
+                    className="leading-[21px] font-medium ml-[9px] text-n700"
+                  >
+                    ID
+                  </label>
+                  <input
+                    type="text"
+                    name="id"
+                    id="id"
+                    value={formValues.id}
+                    placeholder="Enter id"
+                    className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
+                    onChange={(e) => {
+                      handleChange(e, setformValues);
+                    }}
+                  />
+                  {formErrs.id !== "" && formErrs.title !== undefined && (
+                    <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                      {formErrs.id}
+                    </span>
+                  )}
                 </div>
-              
+
+                <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
+                  <label
+                    htmlFor="title"
+                    className="leading-[21px] font-medium ml-[9px] text-n700"
+                  >
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    id="title"
+                    value={formValues.title}
+                    placeholder="Enter title"
+                    className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
+                    onChange={(e) => {
+                      handleChange(e, setformValues);
+                    }}
+                  />
+                  {formErrs.title !== "" && formErrs.title !== undefined && (
+                    <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                      {formErrs.title}
+                    </span>
+                  )}
+                </div>
+              </div>
 
               <div className="flex flex-col items-start gap-[8px] w-full">
                 <label
@@ -553,9 +576,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                         />
                       </svg>
                       {isFocusedAssignInput && searchQueryEng !== "" && (
-                        <div 
-                        className="rounded-[20px] py-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px] z-50"
-                        style={{ top: '100%', left: 0 }}                        >
+                        <div
+                          className="rounded-[20px] py-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px] z-50"
+                          style={{ top: "100%", left: 0 }}
+                        >
                           {loaderAssignSearch ? (
                             <div className="w-full py-[10px] px-[18px] flex items-center justify-center">
                               <RotatingLines
@@ -917,6 +941,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   type="file"
                   name="attachement"
                   id="attachement"
+                  accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
                   onChange={handleAddingFileChange}
                   className="hidden"
                 />
@@ -951,9 +976,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 ? formValues.attachments?.length > 0 && (
                     <div className="w-full flex flex-col gap-[12px]">
                       {formValues.attachments.map((file, index) => {
-                        console.log(file)
                         return (
-                        <UploadingFile key={index} file={file.file} progress={file.progress}/>
+                          <UploadingFile
+                            key={index}
+                            id={file.id}
+                            file={file.file}
+                            progress={file.progress}
+                          />
                         );
                       })}
                     </div>

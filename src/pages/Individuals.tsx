@@ -5,6 +5,7 @@ import { handleOpenDialog } from "../func/openDialog";
 import { useRef, useState, useEffect } from "react";
 import { Resmail } from "../assets/types/Mails";
 import { RotatingLines } from "react-loader-spinner";
+import EmptyData from "../components/EmptyData";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -18,6 +19,8 @@ const Individuals = () => {
   );
   const [editMail, setEditMail] = useState<Resmail>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  console.log(mails)
 
   const fetchMails = async () => {
     const token =
@@ -227,7 +230,7 @@ const Individuals = () => {
                         setEditMail(mail);
                         handleOpenDialog(editEmailDialogRef);
                       }}
-                      className="cursor-pointer ml-[2px]"
+                      className="cursor-pointer ml-[2px] hover:scale-110"
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
                       height="20"
@@ -244,16 +247,7 @@ const Individuals = () => {
               })}
             </div>
           ) : (
-            <div className="flex flex-col gap-6 items-center justify-center py-2">
-              <img
-                src="/astronaut/astronaut.png"
-                alt="astro"
-                className="w-[280px]"
-              />
-              <h3 className="text-[33px] font-bold text-n800">
-               there is no mails Founded
-              </h3>
-            </div>
+            <EmptyData data="emails"/>
           )}
         </main>
       </div>

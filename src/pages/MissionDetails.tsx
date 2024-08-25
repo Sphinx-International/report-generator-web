@@ -31,6 +31,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 import { RootState } from "../Redux/store";
+import { handle_edit_or_reqUpdate_report } from "../func/otherworkorderApis";
 
 type WorkorderProperties = {
   title?: string;
@@ -46,10 +47,8 @@ const MissionDetails = () => {
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
   );
-  console.log(uploadingFiles);
   const [visibleEngPopup, setVisibleEngPopup] = useState<boolean>(false);
   const [visibleCoordPopup, setVisibleCoordPopup] = useState<boolean>(false);
-  const addCertificatDialogRef = useRef<HTMLDialogElement>(null);
   const [workorder, setWorkorder] = useState<ResOfOneMission | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingFinalize, setisLoadingFinalize] = useState(false);
@@ -74,6 +73,7 @@ const MissionDetails = () => {
   const [undoMessageVisible, setUndoMessageVisible] = useState(false);
   const [undo_req_acc_MessageVisible, setUndo_req_acc_MessageVisible] =
     useState(false);
+  const addCertificatDialogRef = useRef<HTMLDialogElement>(null);
   const undoTimeoutRef = useRef<number | null>(null);
   const undoActionTriggeredRef = useRef(false);
   const undo_req_acc_ActionTriggeredRef = useRef(false);
@@ -99,7 +99,6 @@ const MissionDetails = () => {
 
   const [certType, setCertType] = useState<1 | 2 | 3>(1);
   const [showEditCertificatType, setShowEditCertificatType] = useState(false);
-
   useEffect(() => {
     const certfDialog = addCertificatDialogRef.current;
 
@@ -113,7 +112,7 @@ const MissionDetails = () => {
       }
     };
   }, []);
-
+console.log(workorder)
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
@@ -157,14 +156,14 @@ const MissionDetails = () => {
 
   useWebSocketSearch({
     searchQuery: searchQueryEng,
-    endpointPath: "engineer",
+    endpointPath: "search-account/engineer",
     setResults: setSearchEngs,
     setLoader: setLoaderAssignSearch,
   });
 
   useWebSocketSearch({
     searchQuery: searchQueryCoord,
-    endpointPath: "coordinator",
+    endpointPath: "search-account/coordinator",
     setResults: setSearchCoords,
     setLoader: setLoaderCoordSearch,
   });
@@ -1170,7 +1169,7 @@ const MissionDetails = () => {
                                 return (
                                   <div
                                     key={index}
-                                    className=" cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px] border-[1px] border-n400 rounded-[15px] group"
+                                    className={`cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px]  rounded-[15px] group ${attach.is_completed ? "border-[1px] border-n400" : "border-[2px] border-[#DB2C2C]"}`}
                                     onClick={() => {
                                       downloadFile(
                                         attach.id,
@@ -1241,19 +1240,19 @@ const MissionDetails = () => {
                                         />
                                         <path
                                           d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
-                                          fill="#6F6C8F"
+                                          fill={attach.is_completed ? "#6F6C8F":"#DB2C2C"}
                                         />
                                       </svg>
                                       <div className="flex flex-col items-start w-full">
-                                        <span className="text-[13px] font-medium leading-[20px] text-n600 overflow-hidden w-[90%] text-ellipsis text-nowrap">
+                                        <span className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${attach.is_completed ? "text-n600":"text-[#DB2C2C]"}`}>
                                           {attach.file_name}
                                         </span>
-                                        <span className="text-[12px] leading-[20px] text-n600">
+                                        <span className={`text-[12px] leading-[20px] ${attach.is_completed ? "text-n600":"text-[#DB2C2C]"}`}>
                                           {"22.5 mb"}
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 && (
+                                    {getRole() !== 2 && attach.is_completed ? (
                                       <span
                                         className=" w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
                                         onClick={(e) => {
@@ -1283,7 +1282,30 @@ const MissionDetails = () => {
                                           />
                                         </svg>
                                       </span>
-                                    )}
+                                    ): 
+                                    
+                                    <span
+                                        className=" w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+
+                                         //here call the continue upload function
+                                        }}
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+<g clip-path="url(#clip0_968_6186)">
+<path d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z" fill="#C70000"/>
+</g>
+<defs>
+<clipPath id="clip0_968_6186">
+<rect width="14" height="14" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+                                      </span>
+                                    
+                                    
+                                    }
                                   </div>
                                 );
                               })}
@@ -1300,6 +1322,8 @@ const MissionDetails = () => {
                                   <div className="sm:w-[46%]" key={index}>
                                     <UploadingFile
                                       key={index}
+                                      fetchFunc={fetchOneWorkOrder}
+                                      id={attach.id}
                                       progress={attach.progress}
                                       file={attach.file}
                                     />
@@ -1321,14 +1345,21 @@ const MissionDetails = () => {
                                 // Ensure files is not null and handle each file
                                 if (files) {
                                   Array.from(files).forEach((file) => {
-                                    handle_chunck(
-                                      dispatch,
-                                      workorder.workorder.id,
-                                      "attachements",
-                                      file,
-                                      setIsLoading,
-                                      fetchOneWorkOrder
-                                    );
+                                    if (file.size <= 20 * 1024 * 1024) {
+                                      // 20MB limit
+                                      handle_chunck(
+                                        dispatch,
+                                        workorder.workorder.id,
+                                        "attachements",
+                                        file,
+                                        setIsLoading,
+                                        fetchOneWorkOrder
+                                      );
+                                    } else {
+                                      alert(
+                                        `${file.name} exceeds the 20MB limit.`
+                                      );
+                                    }
                                   });
                                 }
                               }}
@@ -1337,20 +1368,28 @@ const MissionDetails = () => {
                                 type="file"
                                 name="attachement"
                                 id="attachement"
+                                accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
                                 ref={fileInputRef}
                                 onChange={(e) => {
                                   const file = e.target.files
                                     ? e.target.files[0]
                                     : null;
                                   if (file) {
-                                    handle_chunck(
-                                      dispatch,
-                                      workorder.workorder.id,
-                                      "attachements",
-                                      file,
-                                      setIsLoading,
-                                      fetchOneWorkOrder
-                                    );
+                                    if (file.size <= 20 * 1024 * 1024) {
+                                      // 20MB limit
+                                      handle_chunck(
+                                        dispatch,
+                                        workorder.workorder.id,
+                                        "attachements",
+                                        file,
+                                        setIsLoading,
+                                        fetchOneWorkOrder
+                                      );
+                                    } else {
+                                      alert(
+                                        `${file.name} exceeds the 20MB limit.`
+                                      );
+                                    }
                                   }
                                 }}
                                 className="hidden"
@@ -1379,7 +1418,7 @@ const MissionDetails = () => {
                                 <span className="text-[13px] text-n600 font-medium leading-[13px]">
                                   Drag & drop your files here or{" "}
                                   <span className="text-primary">
-                                    chooses files
+                                    choose files
                                   </span>
                                 </span>
                               </label>
@@ -1541,6 +1580,8 @@ const MissionDetails = () => {
                             return (
                               <div className="w-[25%]" key={index}>
                                 <UploadingFile
+                                  id={report.id}
+                                  fetchFunc={fetchOneWorkOrder}
                                   progress={report.progress}
                                   file={report.file}
                                 />
@@ -1558,20 +1599,24 @@ const MissionDetails = () => {
                               onDrop={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                // Add the files to the input element
                                 const files = e.dataTransfer.files;
 
                                 // Ensure files is not null and handle each file
                                 if (files) {
                                   Array.from(files).forEach((file) => {
-                                    handle_chunck(
-                                      dispatch,
-                                      workorder.workorder.id,
-                                      "report",
-                                      file,
-                                      setisLoadingFinalize,
-                                      fetchOneWorkOrder
-                                    );
+                                    // Check file size (20MB = 20 * 1024 * 1024 bytes)
+                                    if (file.size > 20 * 1024 * 1024) {
+                                      alert("File size exceeds 20MB limit");
+                                    } else {
+                                      handle_chunck(
+                                        dispatch,
+                                        workorder.workorder.id,
+                                        "report",
+                                        file,
+                                        setisLoadingFinalize,
+                                        fetchOneWorkOrder
+                                      );
+                                    }
                                   });
                                 }
                               }}
@@ -1580,19 +1625,25 @@ const MissionDetails = () => {
                                 type="file"
                                 name="report"
                                 id="report"
+                                accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
                                 onChange={(e) => {
                                   const file = e.target.files
                                     ? e.target.files[0]
                                     : null;
                                   if (file) {
-                                    handle_chunck(
-                                      dispatch,
-                                      workorder.workorder.id,
-                                      "report",
-                                      file,
-                                      setisLoadingFinalize,
-                                      fetchOneWorkOrder
-                                    );
+                                    // Check file size (20MB = 20 * 1024 * 1024 bytes)
+                                    if (file.size > 20 * 1024 * 1024) {
+                                      alert("File size exceeds 20MB limit");
+                                    } else {
+                                      handle_chunck(
+                                        dispatch,
+                                        workorder.workorder.id,
+                                        "report",
+                                        file,
+                                        setisLoadingFinalize,
+                                        fetchOneWorkOrder
+                                      );
+                                    }
                                   }
                                 }}
                                 className="hidden"
@@ -1604,7 +1655,7 @@ const MissionDetails = () => {
                                 <span className="text-[12px] text-n600 font-medium leading-[13px] px-[5px] text-center flex flex-col items-center">
                                   Drag & drop your files here or{" "}
                                   <span className="text-primary">
-                                    chooses files
+                                    choose files
                                   </span>
                                 </span>
                               </label>
@@ -1637,9 +1688,52 @@ const MissionDetails = () => {
                             )}
                           </button>
                         ) : (
-                          <button className="px-[30px] py-[11px] rounded-[30px] border-[2px] border-primary text-primary text-[14px] font-semibold leading-[20px] w-fit">
-                            Request Update
-                          </button>
+                          <div className="flex items-center gap-[12px]">
+                            <button
+                              className="px-[26px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
+                              onClick={() => {
+                                handle_edit_or_reqUpdate_report(
+                                  workorder.workorder.id,
+                                  false,
+                                  setisLoadingFinalize,
+                                  fetchOneWorkOrder
+                                );
+                              }}
+                            >
+                              {isLoadingFinalize ? (
+                                <RotatingLines
+                                  visible={true}
+                                  width="20"
+                                  strokeWidth="3"
+                                  strokeColor="#4A3AFF"
+                                />
+                              ) : (
+                                "Edit reports"
+                              )}
+                            </button>
+                            <button
+                              className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
+                              onClick={() => {
+                                handle_edit_or_reqUpdate_report(
+                                  workorder.workorder.id,
+                                  true,
+                                  setisLoadingFinalize,
+                                  fetchOneWorkOrder
+                                );
+                              }}
+                            >
+                              {isLoadingFinalize ? (
+                                <RotatingLines
+                                  visible={true}
+                                  width="20"
+                                  strokeWidth="3"
+                                  strokeColor="#4A3AFF"
+                                />
+                              ) : (
+                                "Request Update"
+                              )}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1845,6 +1939,9 @@ const MissionDetails = () => {
                                     key={index}
                                   >
                                     <UploadingFile
+                                     key={index}
+                                     fetchFunc={fetchOneWorkOrder}
+                                      id={acceptence.id}
                                       progress={acceptence.progress}
                                       file={acceptence.file}
                                     />
@@ -2024,7 +2121,7 @@ const MissionDetails = () => {
           </div>
         )}
       </div>
-
+        
       <AddCertificatPopup
         ref={addCertificatDialogRef}
         workorderId={workorder!.workorder.id}

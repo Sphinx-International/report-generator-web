@@ -23,9 +23,9 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     formData.append(`${method}`, file_id.toString());
 
 
-    for (const [key, value] of formData.entries()) {
+    /*  for (const [key, value] of formData.entries()) {
         console.log(`${key}: ${value}`);
-      }
+      }  */
     try {
       const response = await fetch(`http://${baseUrl}/workorder/update-workorder-attachments`, {
         method: "PUT",
@@ -36,8 +36,6 @@ export const upload_or_delete_workorder_files_for_attachements = async (
       });
   
       if (response) {
-        console.log(response.status)
-  
         switch (response.status) {
           case 200:
             fetchOneWorkOrder();
@@ -76,16 +74,12 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     
     try {
       const body = certificateType 
-        ? JSON.stringify({ workorder_id, file_id, type: certificateType }) 
+        ? JSON.stringify({ workorder_id, file_id, certificate_type: certificateType }) 
         : JSON.stringify({ workorder_id, file_id });
 
-
-
-
         console.log(body)
-  
       const response = await fetch(`http://${baseUrl}/workorder/upload-workorder-${endPointPath}`, {
-        method: endPointPath === "report" ? "POST" : "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Token ${token}`,
@@ -94,8 +88,6 @@ export const upload_or_delete_workorder_files_for_attachements = async (
       });
   
       if (response) {
-        console.log(await response.json());
-  
         switch (response.status) {
           case 200:
             fetchOneWorkOrder();
@@ -156,13 +148,6 @@ const uploadRemainingChunks = async (
 
          dispatch(updateFileProgress({ type:fileType , fileId , progress}))
 
-        console.log(
-          `Chunk ${
-            index + 1
-          } of ${totalChunks} uploaded successfully. Progress: ${progress.toFixed(
-            2
-          )}%`
-        );
       } else if (response.status === 201) {
 
         dispatch(updateFileProgress({ type:fileType , fileId , progress: 100.00}))
@@ -197,8 +182,6 @@ export const handle_chunck = async (
   const fileSize = file.size; // File size in bytes
 
   const chunks = Math.ceil(fileSize / chunkSize);
-
-  console.log(chunks)
   // Extract the first chunk
   const firstChunk = file.slice(0, chunkSize);
   const formData = new FormData();

@@ -43,6 +43,10 @@ export type ReqAccFile = ResFile & {
   type: 1 | 2 | 3;
 };
 
+export type AttachFile = ResFile & {
+  is_completed: boolean;
+};
+
 
 
 export interface ResOfOneMission {
@@ -58,7 +62,7 @@ export interface ResOfOneMission {
     assigned_to: string | null;
   };
   mail_to: MailTo[],
-  attachments: ResFile[]
+  attachments: AttachFile[]
   reports?:ResFile[]
   acceptance_certificates?:ReqAccFile[]
 }

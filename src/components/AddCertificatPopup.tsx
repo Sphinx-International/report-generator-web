@@ -11,25 +11,21 @@ import { AppDispatch } from "../Redux/store";
 import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
 
-
 interface AddCertificatProps {
   workorderId: string;
   fetchOneWorkOrder: () => void;
 }
 
-
 const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
   (props, ref) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [file, setFile] = useState<TheUploadingFile>();
-    const [certType, setCertType] = useState<1| 2 | 3>(1);
+    const [file, setFile] = useState<TheUploadingFile | undefined>();
+    const [certType, setCertType] = useState<1 | 2 | 3>(1);
     const dispatch = useDispatch<AppDispatch>();
 
     const uploadingacceptenceFiles = useSelector(
       (state: RootState) => state.uploadingFiles.acceptenceFiles
     );
-
-
 
     return (
       <dialog
@@ -48,10 +44,16 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
               return (
                 <span
                   key={index}
-                  className={`cursor-pointer px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`
-                }
-                style={{backgroundColor: type.type === certType ?  `${type.color}`: "white", color: type.type === certType ? "white": `${type.color}`, border: `solid 1px ${type.color}`}}
-                onClick={() => { setCertType(type.type) }}
+                  className={`cursor-pointer px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
+                  style={{
+                    backgroundColor:
+                      type.type === certType ? `${type.color}` : "white",
+                    color: type.type === certType ? "white" : `${type.color}`,
+                    border: `solid 1px ${type.color}`,
+                  }}
+                  onClick={() => {
+                    setCertType(type.type);
+                  }}
                 >
                   {type.name}
                 </span>
@@ -59,12 +61,18 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
             })}
           </div>
         </div>
-        {file && !isLoading ? (
+        {file && !isLoading  ? (
           <UploadingFile
+            id={
+              uploadingacceptenceFiles[uploadingacceptenceFiles.length - 1]?.id
+            }
             progress={
-              uploadingacceptenceFiles[uploadingacceptenceFiles.length - 1]?.progress
-            } 
+              uploadingacceptenceFiles[uploadingacceptenceFiles.length - 1]
+                ?.progress
+            }
             file={file.file}
+            fetchFunc={props.fetchOneWorkOrder}
+            setFile={setFile}
           />
         ) : (
           <div
@@ -78,42 +86,52 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
               e.stopPropagation();
               const files = e.dataTransfer.files;
 
-              // Ensure files is not null and handle each file
+              // Ensure files are not null and handle each file
               if (files) {
                 Array.from(files).forEach((file) => {
-                  setFile({ file });
-                  handle_chunck(
-                    dispatch,
-                    props.workorderId,
-                    "certificate",
-                    file,
-                    setIsLoading,
-                    props.fetchOneWorkOrder,
-                    certType
-                  );
+                  // Check file size (20MB = 20 * 1024 * 1024 bytes)
+                  if (file.size > 20 * 1024 * 1024) {
+                    alert("File size exceeds 20MB limit");
+                  } else {
+                    setFile({ file });
+                    handle_chunck(
+                      dispatch,
+                      props.workorderId,
+                      "certificate",
+                      file,
+                      setIsLoading,
+                      props.fetchOneWorkOrder,
+                      certType
+                    );
+                  }
                 });
               }
             }}
           >
-            {" "}
             <input
               type="file"
               name="acceptence"
               id="acceptence"
+              accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
               className="hidden"
               onChange={async (e) => {
                 const file = e.target.files ? e.target.files[0] : null;
                 if (file) {
-                  setFile({ file });
-                  handle_chunck(
-                    dispatch,
-                    props.workorderId,
-                    "certificate",
-                    file,
-                    setIsLoading,
-                    props.fetchOneWorkOrder,
-                    certType
-                  );
+                  // Check file size (20MB = 20 * 1024 * 1024 bytes)
+                  if (file.size > 20 * 1024 * 1024) {
+                    alert("File size exceeds 20MB limit");
+                  } else {
+                    setFile({ file });
+                    handle_chunck(
+                      dispatch,
+                      props.workorderId,
+                      "certificate",
+                      file,
+                      setIsLoading,
+                      props.fetchOneWorkOrder,
+                      certType
+                    );
+                  }
                 }
               }}
             />
@@ -139,7 +157,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
           onClick={() => {
             handleCloseDialog(ref);
             setFile(undefined);
-            setCertType(1)
+            setCertType(1);
           }}
         >
           {isLoading ? (

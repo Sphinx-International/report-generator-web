@@ -32,7 +32,7 @@ const useWebSocketSearch = ({
       return;
     }
 
-    const url = `ws://${baseUrl}/ws/search-account/${endpointPath}`;
+    const url = `ws://${baseUrl}/ws/${endpointPath}`;
     const socket = new WebSocket(url);
 
     socket.onopen = () => {
