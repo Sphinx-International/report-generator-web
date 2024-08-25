@@ -54,11 +54,9 @@ const EditUsers = () => {
       return;
     }
 
-<<<<<<< Updated upstream
-    const url = `https://auto-reporting-server.sphinx-international.online/account/get-account/${id}`;
-=======
-    const url = `${baseUrl}/account/get-account/${id}`;
->>>>>>> Stashed changes
+    const url = `http://${baseUrl}/account/get-account/${id}`;
+
+
     setIsPageLoading(true);
     try {
       const response = await fetch(url, {
@@ -82,7 +80,6 @@ const EditUsers = () => {
       setLastName(data.last_name);
       setEmail(data.email);
       setSelectedOption(data.role === 1 ? "Coordinator" : "Engineer");
-      console.log(data);
     } catch (err) {
       console.error("Error: ", err);
     } finally {
@@ -101,11 +98,8 @@ const EditUsers = () => {
     setIsLoadingGeneral(true);
     setErrGeneral("");
     try {
-<<<<<<< Updated upstream
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/generals", {
-=======
-      const response = await fetch(`${baseUrl}/account/update-account/generals`, {
->>>>>>> Stashed changes
+      const response = await fetch(`http://${baseUrl}/account/update-account/generals`, {
+
         // Added a leading slash
         method: "PUT",
         headers: {
@@ -155,11 +149,8 @@ const EditUsers = () => {
     setIsLoadingRole(true);
     setErrRole("");
     try {
-<<<<<<< Updated upstream
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/update-account/role", {
-=======
-      const response = await fetch(`${baseUrl}/account/update-account/role`, {
->>>>>>> Stashed changes
+      const response = await fetch(`http://${baseUrl}/account/update-account/role`, {
+
         // Added a leading slash
         method: "PUT",
         headers: {

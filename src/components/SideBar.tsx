@@ -1,25 +1,27 @@
 import { sideBarTab } from "../assets/sidebarData";
-import { NavLink,useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { closeSidebar } from "../Redux/slices/sideBarSlice";
 import { RootState } from "../Redux/store";
 import { AppDispatch } from "../Redux/store";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const SideBar = () => {
   const dispatch = useDispatch<AppDispatch>();
   const isSidebarOpen = useSelector((state: RootState) => state.sidebar.isOpen);
   const navigate = useNavigate();
 
-
   const handleLogout = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
     }
     try {
-    const response =  fetch(`${baseUrl}/account/logout`, {
+      const response = fetch(`http://${baseUrl}/account/logout`, {
+
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -27,9 +29,9 @@ const SideBar = () => {
         },
       });
       if ((await response).status === 200) {
-        navigate("/login")
-         localStorage.clear()
-         sessionStorage.clear()
+        navigate("/login");
+        localStorage.clear();
+        sessionStorage.clear();
       }
     } catch (error) {
       console.error("Error deleting users:", error);
@@ -73,31 +75,70 @@ const SideBar = () => {
                     to={item.link}
                     key={index}
                     onClick={() => {
-                      localStorage.removeItem("selectedFilter")
+                      localStorage.removeItem("selectedFilter");
                       dispatch(closeSidebar());
+
                     }}
                     className={({ isActive, isPending }) =>
-                      `${isPending ? "pending" : isActive ? "active" : ""}`
+                      `${
+                        isPending ? "pending" : isActive ? "active" : ""
+                      } flex flex-col items-start gap-[15px]`
                     }
                   >
                     {({ isActive }) => (
-                      <div className="flex items-center justify-between cursor-pointer">
-                        <div
-                          className={`flex items-center gap-[15px] ${
-                            isActive ? "text-primary" : "text-[#6F6C90]"
-                          }  font-medium w-[150px] xl:w-[190px] text-[14px]`}
-                        >
+                      <>
+                        <div className="flex items-center justify-between cursor-pointer">
                           <div
-                            dangerouslySetInnerHTML={{
-                              __html: isActive ? item.activeSvg : item.svg,
-                            }}
-                          />
-                          {item.title}
+                            className={`flex items-center gap-[15px] ${
+                              isActive ? "text-primary" : "text-[#6F6C90]"
+                            }  font-medium w-[150px] xl:w-[190px] text-[14px]`}
+                          >
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: isActive ? item.activeSvg : item.svg,
+                              }}
+                            />
+                            {item.title}
+                          </div>
+                          {isActive && (
+                            <span className="w-[4px] h-[24px] bg-primary rounded-tl-[3px] rounded-bl-[3px]"></span>
+                          )}
                         </div>
-                        {isActive && (
-                          <span className="w-[4px] h-[24px] bg-primary rounded-tl-[3px] rounded-bl-[3px]"></span>
+                        {item.subItem && (
+                          <div className="ml-3 flex flex-col gap-[13px]">
+                            {item.subItem.map((subItem, subIndex) => (
+                              <NavLink
+                                to={subItem.link}
+                                key={subIndex}
+                                className={({ isActive, isPending }) =>
+                                  `${
+                                    isPending
+                                      ? "pending"
+                                      : isActive
+                                      ? "active"
+                                      : ""
+                                  } flex items-center gap-[15px] ${
+                                    isActive ? "text-primary" : "text-[#6F6C90]"
+                                  } font-medium w-[150px] xl:w-[190px] text-[14px]`
+                                }
+                              >
+                                {({ isActive }) => (
+                                  <>
+                                    <div
+                                      dangerouslySetInnerHTML={{
+                                        __html: isActive
+                                          ? subItem.activeSvg
+                                          : subItem.svg,
+                                      }}
+                                    />
+                                    {subItem.title}
+                                  </>
+                                )}
+                              </NavLink>
+                            ))}
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
                   </NavLink>
                 );
@@ -138,8 +179,9 @@ const SideBar = () => {
             })}
           </div>
         </div>
-        <button className="flex flex-row-reverse items-center gap-[15px] text-[#6F6C90] font-medium text-[14px]"
-         onClick={handleLogout}
+        <button
+          className="flex flex-row-reverse items-center gap-[15px] text-[#6F6C90] font-medium text-[14px]"
+          onClick={handleLogout}
         >
           Log out{" "}
           <svg

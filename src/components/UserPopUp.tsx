@@ -1,16 +1,18 @@
-import { useState, forwardRef, MouseEvent, ChangeEvent } from "react";
+import { useState, forwardRef, MouseEvent } from "react";
 // import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
 import generatePassword from "../func/generatePassword";
 import { ThreeDots } from "react-loader-spinner";
+import handleChange from "../func/handleChangeFormsInput";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface Userprops {
   fetchUsers?: () => void;
 }
 const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
- // const [selectedDate, setSelectedDate] = useState<Date | null>(null);
- // const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  // const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  // const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>("Select a role");
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [visibleEmailErr, setVisibleEmailErr] = useState<boolean>(false);
@@ -34,11 +36,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     role: null,
   });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const closeDialog = (eo: MouseEvent<HTMLButtonElement> | React.FormEvent) => {
     eo.preventDefault();
     setFormData({
@@ -48,6 +45,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       password: "",
       role: null,
     });
+    setEmailErr("");
     setSelectedOption("Select a role");
     if (ref && typeof ref !== "function" && ref.current) {
       ref.current.close();
@@ -55,7 +53,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     }
   };
 
- /* const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+  /* const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -74,18 +72,16 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
     }
     setIsLoading(true);
     try {
-<<<<<<< Updated upstream
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/create-account", {
-=======
-      const response = await fetch(`${baseUrl}/account/create-account`, {
->>>>>>> Stashed changes
+      const response = await fetch(`http://${baseUrl}/account/create-account`, {
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,9 +93,9 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       if (response) {
         const data = await response.json();
         console.log("Form submitted successfully", data);
-
         switch (response.status) {
           case 201:
+            props.fetchUsers!();
             closeDialog(e);
             break;
           case 409:
@@ -119,8 +115,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
             console.log("error");
             break;
         }
-        setIsLoading(false);
-
         /* setEmail("");
         setPassword(""); */
       }
@@ -128,7 +122,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       console.error("Error submitting form", err);
     } finally {
       if (props.fetchUsers) {
-        props.fetchUsers();
+        setIsLoading(false);
       }
     }
   };
@@ -203,7 +197,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 id="first_name"
                 className="px-[18px] w-full sm:h-[48px] sm:text-[16px] text-[14px] h-[44px] rounded-[46px] shadow-lg"
                 onChange={(e) => {
-                  handleChange(e);
+                  handleChange(e, setFormData);
                 }}
               />
             </div>
@@ -222,7 +216,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 id="last_name"
                 className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
                 onChange={(e) => {
-                  handleChange(e);
+                  handleChange(e, setFormData);
                 }}
               />
             </div>
@@ -243,7 +237,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 id="email"
                 className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
                 onChange={(e) => {
-                  handleChange(e);
+                  handleChange(e, setFormData);
                 }}
               />
             </div>
@@ -263,7 +257,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                   id="password"
                   className="px-[18px] w-full sm:h-[48px] h-[44px] rounded-[46px] shadow-lg sm:text-[16px] text-[14px]"
                   onChange={(e) => {
-                    handleChange(e);
+                    handleChange(e, setFormData);
                   }}
                 />
                 {formData.password === "" ? (

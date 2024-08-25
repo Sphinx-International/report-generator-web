@@ -1,18 +1,24 @@
+ export type TheUploadingFile= {
+  id?:number,
+  progress?:  number ,
+  file?: File
+ }
+
 export interface ReqMission {
   title: string;
-  ticker_number: number | undefined;
+  id: string | undefined;
   priority: 0 | 1 | 2 | 3;
   description: string;
   require_acceptence: boolean; // False by default | Not required
   assigned_to?: string;
-  accounts: string[],
-  attachments:File[]
+  emails: string[],
+  attachments:TheUploadingFile[]
 }
 
+
 export interface ResMission {
-  id: number;
+  id: string;
   title: string;
-  ticker_number: number | undefined;
   priority: 0 | 1 | 2 | 3;
   status: 0 | 1 | 2 | 3 | 4 | 5;
   description: string;
@@ -23,23 +29,31 @@ export interface ResMission {
  type MailTo ={
     id:number,
     workorder: number,
-    account:string
+    email:string
 }
 export type ResFile ={
     id:number,
     file_name: string,
     uploaded_at:Date,
     workorder: number,
+    downloadProgress?: string
 }
+
+export type ReqAccFile = ResFile & {
+  type: 1 | 2 | 3;
+};
+
+export type AttachFile = ResFile & {
+  is_completed: boolean;
+};
 
 
 
 export interface ResOfOneMission {
   workorder: {
-    id: number;
+    id: string;
     title: string;
-    ticker_number: number;
-    priority: 0 | 1 | 2 | 3;
+    priority: 0 | 1 | 2 | 3 |number;
     status: 0 | 1 | 2 | 3 | 4 | 5;
     description: string;
     require_acceptence?: boolean;
@@ -48,7 +62,7 @@ export interface ResOfOneMission {
     assigned_to: string | null;
   };
   mail_to: MailTo[],
-  attachments: ResFile[]
-  report?:ResFile
-  acceptance_certificate?:ResFile
+  attachments: AttachFile[]
+  reports?:ResFile[]
+  acceptance_certificates?:ReqAccFile[]
 }

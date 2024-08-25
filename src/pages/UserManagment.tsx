@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 import { Link } from "react-router-dom";
+import EmptyData from "../components/EmptyData";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 
@@ -100,8 +101,9 @@ const UserManagment = () => {
       return { total: 0, current_offset: 0 };
     }
     const url = role
-      ? `${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
-      : `${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
+      ? `http://${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
+      : `http://${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
+
 
     setIsloading(true);
     try {
@@ -178,8 +180,6 @@ const UserManagment = () => {
     // Perform the action when users are selected
     handledeleteUserButtonClick();
   };
-
-  console.log(isloading);
 
   return (
     <div className="w-full flex md:h-[100vh]">
@@ -331,16 +331,7 @@ const UserManagment = () => {
                     />
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-6 items-center justify-center py-4">
-                    <img
-                      src="/astronaut/astronaut.png"
-                      alt="astro"
-                      className="w-[300px]"
-                    />
-                    <h3 className="text-[36px] font-bold text-n800">
-                      No User Founded
-                    </h3>
-                  </div>
+                  <EmptyData data="mails"/>
                 )}
               </div>
 
@@ -444,17 +435,11 @@ const UserManagment = () => {
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedUsers}
-<<<<<<< Updated upstream
-        deleteUrl="https://auto-reporting-server.sphinx-international.online/account/delete-accounts"
+        deleteUrl={`http://${baseUrl}/account/delete-accounts`}
         jsonTitle="accounts"
         fetchFunc={fetchUsers}
-        fetchUrl="https://auto-reporting-server.sphinx-international.online/account/get-accounts"
-=======
-        deleteUrl= {`${baseUrl}/account/delete-accounts`}
-        jsonTitle="accounts"
-        fetchFunc={fetchUsers}
-        fetchUrl={`${baseUrl}/account/get-accounts`}
->>>>>>> Stashed changes
+        fetchUrl={`http://${baseUrl}/account/get-accounts`}
+
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

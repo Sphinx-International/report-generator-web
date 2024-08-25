@@ -72,11 +72,8 @@ const ResetPassword = () => {
     e.preventDefault();
 
     try {
-<<<<<<< Updated upstream
-      const response = await fetch("https://auto-reporting-server.sphinx-international.online/account/forget-password", {
-=======
-      const response = await fetch(`${baseUrl}/account/forget-password`, {
->>>>>>> Stashed changes
+      const response = await fetch(`http://${baseUrl}/account/forget-password`, {
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",

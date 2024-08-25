@@ -4,19 +4,19 @@ import Header from "../components/Header";
 import Main from "../components/Main";
 import Pagination from "../components/Pagination";
 import MissionPopup from "../components/MissionPopup";
-import SuccessPopup from "../components/SuccessPopup";
 import WorkOrderStatus from "../components/WorkOrderStatus";
 import WorkOrderpriority from "../components/WorkOrderPriorities";
 import DeletePopup from "../components/DeletePopup";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../Redux/store";
 import { ResMission } from "../assets/types/Mission";
+import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 const Missions = () => {
   const navigate = useNavigate();
@@ -27,11 +27,9 @@ const Missions = () => {
   );
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
-  const submitMissionDialogRef = useRef<HTMLDialogElement>(null);
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
   const [workorders, setWorkorders] = useState<ResMission[] | null>(null);
-  const isDialogOpen = useSelector((state: RootState) => state.dialog.isOpen);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [totalWorkorders, setTotalWorkorders] = useState(0);
@@ -75,8 +73,8 @@ const Missions = () => {
     setIsLoading(true);
 
     const url = status
-      ? `${baseUrl}/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
-      : `${baseUrl}/workorder/get-workorders?offset=${offset}&limit=${limit}`;
+      ? `http://${baseUrl}/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
+      : `http://${baseUrl}/workorder/get-workorders?offset=${offset}&limit=${limit}`;
 
     try {
       const response = await fetch(url, {
@@ -135,12 +133,8 @@ const Missions = () => {
     } else {
       fetchWorkOrders((currentPage - 1) * limit, limit, filter);
     }
-    const dialog = submitMissionDialogRef.current;
-    if (dialog && isDialogOpen) {
-      dialog.style.display = "flex";
-      dialog.showModal();
-    }
-  }, [isDialogOpen, currentPage]);
+
+  }, [currentPage]);
 
   return (
     <div className="flex w-full md:h-[100vh]">
@@ -278,26 +272,15 @@ const Missions = () => {
       </div>
       <MissionPopup
         ref={missionDialogRef}
-        title={true}
-        textAreaTitle="Description"
-        textAreaPlaceholder="Description"
         fetchWorkOrders={fetchWorkOrders}
       />
-      <SuccessPopup ref={submitMissionDialogRef} />
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedWorkorders}
-<<<<<<< Updated upstream
-        deleteUrl="https://auto-reporting-server.sphinx-international.online/workorder/delete-workorders"
+        deleteUrl={`http://${baseUrl}/workorder/delete-workorders`}
         jsonTitle="workorders"
         fetchFunc={fetchWorkOrders}
-        fetchUrl="https://auto-reporting-server.sphinx-international.online/workorder/get-workorders"
-=======
-        deleteUrl={`${baseUrl}/workorder/delete-workorders`}
-        jsonTitle="workorders"
-        fetchFunc={fetchWorkOrders}
-        fetchUrl={`${baseUrl}/workorder/get-workorders`}
->>>>>>> Stashed changes
+        fetchUrl={`http://${baseUrl}/workorder/get-workorders`}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}
