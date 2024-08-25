@@ -107,9 +107,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     const handleAddingFileChangeWithDragAndDrop = (files: FileList) => {
       if (files) {
-        handle_chunck(files);
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          handle_chunck(file);
+        }
       }
     };
+    
 
     const updateAttachmentProgress = (id: number, newProgress: number) => {
       setformValues((prevValues) => ({
@@ -163,79 +167,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setFormErrs((prev) => ({ ...prev, emails: "" }));
     };
 
-    const handleCreateWorkorder = async (e: FormEvent) => {
-      e.preventDefault();
 
-      const token =
-        localStorage.getItem("token") || sessionStorage.getItem("token");
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("title", formValues.title);
-      formData.append("id", formValues.id?.toString() || "");
-      formData.append("priority", formValues.priority.toString());
-      formData.append("description", formValues.description);
-      formData.append(
-        "require_acceptence",
-        formValues.require_acceptence.toString()
-      );
-      if (formValues.assigned_to) {
-        formData.append("assigned_to", formValues.assigned_to);
-      }
-
-      formValues.emails.forEach((mail) => {
-        formData.append("emails", mail);
-      });
-
-      if (formValues.attachments) {
-        formValues.attachments.forEach((attach) => {
-          formData.append("attachments", attach.id!.toString());
-        });
-      }
-
-      setIsLoading(true);
-
-      try {
-        const response = await fetch(
-          `http://${baseUrl}/workorder/create-workorder`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-            body: formData,
-          }
-        );
-
-          method: "POST",
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-          body: formData,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Form submitted successfully", data);
-
-          if (response.status === 200) {
-            closeDialog(e);
-          }
-        } else {
-          const errorData = await response.json();
-          console.error("Error submitting form", errorData);
-        }
-      } catch (err) {
-        console.error("Error submitting form", err);
-      } finally {
-        setIsLoading(false);
-        props.fetchWorkOrders!();
-        localStorage.setItem("selectedFilter", "all");
-      }
-    };
 
     const handleFirstSubmit = (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
@@ -252,6 +184,75 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
     };
 
+
+
+
+    const handleCreateWorkorder = async (e: FormEvent) => {
+      e.preventDefault();
+    
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+    
+      const formData = new FormData();
+      formData.append("title", formValues.title);
+      formData.append("id", formValues.id?.toString() || "");
+      formData.append("priority", formValues.priority.toString());
+      formData.append("description", formValues.description);
+      formData.append(
+        "require_acceptence",
+        formValues.require_acceptence.toString()
+      );
+      if (formValues.assigned_to) {
+        formData.append("assigned_to", formValues.assigned_to);
+      }
+    
+      formValues.emails.forEach((mail) => {
+        formData.append("emails", mail);
+      });
+    
+      if (formValues.attachments) {
+        formValues.attachments.forEach((attach) => {
+          formData.append("attachments", attach.id!.toString());
+        });
+      }
+    
+      setIsLoading(true);
+    
+      try {
+        const response = await fetch(
+          `http://${baseUrl}/workorder/create-workorder`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+            body: formData,
+          }
+        );
+    
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Form submitted successfully", data);
+    
+          if (response.status === 200) {
+            closeDialog(e);
+          }
+        } else {
+          const errorData = await response.json();
+          console.error("Error submitting form", errorData);
+        }
+      } catch (err) {
+        console.error("Error submitting form", err);
+      } finally {
+        setIsLoading(false);
+        props.fetchWorkOrders!();
+        localStorage.setItem("selectedFilter", "all");
+      }
+    };
+    
     const handleSecondSubmit = (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
     ) => {
