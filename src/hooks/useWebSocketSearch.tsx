@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const baseUrl = import.meta.env.VITE_BASE_URL;
+const baseUrl = import.meta.env.VITE_BASE_WS_URL;
 
 interface UseWebSocketSearchProps {
   searchQuery: string | null;
@@ -32,7 +32,7 @@ const useWebSocketSearch = ({
       return;
     }
 
-    const url = `ws://${baseUrl}/ws/${endpointPath}`;
+    const url = `${baseUrl}/ws/${endpointPath}`;
     const socket = new WebSocket(url);
 
     socket.onopen = () => {

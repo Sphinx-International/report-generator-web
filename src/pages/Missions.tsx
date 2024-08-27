@@ -73,8 +73,8 @@ const Missions = () => {
     setIsLoading(true);
 
     const url = status
-      ? `http://${baseUrl}/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
-      : `http://${baseUrl}/workorder/get-workorders?offset=${offset}&limit=${limit}`;
+      ? `${baseUrl}/workorder/get-workorders/${status}?offset=${offset}&limit=${limit}`
+      : `${baseUrl}/workorder/get-workorders?offset=${offset}&limit=${limit}`;
 
     try {
       const response = await fetch(url, {
@@ -277,10 +277,10 @@ const Missions = () => {
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedWorkorders}
-        deleteUrl={`http://${baseUrl}/workorder/delete-workorders`}
+        deleteUrl={`${baseUrl}/workorder/delete-workorders`}
         jsonTitle="workorders"
         fetchFunc={fetchWorkOrders}
-        fetchUrl={`http://${baseUrl}/workorder/get-workorders`}
+        fetchUrl={`${baseUrl}/workorder/get-workorders`}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

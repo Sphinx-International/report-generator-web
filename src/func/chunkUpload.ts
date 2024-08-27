@@ -27,7 +27,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
         console.log(`${key}: ${value}`);
       }  */
     try {
-      const response = await fetch(`http://${baseUrl}/workorder/update-workorder-attachments`, {
+      const response = await fetch(`${baseUrl}/workorder/update-workorder-attachments`, {
         method: "PUT",
         headers: {
             Authorization: `Token ${token}`,
@@ -78,7 +78,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
         : JSON.stringify({ workorder_id, file_id });
 
         console.log(body)
-      const response = await fetch(`http://${baseUrl}/workorder/upload-workorder-${endPointPath}`, {
+      const response = await fetch(`${baseUrl}/workorder/upload-workorder-${endPointPath}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +134,7 @@ const uploadRemainingChunks = async (
 
     try {
       const response = await fetch(
-        `http://${baseUrl}/file/upload-rest-chunks/${fileId}`,
+        `${baseUrl}/file/upload-rest-chunks/${fileId}`,
         {
           method: "PUT",
           headers: {
@@ -193,7 +193,7 @@ export const handle_chunck = async (
   setIsLoading(true);
 
   try {
-    const response = await fetch(`http://${baseUrl}/file/upload-first-chunk`, {
+    const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
       method: "POST",
       headers: {
         Authorization: `Token ${token}`,

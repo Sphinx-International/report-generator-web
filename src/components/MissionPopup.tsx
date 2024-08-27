@@ -223,7 +223,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     
       try {
         const response = await fetch(
-          `http://${baseUrl}/workorder/create-workorder`,
+          `${baseUrl}/workorder/create-workorder`,
           {
             method: "POST",
             headers: {
@@ -308,7 +308,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
         try {
           const response = await fetch(
-            `http://${baseUrl}/file/upload-rest-chunks/${fileId}`,
+            `${baseUrl}/file/upload-rest-chunks/${fileId}`,
             {
               method: "PUT",
               headers: {
@@ -391,7 +391,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
       try {
         const response = await fetch(
-          `http://${baseUrl}/file/upload-first-chunk`,
+          `${baseUrl}/file/upload-first-chunk`,
           {
             method: "POST",
             headers: {

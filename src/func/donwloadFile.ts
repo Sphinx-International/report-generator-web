@@ -16,7 +16,7 @@ export const downloadFile = async (
   }
   try {
     const response = await fetch(
-      `http://${baseUrl}/workorder/${path}/${fileId}`,
+      `${baseUrl}/workorder/${path}/${fileId}`,
       {
         method: "GET",
         headers: {

@@ -30,7 +30,7 @@ const Groups = () => {
     }
     setIsLoading(true);
 
-    const url = `http://${baseUrl}/mail/get-groups`;
+    const url = `${baseUrl}/mail/get-groups`;
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -63,7 +63,7 @@ const Groups = () => {
       return;
     }
 
-    const url = `http://${baseUrl}/mail/delete-group`;
+    const url = `${baseUrl}/mail/delete-group`;
     try {
       const response = await fetch(url, {
         method: "DELETE",

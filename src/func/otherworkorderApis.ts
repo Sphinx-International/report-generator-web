@@ -17,7 +17,7 @@ export const handle_edit_or_reqUpdate_report = async (
      console.log(JSON.stringify({ workorder_id, notify_engineer }))
     try {
       const response = await fetch(
-        `http://${baseUrl}/workorder/request-update`,
+        `${baseUrl}/workorder/request-update`,
         {
           method: "PUT",
           headers: {

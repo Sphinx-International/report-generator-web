@@ -176,7 +176,7 @@ console.log(workorder)
       return;
     }
 
-    const url = `http://${baseUrl}/workorder/get-workorder/${id}`;
+    const url = `${baseUrl}/workorder/get-workorder/${id}`;
 
     try {
       const response = await fetch(url, {
@@ -237,7 +237,7 @@ console.log(workorder)
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://${baseUrl}/workorder/update-workorder`,
+        `${baseUrl}/workorder/update-workorder`,
         {
           method: "PATCH",
           headers: {
@@ -333,7 +333,7 @@ console.log(workorder)
     }
     try {
       const response = await fetch(
-        `http://${baseUrl}/workorder/update-workorder-acceptence`,
+        `${baseUrl}/workorder/update-workorder-acceptence`,
         {
           method: "PATCH",
           headers: {

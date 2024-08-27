@@ -55,7 +55,7 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(`http://${baseUrl}/account/login`, {
+      const response = await fetch(`${baseUrl}/account/login`, {
 
         method: "POST",
         headers: {

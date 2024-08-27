@@ -72,7 +72,7 @@ const ResetPassword = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://${baseUrl}/account/forget-password`, {
+      const response = await fetch(`${baseUrl}/account/forget-password`, {
 
         method: "POST",
         headers: {

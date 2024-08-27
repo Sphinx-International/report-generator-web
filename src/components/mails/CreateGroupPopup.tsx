@@ -45,7 +45,7 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
 
       try {
         const response = await fetch(
-          `http://${baseUrl}/mail/create-group`,
+          `${baseUrl}/mail/create-group`,
 
           {
             method: "POST",

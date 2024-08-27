@@ -70,7 +70,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
       }
       setIsLoading(true);
 
-      const url = `http://${baseUrl}/mail/get-group-members/${props.groupInfo.id}`;
+      const url = `${baseUrl}/mail/get-group-members/${props.groupInfo.id}`;
       try {
         const response = await fetch(url, {
           method: "GET",
@@ -106,7 +106,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
       }
       try {
         const response = await fetch(
-          `http://${baseUrl}/mail/update-group`,
+          `${baseUrl}/mail/update-group`,
 
           {
             method: "PUT",
