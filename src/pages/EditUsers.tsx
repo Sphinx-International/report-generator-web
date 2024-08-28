@@ -55,6 +55,8 @@ const EditUsers = () => {
     }
 
     const url = `http://${baseUrl}/account/get-account/${id}`;
+
+
     setIsPageLoading(true);
     try {
       const response = await fetch(url, {
@@ -97,6 +99,7 @@ const EditUsers = () => {
     setErrGeneral("");
     try {
       const response = await fetch(`http://${baseUrl}/account/update-account/generals`, {
+
         // Added a leading slash
         method: "PUT",
         headers: {
@@ -147,6 +150,7 @@ const EditUsers = () => {
     setErrRole("");
     try {
       const response = await fetch(`http://${baseUrl}/account/update-account/role`, {
+
         // Added a leading slash
         method: "PUT",
         headers: {

@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import EmptyData from "../components/EmptyData";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
+
 const titlesRow = [
   {
     title: "Picture",
@@ -102,6 +103,7 @@ const UserManagment = () => {
     const url = role
       ? `http://${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
       : `http://${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
+
 
     setIsloading(true);
     try {
@@ -437,6 +439,7 @@ const UserManagment = () => {
         jsonTitle="accounts"
         fetchFunc={fetchUsers}
         fetchUrl={`http://${baseUrl}/account/get-accounts`}
+
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

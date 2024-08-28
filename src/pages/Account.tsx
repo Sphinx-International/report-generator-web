@@ -8,7 +8,6 @@ import { User } from "../assets/types/User";
 import { ThreeDots } from "react-loader-spinner";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-
 const accountNavigation: string[] = [
   "My profile",
   "Email settings",
@@ -45,6 +44,7 @@ const Account = () => {
     setErr("")
     try {
       const response = await fetch(`http://${baseUrl}//account/update-account/generals`, {
+
         // Added a leading slash
         method: "PUT",
         headers: {
