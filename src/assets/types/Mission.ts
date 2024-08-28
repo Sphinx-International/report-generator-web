@@ -37,16 +37,21 @@ export type ResFile ={
     uploaded_at:Date,
     workorder: number,
     downloadProgress?: string
+    is_completed: boolean;
+
 }
 
 export type ReqAccFile = ResFile & {
   type: 1 | 2 | 3;
 };
 
-export type AttachFile = ResFile & {
-  is_completed: boolean;
-};
 
+export type History =  {
+  id:number,
+  at: Date,
+  status:number,
+  workorder:string
+};
 
 
 export interface ResOfOneMission {
@@ -61,8 +66,9 @@ export interface ResOfOneMission {
     created_by: string;
     assigned_to: string | null;
   };
+  history:History[],
   mail_to: MailTo[],
-  attachments: AttachFile[]
+  attachments: ResFile[]
   reports?:ResFile[]
   acceptance_certificates?:ReqAccFile[]
 }

@@ -18,6 +18,7 @@ import Page404 from "./pages/Page404.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GlobalBeforeUnload from "./routes middlewares/GlobalBeforeUnload.tsx";
+import { SnackbarProvider } from "notistack"; // Import SnackbarProvider
 
 const router = createBrowserRouter([
   {
@@ -58,12 +59,10 @@ const router = createBrowserRouter([
       <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]} />
     ),
   },
-
   {
     path: "/mails",
     element: <ProtectedRoute element={<Groups />} allowedRoles={[0]} />,
   },
-
   {
     path: "/mails/groups",
     element: <ProtectedRoute element={<Groups />} allowedRoles={[0]} />,
@@ -82,7 +81,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
     <React.StrictMode>
       <GlobalBeforeUnload>
-        <RouterProvider router={router} />
+        <SnackbarProvider maxSnack={3}> {/* Wrap your app with SnackbarProvider */}
+          <RouterProvider router={router} />
+        </SnackbarProvider>
       </GlobalBeforeUnload>
     </React.StrictMode>
   </Provider>

@@ -152,6 +152,63 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
       setIsLoading(false);
     };
 
+    const handleEditMembers = async () => {
+      setIsLoading(true);
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        setIsLoading(false);
+        return;
+      }
+      console.log(JSON.stringify(editMembers)    )
+      try {
+        const response = await fetch(
+          `http://${baseUrl}/mail/update-group-members`,
+
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Token ${token}`,
+            },
+            body: JSON.stringify(editMembers),
+          }
+        );
+
+        if (response) {
+          console.log(response.status);
+          switch (response.status) {
+            case 200:
+              handleClose()
+              setEditMembers({
+                group_id: props.groupInfo?.id,
+                add: [],
+                delete: [],
+              })
+              props.fetchFunc();
+              break;
+            case 400:
+              setErr("Verify your email.");
+              break;
+            case 409:
+              setErr("Group name already exists.");
+              setVisibleErr(true);
+              break;
+            default:
+              console.log("Error: check the response status code");
+              break;
+          }
+        }
+      } catch (err) {
+        console.error("Error submitting form", err);
+      }
+
+      setIsLoading(false);
+    };
+
+
+
     useEffect(() => {
       fetchGroup();
       setGroupName(props.groupInfo?.name);
@@ -444,7 +501,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
                       ? false
                       : true
                   }
-                  onClick={() => {}}
+                  onClick={() => {handleEditMembers()}}
                 >
                   {isLoading ? (
                     <RotatingLines strokeColor="white" width="20" />

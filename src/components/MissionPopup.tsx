@@ -107,7 +107,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     const handleAddingFileChangeWithDragAndDrop = (files: FileList) => {
       if (files) {
-        handle_chunck(files);
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          handle_chunck(file);
+        }
       }
     };
 
