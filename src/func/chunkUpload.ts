@@ -238,9 +238,6 @@ export const handle_chunck = async (
   }
 };
 
-
-
-
 export const handle_resuming_upload = async (
   dispatch: AppDispatch, 
   fileId: number,
@@ -249,6 +246,7 @@ export const handle_resuming_upload = async (
   file_token: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc: () => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   enqueueSnackbar: (message: string, options?: any) => void // Add this parameter
 ) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -303,6 +301,70 @@ export const handle_resuming_upload = async (
     }
   } catch (err) {
     console.error("Error submitting resume upload", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+export const handle_files_with_one_chunk = async (
+  dispatch: AppDispatch,  // Add dispatch as a parameter
+  workorder_id: string,
+  fileType: "attachements" |"report" |"certificate",
+  file: File,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  fetchOneWorkOrder: () => void,
+  fileStatus?: 0 |1 | 2 | 3 
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  // Extract the first chunk
+  const formData = new FormData();
+  formData.append("name", file.name);
+  formData.append("type", "1");
+  formData.append("file", file);
+
+ /* console.log("FormData contents:");
+  for (const pair of formData.entries()) {
+    console.log(pair[0] + ':', pair[1]);
+  }*/
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(`http://${baseUrl}/file/upload-file`, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const fileId = data.id;
+
+      // here 
+      dispatch(addUploadingFile({type:fileType,file:{ id: fileId, progress: 0, file }}))
+      setIsLoading(false);
+      if (fileType === "attachements") {
+        upload_or_delete_workorder_files_for_attachements(workorder_id,fileId,"add",setIsLoading,fetchOneWorkOrder)
+      } else {
+        await upload_workorder_files(workorder_id,fileId,fileType,setIsLoading,fetchOneWorkOrder,fileStatus)
+      }
+      fetchOneWorkOrder()
+      dispatch(removeUploadingFile({type:fileType,fileId}))
+       
+    } else {
+      console.error("Failed to upload file");
+    }
+  } catch (err) {
+    console.error("Error submitting file", err);
   } finally {
     setIsLoading(false);
   }

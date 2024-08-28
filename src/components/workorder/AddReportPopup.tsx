@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { handleCloseDialog } from "../../func/openDialog";
-import { handle_chunck } from "../../func/chunkUpload";
+import { handle_chunck,handle_files_with_one_chunk } from "../../func/chunkUpload";
 import { useState } from "react";
 import { TheUploadingFile } from "../../assets/types/Mission";
 import UploadingFile from ".././uploadingFile";
@@ -146,13 +146,24 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
               // Ensure files are not null and handle each file
               if (files) {
                 Array.from(files).forEach(async (file) => {
-                  // Check file size (20MB = 20 * 1024 * 1024 bytes)
                   if (file.size > 20 * 1024 * 1024) {
-                    alert("File size exceeds 20MB limit");
+                    alert(`${file.name} exceeds the 20MB limit.`);
+                  } else if (file.size <= 512 * 1024) {
+                    setFile({ file });
+
+                    handle_files_with_one_chunk(                      
+                      dispatch,
+                      props.workorderId,
+                      "report",
+                      file,
+                      setIsLoading,
+                      props.fetchOneWorkOrder,
+                      currentReportTypeIndex
+                    );
                   } else {
                     const file_token = await generateFileToken(file);
-
                     setFile({ file });
+
                     handle_chunck(
                       dispatch,
                       props.workorderId,
@@ -177,13 +188,24 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
               onChange={async (e) => {
                 const file = e.target.files ? e.target.files[0] : null;
                 if (file) {
-                  // Check file size (20MB = 20 * 1024 * 1024 bytes)
                   if (file.size > 20 * 1024 * 1024) {
-                    alert("File size exceeds 20MB limit");
+                    alert(`${file.name} exceeds the 20MB limit.`);
+                  } else if (file.size <= 512 * 1024) {
+                    setFile({ file });
+
+                    handle_files_with_one_chunk(                      
+                      dispatch,
+                      props.workorderId,
+                      "report",
+                      file,
+                      setIsLoading,
+                      props.fetchOneWorkOrder,
+                      currentReportTypeIndex
+                    );
                   } else {
                     const file_token = await generateFileToken(file);
-
                     setFile({ file });
+
                     handle_chunck(
                       dispatch,
                       props.workorderId,

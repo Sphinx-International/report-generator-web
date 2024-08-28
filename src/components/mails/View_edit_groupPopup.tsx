@@ -10,7 +10,7 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 interface ViewEditGroupPopup {
   groupInfo?: Resgroup;
   fetchFunc: () => void;
-  setOpenedGroup: React.Dispatch<React.SetStateAction<Resgroup | undefined>>; 
+  setOpenedGroup: React.Dispatch<React.SetStateAction<Resgroup | undefined>>;
 }
 
 interface EditingGroupMembers {
@@ -161,7 +161,14 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
         setIsLoading(false);
         return;
       }
-      console.log(JSON.stringify(editMembers)    )
+
+      // Extract IDs from the `add` array
+      const transformedMembers = {
+        group_id: editMembers.group_id,
+        add: editMembers.add.map((member) => member.id), // Extract only the IDs
+        delete: editMembers.delete, // Keep the delete array as it is
+      };
+
       try {
         const response = await fetch(
           `http://${baseUrl}/mail/update-group-members`,
@@ -172,7 +179,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
               "Content-Type": "application/json",
               Authorization: `Token ${token}`,
             },
-            body: JSON.stringify(editMembers),
+            body: JSON.stringify(transformedMembers),
           }
         );
 
@@ -180,12 +187,12 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
           console.log(response.status);
           switch (response.status) {
             case 200:
-              handleClose()
+              handleClose();
               setEditMembers({
                 group_id: props.groupInfo?.id,
                 add: [],
                 delete: [],
-              })
+              });
               props.fetchFunc();
               break;
             case 400:
@@ -206,8 +213,6 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
 
       setIsLoading(false);
     };
-
-
 
     useEffect(() => {
       fetchGroup();
@@ -501,7 +506,9 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
                       ? false
                       : true
                   }
-                  onClick={() => {handleEditMembers()}}
+                  onClick={() => {
+                    handleEditMembers();
+                  }}
                 >
                   {isLoading ? (
                     <RotatingLines strokeColor="white" width="20" />

@@ -21,6 +21,7 @@ import {
   handle_chunck,
   upload_or_delete_workorder_files_for_attachements,
   handle_resuming_upload,
+  handle_files_with_one_chunk
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
 import { formatDate } from "../func/formatDatr&Time";
@@ -163,8 +164,6 @@ const MissionDetails = () => {
     }
   };
 
-  //console.log(workorder)
-
   useEffect(() => {
     const certfDialog = addCertificatDialogRef.current;
 
@@ -265,6 +264,7 @@ const MissionDetails = () => {
       }
 
       const data = await response.json();
+
       setWorkorder(data);
       setBasicDataWorkorder({
         title: data.workorder.title,
@@ -462,8 +462,6 @@ const MissionDetails = () => {
     );
   }
 
-  console.log(workorder?.history);
-
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
@@ -523,7 +521,7 @@ const MissionDetails = () => {
                     )}
                   </div>
                   <div className="flex-grow" />
-
+                {workorder.history !== null &&  workorder.history.length !== 0 &&
                   <div className="relative">
                     <svg
                       className="cursor-pointer hover:scale-105"
@@ -579,6 +577,8 @@ const MissionDetails = () => {
                       </div>
                     )}
                   </div>
+                }
+
                 </div>
 
                 <div className="w-full flex flex-col items-start gap-[15px]">
@@ -1501,11 +1501,18 @@ const MissionDetails = () => {
                                 // Ensure files is not null and handle each file
                                 if (files) {
                                   Array.from(files).forEach(async (file) => {
-                                    if (file.size <= 20 * 1024 * 1024) {
-                                      const file_token =
-                                        await generateFileToken(file);
-
-                                      // 20MB limit
+                                    if (file.size > 20 * 1024 * 1024) {
+                                      // Alert when the file is larger than 20MB
+                                      alert(`${file.name} exceeds the 20MB limit.`);
+                                    } else if (file.size <= 512 * 1024) {
+                                      // Call `handle_files_with_one_chunk` when the file is smaller than 512KB
+                                      handle_files_with_one_chunk(dispatch,
+                                        workorder.workorder.id,
+                                        "attachements",
+                                      file,setIsLoading,
+                                      fetchOneWorkOrder);
+                                    } else {
+                                      const file_token = await generateFileToken(file);
                                       handle_chunck(
                                         dispatch,
                                         workorder.workorder.id,
@@ -1514,10 +1521,6 @@ const MissionDetails = () => {
                                         file_token,
                                         setIsLoading,
                                         fetchOneWorkOrder
-                                      );
-                                    } else {
-                                      alert(
-                                        `${file.name} exceeds the 20MB limit.`
                                       );
                                     }
                                   });
@@ -1535,10 +1538,16 @@ const MissionDetails = () => {
                                     ? e.target.files[0]
                                     : null;
                                   if (file) {
-                                    if (file.size <= 20 * 1024 * 1024) {
-                                      const file_token =
-                                        await generateFileToken(file);
-                                      // 20MB limit
+                                    if (file.size > 20 * 1024 * 1024) {
+                                      alert(`${file.name} exceeds the 20MB limit.`);
+                                    } else if (file.size <= 512 * 1024) {
+                                      handle_files_with_one_chunk(dispatch,
+                                        workorder.workorder.id,
+                                        "attachements",
+                                      file,setIsLoading,
+                                      fetchOneWorkOrder);
+                                    } else {
+                                      const file_token = await generateFileToken(file);
                                       handle_chunck(
                                         dispatch,
                                         workorder.workorder.id,
@@ -1547,10 +1556,6 @@ const MissionDetails = () => {
                                         file_token,
                                         setIsLoading,
                                         fetchOneWorkOrder
-                                      );
-                                    } else {
-                                      alert(
-                                        `${file.name} exceeds the 20MB limit.`
                                       );
                                     }
                                   }
@@ -1735,7 +1740,7 @@ const MissionDetails = () => {
                                           }
                                         />
                                       </svg>
-                                      <div className="flex flex-col items-start w-full">
+                                      <div className="flex flex-col items-start gap-1 w-full">
                                         <span
                                           className={`text-[13px] font-medium leading-[20px] overflow-hidden w-full text-ellipsis ${
                                             report.is_completed
@@ -1744,6 +1749,15 @@ const MissionDetails = () => {
                                           }`}
                                         >
                                           {report.file_name}
+                                        </span>
+                                        <span
+                                          className={`text-[12px] leading-[20px] ${
+                                            report.is_completed
+                                              ? "text-n600"
+                                              : "text-[#db2c2c]"
+                                          }`}
+                                        >
+                                        sssssssssss
                                         </span>
                                         <span
                                           className={`text-[12px] leading-[20px] ${
@@ -2188,7 +2202,7 @@ const MissionDetails = () => {
                         <div className="flex justify-end w-full">
                           {workorder.workorder.status < 4 && (
                             <button
-                              className="px-[30px] py-[11px] rounded-[30px] border-[2px] border-primary text-primary text-[14px] font-semibold leading-[20px] w-fit"
+                              className={`px-[30px] py-[11px] rounded-[30px] border-[2px] text-[14px] font-semibold leading-[20px] w-fit ${workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ?"cursor-pointer border-primary text-primary" :"cursor-not-allowed border-n500 text-n500"}`}
                               onClick={() => {
                                 handle_Validate_and_Acceptence(
                                   workorder.workorder.id,
@@ -2197,6 +2211,8 @@ const MissionDetails = () => {
                                   fetchOneWorkOrder
                                 );
                               }}
+                              disabled={workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ? false: true} 
+                              title={workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ? "": "upload accepted certificate first"}
                             >
                               {isLoading ? (
                                 <RotatingLines

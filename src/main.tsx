@@ -18,7 +18,7 @@ import Page404 from "./pages/Page404.tsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GlobalBeforeUnload from "./routes middlewares/GlobalBeforeUnload.tsx";
-import { SnackbarProvider } from "notistack"; // Import SnackbarProvider
+import { SnackbarProvider } from "notistack";
 
 const router = createBrowserRouter([
   {

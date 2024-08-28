@@ -1,23 +1,30 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   isValidEmail,
   check4DigitCode,
   isValidPassword,
 } from "../func/authValidation";
+import { useSnackbar } from "notistack"; // Import the useSnackbar hook
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const ResetPassword = () => {
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState(["", "", "", ""]);
+  const [token, setToken] = useState<string>();
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
 
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [errorVisible, setErrorVisible] = useState<boolean>(false);
   const [newPassError, setNewPassError] = useState<boolean>(false);
   const [confirmPassError, setConfirmPassError] = useState<boolean>(false);
 
   const [resetPage, setResetPage] = useState<1 | 2 | 3>(1);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar(); // Destructure enqueueSnackbar from the hook
 
   const handleCodeChange = (index: number, value: string) => {
     if (value === "" || /^\d$/.test(value)) {
@@ -59,58 +66,135 @@ const ResetPassword = () => {
       setNewPassError(false);
       if (newPass === confirmPass) {
         setConfirmPassError(false);
+        return true;
       } else {
         setConfirmPassError(true);
+        return false;
       }
     } else {
       setNewPassError(true);
+      return false;
     }
   };
 
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleForgetPass = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const response = await fetch(`http://${baseUrl}/account/forget-password`, {
+      const response = await fetch(
+        `http://${baseUrl}/account/forget-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
 
+      console.log(response.status);
+
+      switch (response.status) {
+        case 200:
+          // Handling success based on the status code
+          console.log("Form submitted successfully. Please check your email.");
+          setResetPage(2);
+          setError("");
+          setErrorVisible(false);
+          enqueueSnackbar("Please check your email.", { variant: "info" , autoHideDuration: 3000,});
+          break;
+
+        case 208:
+          setErrorVisible(true)
+          setError("Your request has already been treated.");
+          console.log("Your request has already been treated.");
+          break;
+
+        default:
+          console.error("Error submitting form");
+          break;
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+    }
+  };
+
+  const handlePassKey = async () => {
+    try {
+      const response = await fetch(
+        `http://${baseUrl}/account/check-pass-key?email=${email}&key=${code.join(
+          ""
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(response.status);
+
+      switch (response.status) {
+        case 200:
+          {
+            const data = await response.json();
+            setResetPage(3);
+            setError("");
+            setErrorVisible(false);
+            setToken(data.token);
+          }
+          break;
+        case 406:
+          setErrorVisible(true);
+          setError("Your pass key is uncorrect");
+          break;
+        case 408:
+          setErrorVisible(true);
+          setError("Your pass key is timed out");
+          break;
+
+        default:
+          console.error("Error submitting form");
+          break;
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+    }
+  };
+
+  const handleResetPass = async () => {
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    try {
+      const response = await fetch(`http://${baseUrl}/account/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({password: newPassword }),
       });
 
-      if (response) {
-        const data = await response.json();
-        console.log("Form submitted successfully", data);
-        console.log(response.status)
+      console.log(response.status);
 
-      /*  if (response.status === 200) {
-          localStorage.setItem("token", data.token);
-          navigate("/users");
-        } else if (response.status === 401) {
-          setPasswordErr(true);
-          setPasswordErrMsg("Wrong password");
-        } else if (response.status === 404) {
-          setEmailErr(true);
-          setEmailErrMsg("email not found");
-        } else {
-          console.error("Unexpected error", response.statusText);
-        } 
+      switch (response.status) {
+        case 200:
+          setError("");
+          setErrorVisible(false);
+          enqueueSnackbar("Password successfully reset", { variant: "success" , autoHideDuration: 3000,});
+          navigate("/")
+          break;
 
-        /* setEmail("");
-        setPassword(""); */
-      } else {
-        console.error("Error submitting form");
+        default:
+          console.error("Error submitting form");
+          break;
       }
     } catch (err) {
-      console.error("Error submitting form", err);
+      console.error("Error submitting form:", err);
     }
   };
-
-
-
 
   return (
     <div className="flex items-center justify-center w-full h-[100vh]">
@@ -184,7 +268,7 @@ const ResetPassword = () => {
                 />
                 {error && (
                   <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                    Enter a valid email
+                    {error}
                   </span>
                 )}
               </div>
@@ -192,10 +276,10 @@ const ResetPassword = () => {
                 type="submit"
                 className="py-[18px] w-full text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
                 onClick={(eo) => {
-                 
                   isValidEmail(email)
-                    ? (setError(false), setResetPage(2), handleSubmit(eo))
-                    : setError(true);
+                    ? (setErrorVisible(false), handleForgetPass(eo))
+                    : eo.preventDefault();
+                  setErrorVisible(true);
                 }}
               >
                 Send code
@@ -211,7 +295,7 @@ const ResetPassword = () => {
                 Verify your email{" "}
               </h1>
               <span className="text-center text-n500 w-full xl:w-[400px]">
-                We have sent a verification code to <br /> merry@gmail.com
+                We have sent a verification code to <br /> {email}
               </span>
             </div>
 
@@ -246,9 +330,9 @@ const ResetPassword = () => {
                     );
                   })}
                 </div>
-                {error && (
+                {errorVisible && (
                   <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                    Enter a valid code please{" "}
+                    {error}
                   </span>
                 )}
               </div>
@@ -258,15 +342,17 @@ const ResetPassword = () => {
                 onClick={(eo) => {
                   eo.preventDefault();
                   check4DigitCode(code)
-                    ? (setError(false), setResetPage(3))
-                    : setError(true);
+                    ? handlePassKey()
+                    : setErrorVisible(true);
                 }}
               >
                 Next
               </button>
               <span className="text-[14px] text-n600">
                 You haven’t recieved a code ?{" "}
-                <span className="font-semibold text-primary cursor-pointer">
+                <span className="font-semibold text-primary cursor-pointer"
+                      onClick={(e) => { handleForgetPass(e) }}
+                >
                   Click to resend
                 </span>
               </span>
@@ -380,7 +466,8 @@ const ResetPassword = () => {
                 className="py-[18px] w-full text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
                 onClick={(eo) => {
                   eo.preventDefault();
-                  checkNewPassword(newPassword, confirmPassword);
+                  checkNewPassword(newPassword, confirmPassword) &&
+                    handleResetPass();
                 }}
               >
                 Confirm
