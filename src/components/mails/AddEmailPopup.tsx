@@ -54,8 +54,8 @@ const AddEmailPopup = forwardRef<HTMLDialogElement, AddOrUpdateEmailPopup>(
       try {
         const response = await fetch(
           props.method === "POST"
-            ? `http://${baseUrl}/mail/create-mail`
-            : `http://${baseUrl}/mail/update-mail`,
+            ? `${baseUrl}/mail/create-mail`
+            : `${baseUrl}/mail/update-mail`,
           {
             method: props.method,
             headers: {

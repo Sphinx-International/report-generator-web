@@ -20,7 +20,7 @@ const SideBar = () => {
       return;
     }
     try {
-      const response = fetch(`http://${baseUrl}/account/logout`, {
+      const response = fetch(`${baseUrl}/account/logout`, {
 
         method: "DELETE",
         headers: {

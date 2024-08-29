@@ -62,8 +62,8 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialData = await initialResponse.json();
         const initialUserCount = initialData.data.length;
     
-        if (props.deleteUrl === `http://${baseUrl}/account/delete-accounts`) {
-          const secondResponse = await fetch(`http://${baseUrl}/workorder/delete-workorders-by-account`, {
+        if (props.deleteUrl === `${baseUrl}/account/delete-accounts`) {
+          const secondResponse = await fetch(`${baseUrl}/workorder/delete-workorders-by-account`, {
 
             method: "DELETE",
             headers: {

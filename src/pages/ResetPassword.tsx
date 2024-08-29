@@ -81,7 +81,7 @@ const ResetPassword = () => {
     e.preventDefault();
     try {
       const response = await fetch(
-        `http://${baseUrl}/account/forget-password`,
+        `${baseUrl}/account/forget-password`,
         {
           method: "POST",
           headers: {
@@ -121,7 +121,7 @@ const ResetPassword = () => {
   const handlePassKey = async () => {
     try {
       const response = await fetch(
-        `http://${baseUrl}/account/check-pass-key?email=${email}&key=${code.join(
+        `${baseUrl}/account/check-pass-key?email=${email}&key=${code.join(
           ""
         )}`,
         {
@@ -168,7 +168,7 @@ const ResetPassword = () => {
       return;
     }
     try {
-      const response = await fetch(`http://${baseUrl}/account/reset-password`, {
+      const response = await fetch(`${baseUrl}/account/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

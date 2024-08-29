@@ -20,7 +20,7 @@ const uploadingFile: React.FC<UploadingFilePopup> = (props) => {
     }
 
     try {
-      const response = await fetch(`http://${baseUrl}/file/cancel-upload/${fileID}`, {
+      const response = await fetch(`${baseUrl}/file/cancel-upload/${fileID}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

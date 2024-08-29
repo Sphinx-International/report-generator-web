@@ -25,7 +25,7 @@ import {
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
 import { formatDate } from "../func/formatDatr&Time";
-import AddCertificatPopup from "../components/AddCertificatPopup";
+import AddCertificatPopup from "../components/workorder/AddCertificatPopup";
 import AddReportPopup from "../components/workorder/AddReportPopup";
 import { handleOpenDialog } from "../func/openDialog";
 import CircularProgress from "../components/CircleProgress";
@@ -34,7 +34,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 import { RootState } from "../Redux/store";
-import { handle_edit_or_reqUpdate_report } from "../func/otherworkorderApis";
+import { handle_edit_or_reqUpdate_report,handle_update_cert_type } from "../func/otherworkorderApis";
 import { generateFileToken } from "../func/generateFileToken";
 import { useSnackbar } from "notistack";
 
@@ -240,7 +240,7 @@ const MissionDetails = () => {
       return;
     }
 
-    const url = `http://${baseUrl}/workorder/get-workorder/${id}`;
+    const url = `${baseUrl}/workorder/get-workorder/${id}`;
 
     try {
       const response = await fetch(url, {
@@ -280,6 +280,8 @@ const MissionDetails = () => {
     }
   }, [id]);
 
+  console.log(workorder)
+
   const handleEditWorkorder = async (properties: WorkorderProperties = {}) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -301,7 +303,7 @@ const MissionDetails = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://${baseUrl}/workorder/update-workorder`,
+        `${baseUrl}/workorder/update-workorder`,
         {
           method: "PATCH",
           headers: {
@@ -397,7 +399,7 @@ const MissionDetails = () => {
     }
     try {
       const response = await fetch(
-        `http://${baseUrl}/workorder/update-workorder-acceptence`,
+        `${baseUrl}/workorder/update-workorder-acceptence`,
         {
           method: "PATCH",
           headers: {
@@ -1168,7 +1170,7 @@ const MissionDetails = () => {
                           : "Urgent"}
                       </span>
                       {showPriority && (
-                        <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-lg z-30 absolute flex flex-col items-start gap-[27px] lg:-left-36 left-3 top-12">
+                        <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-lg z-30 absolute flex flex-col items-start gap-[27px] lg:left-32 left-3 top-12">
                           <div className="flex flex-col items-start gap-[16px]">
                             <span className=" text-n700 font-medium md:text-[14px] text-[12px]">
                               Priority
@@ -2067,7 +2069,7 @@ const MissionDetails = () => {
                                             }}
                                           >
                                             <svg
-                                              className="hover:scale-110 transition-all duration-100"
+                                              className="hover:scale-115 transition-all duration-100"
                                               onClick={() => {
                                                 setShowEditCertificatType(
                                                   !showEditCertificatType
@@ -2088,7 +2090,10 @@ const MissionDetails = () => {
                                               />
                                             </svg>
                                             {showEditCertificatType && (
-                                              <div className="bg-white p-[15px] rounded-[20px] shadow-xl flex items-center flex-col md:flex-row gap-[6px] absolute right-0 top-6">
+
+<div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
+
+                                              <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
                                                 {certeficatTypes.map((type) => {
                                                   return (
                                                     <span
@@ -2114,6 +2119,39 @@ const MissionDetails = () => {
                                                   );
                                                 })}
                                               </div>
+
+
+             {workorder.acceptance_certificates[workorder.acceptance_certificates.length - 1].type !== certType &&
+             <div className="flex items-center gap-[6px] w-full">
+                              <button
+                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
+                                onClick={() => {
+                                  setCertType(workorder.acceptance_certificates![workorder.acceptance_certificates!.length - 1].type)
+                                  setShowEditCertificatType(false);
+                                }}  
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                                onClick={async () => {
+                                 await  handle_update_cert_type(
+                                     workorder.workorder.id,
+                                     certType,
+                                     fetchOneWorkOrder
+                                  );
+                                  setShowEditCertificatType(false);
+                                }} 
+                              >
+                                Save
+                              </button>
+                            </div>
+             }
+
+
+                                            </div>
+
+
                                             )}
                                           </div>
                                         )}

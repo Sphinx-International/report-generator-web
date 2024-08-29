@@ -43,7 +43,7 @@ const Account = () => {
     setIsLoading(true);
     setErr("")
     try {
-      const response = await fetch(`http://${baseUrl}//account/update-account/generals`, {
+      const response = await fetch(`${baseUrl}//account/update-account/generals`, {
 
         // Added a leading slash
         method: "PUT",

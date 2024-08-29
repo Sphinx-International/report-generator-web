@@ -26,7 +26,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
         console.log(`${key}: ${value}`);
       }  */
     try {
-      const response = await fetch(`http://${baseUrl}/workorder/update-workorder-attachments`, {
+      const response = await fetch(`${baseUrl}/workorder/update-workorder-attachments`, {
         method: "PUT",
         headers: {
             Authorization: `Token ${token}`,
@@ -77,7 +77,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
         : JSON.stringify({ workorder_id, file_id, auto_validate: fileStatus  });
 
         console.log(body)
-      const response = await fetch(`http://${baseUrl}/workorder/upload-workorder-${fileType}`, {
+      const response = await fetch(`${baseUrl}/workorder/upload-workorder-${fileType}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +134,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
 
       try {
         const response = await fetch(
-          `http://${baseUrl}/file/upload-rest-chunks/${fileId}`,
+          `${baseUrl}/file/upload-rest-chunks/${fileId}`,
           {
             method: "PUT",
             headers: {
@@ -200,7 +200,7 @@ export const handle_chunck = async (
   setIsLoading(true);
 
   try {
-    const response = await fetch(`http://${baseUrl}/file/upload-first-chunk`, {
+    const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
       method: "POST",
       headers: {
         Authorization: `Token ${token}`,
@@ -258,7 +258,7 @@ export const handle_resuming_upload = async (
   setIsLoading(true);
 
   try {
-    const response = await fetch(`http://${baseUrl}/file/request-resuming-upload/${fileId}`, {
+    const response = await fetch(`${baseUrl}/file/request-resuming-upload/${fileId}`, {
       method: "PUT",
       headers: {
         Authorization: `Token ${token}`,
@@ -337,7 +337,7 @@ export const handle_files_with_one_chunk = async (
   setIsLoading(true);
 
   try {
-    const response = await fetch(`http://${baseUrl}/file/upload-file`, {
+    const response = await fetch(`${baseUrl}/file/upload-file`, {
       method: "POST",
       headers: {
         Authorization: `Token ${token}`,

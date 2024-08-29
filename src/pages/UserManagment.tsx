@@ -101,8 +101,8 @@ const UserManagment = () => {
       return { total: 0, current_offset: 0 };
     }
     const url = role
-      ? `http://${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
-      : `http://${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
+      ? `${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
+      : `${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
 
 
     setIsloading(true);
@@ -435,10 +435,10 @@ const UserManagment = () => {
       <DeletePopup
         ref={deleteDialogRef}
         deleteItems={selectedUsers}
-        deleteUrl={`http://${baseUrl}/account/delete-accounts`}
+        deleteUrl={`${baseUrl}/account/delete-accounts`}
         jsonTitle="accounts"
         fetchFunc={fetchUsers}
-        fetchUrl={`http://${baseUrl}/account/get-accounts`}
+        fetchUrl={`${baseUrl}/account/get-accounts`}
 
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}

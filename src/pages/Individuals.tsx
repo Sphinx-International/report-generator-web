@@ -31,7 +31,7 @@ const Individuals = () => {
     }
     setIsLoading(true);
 
-    const url = `http://${baseUrl}/mail/get-mails`;
+    const url = `${baseUrl}/mail/get-mails`;
     // setIsPageLoading(true);
     try {
       const response = await fetch(url, {
@@ -66,7 +66,7 @@ const Individuals = () => {
       return;
     }
 
-    const url = `http://${baseUrl}/mail/delete-mail`;
+    const url = `${baseUrl}/mail/delete-mail`;
     try {
       const response = await fetch(url, {
         method: "DELETE",

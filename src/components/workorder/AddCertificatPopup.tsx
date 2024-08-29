@@ -1,16 +1,16 @@
 import { forwardRef } from "react";
-import { handleCloseDialog } from "../func/openDialog";
-import { handle_chunck,handle_files_with_one_chunk } from "../func/chunkUpload";
+import { handleCloseDialog } from "../../func/openDialog";
+import { handle_chunck,handle_files_with_one_chunk } from "../../func/chunkUpload";
 import { useState } from "react";
-import { TheUploadingFile } from "../assets/types/Mission";
-import UploadingFile from "./uploadingFile";
+import { TheUploadingFile } from "../../assets/types/Mission";
+import UploadingFile from "./../uploadingFile";
 import { RotatingLines } from "react-loader-spinner";
-import { certeficatTypes } from "../assets/CertificatTypes";
+import { certeficatTypes } from "../../assets/CertificatTypes";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../Redux/store";
+import { AppDispatch } from "../../Redux/store";
 import { useSelector } from "react-redux";
-import { RootState } from "../Redux/store";
-import { generateFileToken } from "../func/generateFileToken";
+import { RootState } from "../../Redux/store";
+import { generateFileToken } from "../../func/generateFileToken";
 
 interface AddCertificatProps {
   workorderId: string;
