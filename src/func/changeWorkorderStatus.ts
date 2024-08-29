@@ -24,7 +24,7 @@ export const handle_Assignment_and_execute = async (
       ? JSON.stringify({ workorder_id, engineer_id })
       : JSON.stringify({ workorder_id });
   try {
-    const response = await fetch(`http://${baseUrl}/workorder/${endPointPah}`, {
+    const response = await fetch(`${baseUrl}/workorder/${endPointPah}`, {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export const handle_Validate_and_Acceptence = async (
   console.log(JSON.stringify({ workorder_id }));
   setIsLoading(true);
   try {
-    const response = await fetch(`http://${baseUrl}/workorder/${endPointPah}`, {
+    const response = await fetch(`${baseUrl}/workorder/${endPointPah}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -118,7 +118,7 @@ export const handle_add_or_delete_mailedPerson = async (
   setIsLoading(true);
   try {
     const response = await fetch(
-      `http://${baseUrl}/workorder/update-workorder-mails`,
+      `${baseUrl}/workorder/update-workorder-mails`,
       {
         method: "PUT",
         headers: {

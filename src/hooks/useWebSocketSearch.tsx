@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const baseUrl = import.meta.env.VITE_WS_BASE_URL;
+const baseUrl = import.meta.env.VITE_BASE_WS_URL;
 
 interface UseWebSocketSearchProps {
   searchQuery: string | null;
