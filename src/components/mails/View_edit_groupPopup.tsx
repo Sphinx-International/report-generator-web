@@ -10,7 +10,7 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 interface ViewEditGroupPopup {
   groupInfo?: Resgroup;
   fetchFunc: () => void;
-  setOpenedGroup: React.Dispatch<React.SetStateAction<Resgroup | undefined>>; 
+  setOpenedGroup: React.Dispatch<React.SetStateAction<Resgroup | undefined>>;
 }
 
 interface EditingGroupMembers {
@@ -131,6 +131,68 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
               }));
               setErr("");
               setVisibleErr(false);
+              props.fetchFunc();
+              break;
+            case 400:
+              setErr("Verify your email.");
+              break;
+            case 409:
+              setErr("Group name already exists.");
+              setVisibleErr(true);
+              break;
+            default:
+              console.log("Error: check the response status code");
+              break;
+          }
+        }
+      } catch (err) {
+        console.error("Error submitting form", err);
+      }
+
+      setIsLoading(false);
+    };
+
+    const handleEditMembers = async () => {
+      setIsLoading(true);
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        setIsLoading(false);
+        return;
+      }
+
+      // Extract IDs from the `add` array
+      const transformedMembers = {
+        group_id: editMembers.group_id,
+        add: editMembers.add.map((member) => member.id), // Extract only the IDs
+        delete: editMembers.delete, // Keep the delete array as it is
+      };
+
+      try {
+        const response = await fetch(
+          `${baseUrl}/mail/update-group-members`,
+
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Token ${token}`,
+            },
+            body: JSON.stringify(transformedMembers),
+          }
+        );
+
+        if (response) {
+          console.log(response.status);
+          switch (response.status) {
+            case 200:
+              handleClose();
+              setEditMembers({
+                group_id: props.groupInfo?.id,
+                add: [],
+                delete: [],
+              });
               props.fetchFunc();
               break;
             case 400:
@@ -444,7 +506,9 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
                       ? false
                       : true
                   }
-                  onClick={() => {}}
+                  onClick={() => {
+                    handleEditMembers();
+                  }}
                 >
                   {isLoading ? (
                     <RotatingLines strokeColor="white" width="20" />

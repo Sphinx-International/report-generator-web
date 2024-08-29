@@ -1,15 +1,16 @@
 import { forwardRef } from "react";
-import { handleCloseDialog } from "../func/openDialog";
-import { handle_chunck } from "../func/chunkUpload";
+import { handleCloseDialog } from "../../func/openDialog";
+import { handle_chunck,handle_files_with_one_chunk } from "../../func/chunkUpload";
 import { useState } from "react";
-import { TheUploadingFile } from "../assets/types/Mission";
-import UploadingFile from "./uploadingFile";
+import { TheUploadingFile } from "../../assets/types/Mission";
+import UploadingFile from "./../uploadingFile";
 import { RotatingLines } from "react-loader-spinner";
-import { certeficatTypes } from "../assets/CertificatTypes";
+import { certeficatTypes } from "../../assets/CertificatTypes";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../Redux/store";
+import { AppDispatch } from "../../Redux/store";
 import { useSelector } from "react-redux";
-import { RootState } from "../Redux/store";
+import { RootState } from "../../Redux/store";
+import { generateFileToken } from "../../func/generateFileToken";
 
 interface AddCertificatProps {
   workorderId: string;
@@ -61,7 +62,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
             })}
           </div>
         </div>
-        {file && !isLoading  ? (
+        {file && !isLoading ? (
           <UploadingFile
             id={
               uploadingacceptenceFiles[uploadingacceptenceFiles.length - 1]?.id
@@ -88,17 +89,31 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
 
               // Ensure files are not null and handle each file
               if (files) {
-                Array.from(files).forEach((file) => {
-                  // Check file size (20MB = 20 * 1024 * 1024 bytes)
+                Array.from(files).forEach(async (file) => {
                   if (file.size > 20 * 1024 * 1024) {
-                    alert("File size exceeds 20MB limit");
-                  } else {
+                    alert(`${file.name} exceeds the 20MB limit.`);
+                  } else if (file.size <= 512 * 1024) {
                     setFile({ file });
+
+                    handle_files_with_one_chunk(                      
+                      dispatch,
+                      props.workorderId,
+                      "certificate",
+                      file,
+                      setIsLoading,
+                      props.fetchOneWorkOrder,
+                      certType
+                    );
+                  } else {
+                    const file_token = await generateFileToken(file);
+                    setFile({ file });
+
                     handle_chunck(
                       dispatch,
                       props.workorderId,
                       "certificate",
                       file,
+                      file_token,
                       setIsLoading,
                       props.fetchOneWorkOrder,
                       certType
@@ -117,16 +132,29 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
               onChange={async (e) => {
                 const file = e.target.files ? e.target.files[0] : null;
                 if (file) {
-                  // Check file size (20MB = 20 * 1024 * 1024 bytes)
                   if (file.size > 20 * 1024 * 1024) {
-                    alert("File size exceeds 20MB limit");
+                    alert(`${file.name} exceeds the 20MB limit.`);
+                  } else if (file.size <= 512 * 1024) {
+                    setFile({ file });
+                    handle_files_with_one_chunk(
+                      dispatch,
+                      props.workorderId,
+                      "certificate",
+                      file,
+                      setIsLoading,
+                      props.fetchOneWorkOrder,
+                      certType
+                  );
                   } else {
+                    const file_token = await generateFileToken(file);
+
                     setFile({ file });
                     handle_chunck(
                       dispatch,
                       props.workorderId,
                       "certificate",
                       file,
+                      file_token,
                       setIsLoading,
                       props.fetchOneWorkOrder,
                       certType

@@ -232,7 +232,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             body: formData,
           }
         );
-    
         if (response.ok) {
           const data = await response.json();
           console.log("Form submitted successfully", data);

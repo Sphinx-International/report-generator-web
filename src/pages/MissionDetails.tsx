@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, ChangeEvent } from "react";
 import { useParams } from "react-router-dom";
 import WorkOrderStatus from "../components/WorkOrderStatus";
 import SideBar from "../components/SideBar";
@@ -20,10 +20,13 @@ import handleChange from "../func/handleChangeFormsInput";
 import {
   handle_chunck,
   upload_or_delete_workorder_files_for_attachements,
+  handle_resuming_upload,
+  handle_files_with_one_chunk
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
 import { formatDate } from "../func/formatDatr&Time";
-import AddCertificatPopup from "../components/AddCertificatPopup";
+import AddCertificatPopup from "../components/workorder/AddCertificatPopup";
+import AddReportPopup from "../components/workorder/AddReportPopup";
 import { handleOpenDialog } from "../func/openDialog";
 import CircularProgress from "../components/CircleProgress";
 import { certeficatTypes } from "../assets/CertificatTypes";
@@ -31,7 +34,9 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 import { RootState } from "../Redux/store";
-import { handle_edit_or_reqUpdate_report } from "../func/otherworkorderApis";
+import { handle_edit_or_reqUpdate_report,handle_update_cert_type } from "../func/otherworkorderApis";
+import { generateFileToken } from "../func/generateFileToken";
+import { useSnackbar } from "notistack";
 
 type WorkorderProperties = {
   title?: string;
@@ -74,6 +79,7 @@ const MissionDetails = () => {
   const [undo_req_acc_MessageVisible, setUndo_req_acc_MessageVisible] =
     useState(false);
   const addCertificatDialogRef = useRef<HTMLDialogElement>(null);
+  const addReportDialogRef = useRef<HTMLDialogElement>(null);
   const undoTimeoutRef = useRef<number | null>(null);
   const undoActionTriggeredRef = useRef(false);
   const undo_req_acc_ActionTriggeredRef = useRef(false);
@@ -99,6 +105,65 @@ const MissionDetails = () => {
 
   const [certType, setCertType] = useState<1 | 2 | 3>(1);
   const [showEditCertificatType, setShowEditCertificatType] = useState(false);
+
+  const fileInputOnReuploadRef = useRef<HTMLInputElement>(null);
+  const [selectedIdFileForResumeUpload, setSelectedIdFileForResumeUpload] =
+    useState<number>();
+  const [selectedFileTypeForResumeUpload, setSelectedFileTypeForResumeUpload] =
+    useState<"attachements" | "report" | "certificate">();
+
+  const [visibleHistory, setVisibleHistory] = useState<boolean>(false);
+
+  const { enqueueSnackbar } = useSnackbar(); // Get enqueueSnackbar function
+
+  const handleLabelClick = (
+    fileId: number,
+    fileType: "attachements" | "report" | "certificate"
+  ) => {
+    setSelectedIdFileForResumeUpload(fileId);
+    setSelectedFileTypeForResumeUpload(fileType);
+
+    // Open the file input by triggering a click on its ref
+    fileInputOnReuploadRef.current?.click();
+  };
+
+  const handleFileInputChangeOfResumeUpload = async (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files ? e.target.files[0] : null;
+
+    if (
+      file &&
+      selectedIdFileForResumeUpload !== null &&
+      selectedFileTypeForResumeUpload !== null
+    ) {
+      try {
+        const file_token = await generateFileToken(file);
+
+        // Immediately reset the file input value
+        e.target.value = "";
+
+        // Call the handle_resuming_upload function without waiting for it to complete
+        handle_resuming_upload(
+          dispatch,
+          selectedIdFileForResumeUpload!,
+          file,
+          selectedFileTypeForResumeUpload!,
+          file_token,
+          setIsLoading,
+          fetchOneWorkOrder,
+          enqueueSnackbar
+        );
+
+        // Reset the selected IDs
+        setSelectedIdFileForResumeUpload(undefined);
+        setSelectedFileTypeForResumeUpload(undefined);
+      } catch (error) {
+        console.error("Error handling file upload", error);
+      }
+    }
+  };
+
   useEffect(() => {
     const certfDialog = addCertificatDialogRef.current;
 
@@ -112,7 +177,6 @@ const MissionDetails = () => {
       }
     };
   }, []);
-console.log(workorder)
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
@@ -215,6 +279,8 @@ console.log(workorder)
       setIsPageLoading(false);
     }
   }, [id]);
+
+  console.log(workorder)
 
   const handleEditWorkorder = async (properties: WorkorderProperties = {}) => {
     const token =
@@ -407,8 +473,8 @@ console.log(workorder)
           <div className="flex flex-col items-end gap-[40px] w-full sm:px-[25px] px-[14px]">
             <div className="flex flex-col w-full gap-[31px] ">
               <div className="flex flex-col gap-[31px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
-                <div className="w-full flex flex-col lg:flex-row md:justify-between items-start gap-[14px] md:pl-[6px]">
-                  <div className="flex items-center gap-[12px] w-full text-primary font-semibold md:text-[24px] text-[17px]">
+                <div className="w-full flex flex-row items-center gap-[14px] md:pl-[6px]">
+                  <div className="flex items-center gap-[12px] w-fit text-primary font-semibold md:text-[24px] text-[17px]">
                     <input
                       className={`text-primary font-semibold md:text-[24px] text-[17px] lg:w-[55%] w-[70%] rounded-[20px] py-[7px] sm:px-[20px] px-[16px] bg-white ${
                         isEditing_Title_tic
@@ -456,143 +522,68 @@ console.log(workorder)
                       </svg>
                     )}
                   </div>
-
-                  <div className="flex items-center gap-[8px] relative">
-                    <WorkOrderStatus
-                      status={workorder.workorder.status}
-                      styles={{ fontSize: 13, px: 28, py: 9.5 }}
-                    />
-
-                    <div className="">
-                      {" "}
-                      <span
-                        className={`cursor-pointer rounded-[100px] text-[13px] font-medium leading-[15px] bg-[#FEF6FF] py-[9.5px] px-[28px] ${
-                          basicDataWorkorder.priority === 0
-                            ? "text-primary"
-                            : basicDataWorkorder.priority === 1
-                            ? "text-[#DB2C9F]"
-                            : basicDataWorkorder.priority === 2
-                            ? "text-[#FFAA29]"
-                            : "text-[#DB2C2C]"
-                        }`}
-                        onClick={() => {
-                          if (getRole() !== 2) {
-                            setShowPriority(!showPriority);
-                          }
-                        }}
-                      >
-                        {basicDataWorkorder.priority === 0
-                          ? "Low"
-                          : basicDataWorkorder.priority === 1
-                          ? "Medium"
-                          : basicDataWorkorder.priority === 2
-                          ? "High"
-                          : "Urgent"}
-                      </span>
-                      {showPriority && (
-                        <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-lg z-30 absolute flex flex-col items-start gap-[27px] lg:-left-36 left-3 top-12">
-                          <div className="flex flex-col items-start gap-[16px]">
-                            <span className=" text-n700 font-medium md:text-[14px] text-[12px]">
-                              Priority
-                            </span>
-                            <div className="flex items-center gap-[4px]">
-                              {Array.from({ length: 4 }).map((_, index) => {
-                                return (
-                                  <span
-                                    className={`cursor-pointer rounded-[100px] py-[4.5px] sm:px-[20px] px-[15px] leading-[15px] sm:text-[10px] text-[9px] font-medium ${
-                                      index === 0
-                                        ? index === basicDataWorkorder.priority
-                                          ? "text-primary bg-[#FFF5F3] border-[1px] border-primary"
-                                          : "text-primary bg-[#FFF5F3]"
-                                        : index === 1
-                                        ? index === basicDataWorkorder.priority
-                                          ? "text-[#DB2C9F] bg-[#FEF6FF] border-[1px] border-[#DB2C9F]"
-                                          : "text-[#DB2C9F] bg-[#FEF6FF]"
-                                        : index === 2
-                                        ? index === basicDataWorkorder.priority
-                                          ? "text-[#FFAA29] bg-[#FFF8EC] border-[1px] border-[#FFAA29]"
-                                          : "text-[#FFAA29] bg-[#FFF8EC]"
-                                        : index === basicDataWorkorder.priority
-                                        ? "text-[#DB2C2C] bg-[#FEF6FF] border-[1px] border-[#DB2C2C]"
-                                        : "text-[#DB2C2C] bg-[#FEF6FF]"
-                                    }`}
-                                    onClick={() => {
-                                      setBasicDataWorkorder((prev) => ({
-                                        ...prev,
-                                        priority: index,
-                                      }));
-                                    }}
-                                  >
-                                    {index === 0
-                                      ? "Low"
-                                      : index === 1
-                                      ? "Medium"
-                                      : index === 2
-                                      ? "High"
-                                      : "Urgent"}
-                                  </span>
-                                );
-                              })}
+                  <div className="flex-grow" />
+                {workorder.history !== null &&  workorder.history.length !== 0 &&
+                  <div className="relative">
+                    <svg
+                      className="cursor-pointer hover:scale-105"
+                      onClick={() => {
+                        setVisibleHistory(!visibleHistory);
+                      }}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M12 8V12L14 14"
+                        stroke="#6F6C8F"
+                        stroke-width="1.66667"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M3.0498 10.9999C3.2739 8.8 4.30007 6.75956 5.93254 5.26791C7.56501 3.77627 9.6895 2.93783 11.9007 2.91257C14.1119 2.88732 16.255 3.67701 17.9211 5.13098C19.5872 6.58495 20.6597 8.60142 20.934 10.7957C21.2083 12.9899 20.6651 15.2084 19.4082 17.0277C18.1512 18.8471 16.2684 20.14 14.1191 20.6598C11.9697 21.1796 9.70421 20.8899 7.7548 19.846C5.80539 18.8021 4.30853 17.077 3.5498 14.9999M3.0498 19.9999V14.9999H8.0498"
+                        stroke="#6F6C8F"
+                        stroke-width="1.66667"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    {visibleHistory && (
+                      <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start">
+                        {workorder.history.map((action, index) => {
+                          return (
+                            <div
+                              key={index}
+                              className={`flex flex-col items-start gap-1 py-[10px] ${++index !== workorder.history.length && " border-b-[1px] border-b-n300"}`}
+                            >
+                              <h6 className="text-[13px] leading-5 font-medium text-n800 text-nowrap">
+                                {action.status === 2
+                                  ? "workorder has been executed"
+                                  : action.status === 3
+                                  ? "workorder has been validated"
+                                  : action.status === 4
+                                  ? "workorder has been Accepted"
+                                  : action.status === 5
+                                  ? "workorder is Closed"
+                                  : null}
+                              </h6>
+                              <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
+                                {formatDate(action.at)}
+                              </span>
                             </div>
-                          </div>
-                          {workorder.workorder.priority !==
-                            basicDataWorkorder.priority && (
-                            <div className="flex items-center gap-[6px] w-full">
-                              <button
-                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
-                                onClick={() => {
-                                  setBasicDataWorkorder((prev) => ({
-                                    ...prev,
-                                    priority: workorder.workorder.priority,
-                                  }));
-                                  setShowPriority(false);
-                                }}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
-                                onClick={() => {
-                                  handleEditWorkorder({
-                                    id: workorder.workorder.id,
-                                    priority: basicDataWorkorder.priority,
-                                  });
-                                }}
-                              >
-                                Save
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {reqAcc ? (
-                      <span
-                        className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
-                        onClick={() => {
-                          if (getRole() !== 2) {
-                            handleeditReqAccStatus(workorder.workorder.id, 0);
-                          }
-                        }}
-                      >
-                        ✓
-                      </span>
-                    ) : (
-                      <span
-                        className="px-[10px] py-[6px] rounded-[50%] text-[#DB2C2C] bg-[#DB2C2C4D] cursor-pointer"
-                        onClick={() => {
-                          if (getRole() !== 2) {
-                            handleeditReqAccStatus(workorder.workorder.id, 1);
-                          }
-                        }}
-                      >
-                        🗙
-                      </span>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
+                }
+
                 </div>
 
-                <div className="w-full flex flex-col items-start gap-[12px]">
+                <div className="w-full flex flex-col items-start gap-[15px]">
                   {workorder.workorder.assigned_to !== null ? (
                     <div className="flex items-center gap-[12px] relative">
                       <div
@@ -990,7 +981,7 @@ console.log(workorder)
                       name="description"
                       disabled={isEditing_desc ? false : true}
                       value={basicDataWorkorder.description}
-                      rows={isEditing_desc ? 4 : 3}
+                      rows={isEditing_desc ? 4 : 2}
                       onChange={(e) => {
                         handleChange(e, setBasicDataWorkorder);
                       }}
@@ -1145,6 +1136,140 @@ console.log(workorder)
                         );
                       })}
                   </div>
+
+                  <div className="flex items-center gap-[8px] relative">
+                    <WorkOrderStatus
+                      status={workorder.workorder.status}
+                      styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                    />
+
+                    <div className="">
+                      {" "}
+                      <span
+                        className={`cursor-pointer rounded-[100px] text-[13px] font-medium leading-[15px] bg-[#FEF6FF] py-[9.5px] px-[28px] ${
+                          basicDataWorkorder.priority === 0
+                            ? "text-primary"
+                            : basicDataWorkorder.priority === 1
+                            ? "text-[#DB2C9F]"
+                            : basicDataWorkorder.priority === 2
+                            ? "text-[#FFAA29]"
+                            : "text-[#DB2C2C]"
+                        }`}
+                        onClick={() => {
+                          if (getRole() !== 2) {
+                            setShowPriority(!showPriority);
+                          }
+                        }}
+                      >
+                        {basicDataWorkorder.priority === 0
+                          ? "Low"
+                          : basicDataWorkorder.priority === 1
+                          ? "Medium"
+                          : basicDataWorkorder.priority === 2
+                          ? "High"
+                          : "Urgent"}
+                      </span>
+                      {showPriority && (
+                        <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-lg z-30 absolute flex flex-col items-start gap-[27px] lg:left-32 left-3 top-12">
+                          <div className="flex flex-col items-start gap-[16px]">
+                            <span className=" text-n700 font-medium md:text-[14px] text-[12px]">
+                              Priority
+                            </span>
+                            <div className="flex items-center gap-[4px]">
+                              {Array.from({ length: 4 }).map((_, index) => {
+                                return (
+                                  <span
+                                    className={`cursor-pointer rounded-[100px] py-[4.5px] sm:px-[20px] px-[15px] leading-[15px] sm:text-[10px] text-[9px] font-medium ${
+                                      index === 0
+                                        ? index === basicDataWorkorder.priority
+                                          ? "text-primary bg-[#FFF5F3] border-[1px] border-primary"
+                                          : "text-primary bg-[#FFF5F3]"
+                                        : index === 1
+                                        ? index === basicDataWorkorder.priority
+                                          ? "text-[#DB2C9F] bg-[#FEF6FF] border-[1px] border-[#DB2C9F]"
+                                          : "text-[#DB2C9F] bg-[#FEF6FF]"
+                                        : index === 2
+                                        ? index === basicDataWorkorder.priority
+                                          ? "text-[#FFAA29] bg-[#FFF8EC] border-[1px] border-[#FFAA29]"
+                                          : "text-[#FFAA29] bg-[#FFF8EC]"
+                                        : index === basicDataWorkorder.priority
+                                        ? "text-[#DB2C2C] bg-[#FEF6FF] border-[1px] border-[#DB2C2C]"
+                                        : "text-[#DB2C2C] bg-[#FEF6FF]"
+                                    }`}
+                                    onClick={() => {
+                                      setBasicDataWorkorder((prev) => ({
+                                        ...prev,
+                                        priority: index,
+                                      }));
+                                    }}
+                                  >
+                                    {index === 0
+                                      ? "Low"
+                                      : index === 1
+                                      ? "Medium"
+                                      : index === 2
+                                      ? "High"
+                                      : "Urgent"}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          {workorder.workorder.priority !==
+                            basicDataWorkorder.priority && (
+                            <div className="flex items-center gap-[6px] w-full">
+                              <button
+                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
+                                onClick={() => {
+                                  setBasicDataWorkorder((prev) => ({
+                                    ...prev,
+                                    priority: workorder.workorder.priority,
+                                  }));
+                                  setShowPriority(false);
+                                }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                                onClick={() => {
+                                  handleEditWorkorder({
+                                    id: workorder.workorder.id,
+                                    priority: basicDataWorkorder.priority,
+                                  });
+                                }}
+                              >
+                                Save
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {reqAcc ? (
+                      <span
+                        className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
+                        onClick={() => {
+                          if (getRole() !== 2) {
+                            handleeditReqAccStatus(workorder.workorder.id, 0);
+                          }
+                        }}
+                      >
+                        ✓
+                      </span>
+                    ) : (
+                      <span
+                        className="px-[10px] py-[6px] rounded-[50%] text-[#DB2C2C] bg-[#DB2C2C4D] cursor-pointer"
+                        onClick={() => {
+                          if (getRole() !== 2) {
+                            handleeditReqAccStatus(workorder.workorder.id, 1);
+                          }
+                        }}
+                      >
+                        🗙
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="w-full flex flex-col gap-[6px]">
@@ -1169,7 +1294,11 @@ console.log(workorder)
                                 return (
                                   <div
                                     key={index}
-                                    className={`cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px]  rounded-[15px] group ${attach.is_completed ? "border-[1px] border-n400" : "border-[2px] border-[#DB2C2C]"}`}
+                                    className={`cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px]  rounded-[15px] group ${
+                                      attach.is_completed
+                                        ? "border-[1px] border-n400"
+                                        : "border-[2px] border-[#DB2C2C]"
+                                    }`}
                                     onClick={() => {
                                       downloadFile(
                                         attach.id,
@@ -1240,14 +1369,30 @@ console.log(workorder)
                                         />
                                         <path
                                           d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
-                                          fill={attach.is_completed ? "#6F6C8F":"#DB2C2C"}
+                                          fill={
+                                            attach.is_completed
+                                              ? "#6F6C8F"
+                                              : "#DB2C2C"
+                                          }
                                         />
                                       </svg>
                                       <div className="flex flex-col items-start w-full">
-                                        <span className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${attach.is_completed ? "text-n600":"text-[#DB2C2C]"}`}>
+                                        <span
+                                          className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${
+                                            attach.is_completed
+                                              ? "text-n600"
+                                              : "text-[#DB2C2C]"
+                                          }`}
+                                        >
                                           {attach.file_name}
                                         </span>
-                                        <span className={`text-[12px] leading-[20px] ${attach.is_completed ? "text-n600":"text-[#DB2C2C]"}`}>
+                                        <span
+                                          className={`text-[12px] leading-[20px] ${
+                                            attach.is_completed
+                                              ? "text-n600"
+                                              : "text-[#DB2C2C]"
+                                          }`}
+                                        >
                                           {"22.5 mb"}
                                         </span>
                                       </div>
@@ -1282,30 +1427,43 @@ console.log(workorder)
                                           />
                                         </svg>
                                       </span>
-                                    ): 
-                                    
-                                    <span
-                                        className=" w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110"
+                                    ) : (
+                                      <label
+                                        className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                        htmlFor="reupload"
                                         onClick={(e) => {
                                           e.stopPropagation();
-
-                                         //here call the continue upload function
+                                          handleLabelClick(
+                                            attach.id,
+                                            "attachements"
+                                          );
                                         }}
                                       >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-<g clip-path="url(#clip0_968_6186)">
-<path d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z" fill="#C70000"/>
-</g>
-<defs>
-<clipPath id="clip0_968_6186">
-<rect width="14" height="14" fill="white"/>
-</clipPath>
-</defs>
-</svg>
-                                      </span>
-                                    
-                                    
-                                    }
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 14 14"
+                                          fill="none"
+                                        >
+                                          <g clipPath="url(#clip0_968_6186)">
+                                            <path
+                                              d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                              fill="#C70000"
+                                            />
+                                          </g>
+                                          <defs>
+                                            <clipPath id="clip0_968_6186">
+                                              <rect
+                                                width="14"
+                                                height="14"
+                                                fill="white"
+                                              />
+                                            </clipPath>
+                                          </defs>
+                                        </svg>
+                                      </label>
+                                    )}
                                   </div>
                                 );
                               })}
@@ -1344,20 +1502,27 @@ console.log(workorder)
 
                                 // Ensure files is not null and handle each file
                                 if (files) {
-                                  Array.from(files).forEach((file) => {
-                                    if (file.size <= 20 * 1024 * 1024) {
-                                      // 20MB limit
+                                  Array.from(files).forEach(async (file) => {
+                                    if (file.size > 20 * 1024 * 1024) {
+                                      // Alert when the file is larger than 20MB
+                                      alert(`${file.name} exceeds the 20MB limit.`);
+                                    } else if (file.size <= 512 * 1024) {
+                                      // Call `handle_files_with_one_chunk` when the file is smaller than 512KB
+                                      handle_files_with_one_chunk(dispatch,
+                                        workorder.workorder.id,
+                                        "attachements",
+                                      file,setIsLoading,
+                                      fetchOneWorkOrder);
+                                    } else {
+                                      const file_token = await generateFileToken(file);
                                       handle_chunck(
                                         dispatch,
                                         workorder.workorder.id,
                                         "attachements",
                                         file,
+                                        file_token,
                                         setIsLoading,
                                         fetchOneWorkOrder
-                                      );
-                                    } else {
-                                      alert(
-                                        `${file.name} exceeds the 20MB limit.`
                                       );
                                     }
                                   });
@@ -1370,24 +1535,29 @@ console.log(workorder)
                                 id="attachement"
                                 accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
                                 ref={fileInputRef}
-                                onChange={(e) => {
+                                onChange={async (e) => {
                                   const file = e.target.files
                                     ? e.target.files[0]
                                     : null;
                                   if (file) {
-                                    if (file.size <= 20 * 1024 * 1024) {
-                                      // 20MB limit
+                                    if (file.size > 20 * 1024 * 1024) {
+                                      alert(`${file.name} exceeds the 20MB limit.`);
+                                    } else if (file.size <= 512 * 1024) {
+                                      handle_files_with_one_chunk(dispatch,
+                                        workorder.workorder.id,
+                                        "attachements",
+                                      file,setIsLoading,
+                                      fetchOneWorkOrder);
+                                    } else {
+                                      const file_token = await generateFileToken(file);
                                       handle_chunck(
                                         dispatch,
                                         workorder.workorder.id,
                                         "attachements",
                                         file,
+                                        file_token,
                                         setIsLoading,
                                         fetchOneWorkOrder
-                                      );
-                                    } else {
-                                      alert(
-                                        `${file.name} exceeds the 20MB limit.`
                                       );
                                     }
                                   }
@@ -1465,7 +1635,9 @@ console.log(workorder)
               <div className="w-full flex flex-col items-start gap-[23px]">
                 {workorder.workorder.status > 1 && (
                   <>
-                    <div className="w-full flex flex-col gap-[20px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
+                    <div
+                      className={`w-full flex flex-col gap-[20px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]`}
+                    >
                       <label
                         htmlFor="report"
                         className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
@@ -1484,7 +1656,10 @@ console.log(workorder)
                             .map((report) => {
                               return (
                                 <div
-                                  className="cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px]"
+                                  className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px] ${
+                                    !report.is_completed &&
+                                    "border-[2px] border-[#db2c2c]"
+                                  } `}
                                   onClick={() => {
                                     downloadFile(
                                       report.id,
@@ -1536,40 +1711,101 @@ console.log(workorder)
                                     );
                                   }}
                                 >
-                                  <div className="flex items-center gap-[9px] w-full">
-                                    {report.downloadProgress &&
-                                      report.downloadProgress !== "0" && (
-                                        <CircularProgress
-                                          progress={parseFloat(
-                                            report.downloadProgress || "0"
-                                          )}
+                                  <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-[9px] w-full">
+                                      {report.downloadProgress &&
+                                        report.downloadProgress !== "0" && (
+                                          <CircularProgress
+                                            progress={parseFloat(
+                                              report.downloadProgress || "0"
+                                            )}
+                                          />
+                                        )}
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="22"
+                                        height="26"
+                                        viewBox="0 0 22 26"
+                                        fill="none"
+                                      >
+                                        <path
+                                          opacity="0.2"
+                                          d="M20.375 6.33984V19.4648C20.375 19.7135 20.2762 19.9519 20.1004 20.1278C19.9246 20.3036 19.6861 20.4023 19.4375 20.4023H16.625V10.0898L11.9375 5.40234H5.375V2.58984C5.375 2.3412 5.47377 2.10275 5.64959 1.92693C5.8254 1.75112 6.06386 1.65234 6.3125 1.65234H15.6875L20.375 6.33984Z"
+                                          fill="#6F6C8F"
                                         />
-                                      )}
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="22"
-                                      height="26"
-                                      viewBox="0 0 22 26"
-                                      fill="none"
-                                    >
-                                      <path
-                                        opacity="0.2"
-                                        d="M20.375 6.33984V19.4648C20.375 19.7135 20.2762 19.9519 20.1004 20.1278C19.9246 20.3036 19.6861 20.4023 19.4375 20.4023H16.625V10.0898L11.9375 5.40234H5.375V2.58984C5.375 2.3412 5.47377 2.10275 5.64959 1.92693C5.8254 1.75112 6.06386 1.65234 6.3125 1.65234H15.6875L20.375 6.33984Z"
-                                        fill="#6F6C8F"
-                                      />
-                                      <path
-                                        d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
-                                        fill="#6F6C8F"
-                                      />
-                                    </svg>
-                                    <div className="flex flex-col items-start w-full">
-                                      <span className="text-[13px] font-medium leading-[20px] text-n600 overflow-hidden w-full text-ellipsis">
-                                        {report.file_name}
-                                      </span>
-                                      <span className="text-[12px] leading-[20px] text-n600">
-                                        {formatDate(`${report.uploaded_at}`)}
-                                      </span>
+                                        <path
+                                          d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
+                                          fill={
+                                            report.is_completed
+                                              ? "#6F6C8F"
+                                              : "#db2c2c"
+                                          }
+                                        />
+                                      </svg>
+                                      <div className="flex flex-col items-start gap-1 w-full">
+                                        <span
+                                          className={`text-[13px] font-medium leading-[20px] overflow-hidden w-full text-ellipsis ${
+                                            report.is_completed
+                                              ? "text-n600"
+                                              : "text-[#db2c2c]"
+                                          }`}
+                                        >
+                                          {report.file_name}
+                                        </span>
+                                        <span
+                                          className={`text-[12px] leading-[20px] ${
+                                            report.is_completed
+                                              ? "text-n600"
+                                              : "text-[#db2c2c]"
+                                          }`}
+                                        >
+                                        sssssssssss
+                                        </span>
+                                        <span
+                                          className={`text-[12px] leading-[20px] ${
+                                            report.is_completed
+                                              ? "text-n600"
+                                              : "text-[#db2c2c]"
+                                          }`}
+                                        >
+                                          {formatDate(`${report.uploaded_at}`)}
+                                        </span>
+                                      </div>
                                     </div>
+                                    {!report.is_completed && (
+                                      <label
+                                        className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                        htmlFor="reupload"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleLabelClick(report.id, "report");
+                                        }}
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 14 14"
+                                          fill="none"
+                                        >
+                                          <g clipPath="url(#clip0_968_6186)">
+                                            <path
+                                              d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                              fill="#C70000"
+                                            />
+                                          </g>
+                                          <defs>
+                                            <clipPath id="clip0_968_6186">
+                                              <rect
+                                                width="14"
+                                                height="14"
+                                                fill="white"
+                                              />
+                                            </clipPath>
+                                          </defs>
+                                        </svg>
+                                      </label>
+                                    )}
                                   </div>
                                 </div>
                               );
@@ -1591,74 +1827,14 @@ console.log(workorder)
                         {workorder.workorder.status !== 3 &&
                           workorder.workorder.status !== 5 && (
                             <div
-                              className="flex flex-col items-start gap-[8px] w-full sm:w-fit"
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const files = e.dataTransfer.files;
-
-                                // Ensure files is not null and handle each file
-                                if (files) {
-                                  Array.from(files).forEach((file) => {
-                                    // Check file size (20MB = 20 * 1024 * 1024 bytes)
-                                    if (file.size > 20 * 1024 * 1024) {
-                                      alert("File size exceeds 20MB limit");
-                                    } else {
-                                      handle_chunck(
-                                        dispatch,
-                                        workorder.workorder.id,
-                                        "report",
-                                        file,
-                                        setisLoadingFinalize,
-                                        fetchOneWorkOrder
-                                      );
-                                    }
-                                  });
-                                }
+                              className="cursor-pointer w-full sm:w-fit py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
+                              onClick={() => {
+                                handleOpenDialog(addReportDialogRef);
                               }}
                             >
-                              <input
-                                type="file"
-                                name="report"
-                                id="report"
-                                accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
-                                onChange={(e) => {
-                                  const file = e.target.files
-                                    ? e.target.files[0]
-                                    : null;
-                                  if (file) {
-                                    // Check file size (20MB = 20 * 1024 * 1024 bytes)
-                                    if (file.size > 20 * 1024 * 1024) {
-                                      alert("File size exceeds 20MB limit");
-                                    } else {
-                                      handle_chunck(
-                                        dispatch,
-                                        workorder.workorder.id,
-                                        "report",
-                                        file,
-                                        setisLoadingFinalize,
-                                        fetchOneWorkOrder
-                                      );
-                                    }
-                                  }
-                                }}
-                                className="hidden"
-                              />
-                              <label
-                                htmlFor="report"
-                                className="cursor-pointer w-full sm:w-fit py-[16px] px-[28px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
-                              >
-                                <span className="text-[12px] text-n600 font-medium leading-[13px] px-[5px] text-center flex flex-col items-center">
-                                  Drag & drop your files here or{" "}
-                                  <span className="text-primary">
-                                    choose files
-                                  </span>
-                                </span>
-                              </label>
+                              <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
+                                Upload new files
+                              </span>
                             </div>
                           )}
                       </div>
@@ -1759,7 +1935,10 @@ console.log(workorder)
                                 return (
                                   <div
                                     key={index}
-                                    className="cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px]"
+                                    className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
+                                      !certificate.is_completed &&
+                                      "border-[2px] border-[#db2c2c]"
+                                    }`}
                                     onClick={() => {
                                       downloadFile(
                                         certificate.id,
@@ -1838,11 +2017,21 @@ console.log(workorder)
                                         />
                                         <path
                                           d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
-                                          fill="#6F6C8F"
+                                          fill={
+                                            certificate.is_completed
+                                              ? "#6F6C8F"
+                                              : "#db2c2c"
+                                          }
                                         />
                                       </svg>
                                       <div className="flex flex-col items-start w-full relative">
-                                        <span className="text-[13px] font-medium leading-[20px] text-n600 mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap">
+                                        <span
+                                          className={`text-[13px] font-medium leading-[20px] mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap ${
+                                            certificate.is_completed
+                                              ? "text-n600"
+                                              : "text-[#db2c2c]"
+                                          }`}
+                                        >
                                           {certificate.file_name}
                                         </span>
                                         <span
@@ -1860,7 +2049,13 @@ console.log(workorder)
                                             ? "Accepted with reserve"
                                             : "Rejected"}
                                         </span>
-                                        <span className="text-[12px] leading-[20px] text-n600">
+                                        <span
+                                          className={`text-[12px] leading-[20px] ${
+                                            certificate.is_completed
+                                              ? "text-n600"
+                                              : "text-[#db2c2c]"
+                                          }`}
+                                        >
                                           {formatDate(
                                             `${certificate.uploaded_at}`
                                           )}
@@ -1874,7 +2069,7 @@ console.log(workorder)
                                             }}
                                           >
                                             <svg
-                                              className="hover:scale-110 transition-all duration-100"
+                                              className="hover:scale-115 transition-all duration-100"
                                               onClick={() => {
                                                 setShowEditCertificatType(
                                                   !showEditCertificatType
@@ -1895,7 +2090,10 @@ console.log(workorder)
                                               />
                                             </svg>
                                             {showEditCertificatType && (
-                                              <div className="bg-white p-[15px] rounded-[20px] shadow-xl flex items-center flex-col md:flex-row gap-[6px] absolute right-0 top-6">
+
+<div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
+
+                                              <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
                                                 {certeficatTypes.map((type) => {
                                                   return (
                                                     <span
@@ -1921,8 +2119,79 @@ console.log(workorder)
                                                   );
                                                 })}
                                               </div>
+
+
+             {workorder.acceptance_certificates[workorder.acceptance_certificates.length - 1].type !== certType &&
+             <div className="flex items-center gap-[6px] w-full">
+                              <button
+                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
+                                onClick={() => {
+                                  setCertType(workorder.acceptance_certificates![workorder.acceptance_certificates!.length - 1].type)
+                                  setShowEditCertificatType(false);
+                                }}  
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                                onClick={async () => {
+                                 await  handle_update_cert_type(
+                                     workorder.workorder.id,
+                                     certType,
+                                     fetchOneWorkOrder
+                                  );
+                                  setShowEditCertificatType(false);
+                                }} 
+                              >
+                                Save
+                              </button>
+                            </div>
+             }
+
+
+                                            </div>
+
+
                                             )}
                                           </div>
+                                        )}
+
+                                        {!certificate.is_completed && (
+                                          <label
+                                            className=" absolute right-2 top-[20%] translate-y-[-50%]  px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                            htmlFor="reupload"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleLabelClick(
+                                                certificate.id,
+                                                "certificate"
+                                              );
+                                            }}
+                                          >
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="14"
+                                              height="14"
+                                              viewBox="0 0 14 14"
+                                              fill="none"
+                                            >
+                                              <g clipPath="url(#clip0_968_6186)">
+                                                <path
+                                                  d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                  fill="#C70000"
+                                                />
+                                              </g>
+                                              <defs>
+                                                <clipPath id="clip0_968_6186">
+                                                  <rect
+                                                    width="14"
+                                                    height="14"
+                                                    fill="white"
+                                                  />
+                                                </clipPath>
+                                              </defs>
+                                            </svg>
+                                          </label>
                                         )}
                                       </div>
                                     </div>
@@ -1939,8 +2208,8 @@ console.log(workorder)
                                     key={index}
                                   >
                                     <UploadingFile
-                                     key={index}
-                                     fetchFunc={fetchOneWorkOrder}
+                                      key={index}
+                                      fetchFunc={fetchOneWorkOrder}
                                       id={acceptence.id}
                                       progress={acceptence.progress}
                                       file={acceptence.file}
@@ -1971,7 +2240,7 @@ console.log(workorder)
                         <div className="flex justify-end w-full">
                           {workorder.workorder.status < 4 && (
                             <button
-                              className="px-[30px] py-[11px] rounded-[30px] border-[2px] border-primary text-primary text-[14px] font-semibold leading-[20px] w-fit"
+                              className={`px-[30px] py-[11px] rounded-[30px] border-[2px] text-[14px] font-semibold leading-[20px] w-fit ${workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ?"cursor-pointer border-primary text-primary" :"cursor-not-allowed border-n500 text-n500"}`}
                               onClick={() => {
                                 handle_Validate_and_Acceptence(
                                   workorder.workorder.id,
@@ -1980,6 +2249,8 @@ console.log(workorder)
                                   fetchOneWorkOrder
                                 );
                               }}
+                              disabled={workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ? false: true} 
+                              title={workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ? "": "upload accepted certificate first"}
                             >
                               {isLoading ? (
                                 <RotatingLines
@@ -2121,9 +2392,22 @@ console.log(workorder)
           </div>
         )}
       </div>
-        
+
+      <input
+        ref={fileInputOnReuploadRef} // Attach the ref to the file input
+        type="file"
+        className="hidden"
+        name="reupload"
+        onChange={handleFileInputChangeOfResumeUpload}
+      />
+
       <AddCertificatPopup
         ref={addCertificatDialogRef}
+        workorderId={workorder!.workorder.id}
+        fetchOneWorkOrder={fetchOneWorkOrder}
+      />
+      <AddReportPopup
+        ref={addReportDialogRef}
         workorderId={workorder!.workorder.id}
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
