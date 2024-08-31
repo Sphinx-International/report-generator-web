@@ -72,3 +72,16 @@ export interface ResOfOneMission {
   reports?:ResFile[]
   acceptance_certificates?:ReqAccFile[]
 }
+
+
+export interface alertWorkorder {
+        id: string,
+        title: string,
+        priority: 0 | 1 | 2 | 3 |number;
+        status: 0 | 1 | 2 | 3 | 4 | 5;
+        description: string;
+        require_acceptence: boolean;
+        created_at: Date;
+        created_by: string;
+        assigned_to: string | null;
+}
