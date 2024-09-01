@@ -1,8 +1,7 @@
 const baseUrl = import.meta.env.VITE_BASE_URL;
 import { AppDispatch } from "../Redux/store";
 import { addUploadingFile,removeUploadingFile,updateFileProgress } from "../Redux/slices/uploadingFilesSlice";
-  
-
+import { storeFileInIndexedDB, deleteFileFromIndexedDB } from "./generateFileToken";
 
 export const upload_or_delete_workorder_files_for_attachements = async (
     workorder_id: string,
@@ -53,7 +52,6 @@ export const upload_or_delete_workorder_files_for_attachements = async (
       setIsLoading(false);
     }
   };
-
 
   export const upload_workorder_files = async (
     workorder_id: string,
@@ -106,7 +104,6 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     }
   };
 
-
   const uploadRemainingChunks = async (
     dispatch: AppDispatch,
     file: File,
@@ -120,18 +117,18 @@ export const upload_or_delete_workorder_files_for_attachements = async (
       console.error("No token found");
       return;
     }
-
+  
     const chunkSize = 512 * 1024; // 512 KB
-
+  
     for (let index = uploadedChunks ? uploadedChunks.length + 1 : 1 ; index <= totalChunks; index++) {
       const start = index * chunkSize;
       const end = Math.min(start + chunkSize, file.size);
       const chunk = file.slice(start, end);
-
+  
       const formData = new FormData();
       formData.append("index", index.toString());
       formData.append("file", chunk, `${file.name}.part`);
-
+  
       try {
         const response = await fetch(
           `${baseUrl}/file/upload-rest-chunks/${fileId}`,
@@ -143,12 +140,13 @@ export const upload_or_delete_workorder_files_for_attachements = async (
             body: formData,
           }
         );
-
+          console.log(response.status)
         if (response.status === 200) {
           const progress = ((index + 1) / totalChunks) * 100;
           dispatch(updateFileProgress({ type: fileType, fileId, progress }));
         } else if (response.status === 201) {
           dispatch(updateFileProgress({ type: fileType, fileId, progress: 100.0 }));
+          await deleteFileFromIndexedDB(fileId); // Call the delete function here
           break;
         } else {
           console.error("Failed to upload chunk");
@@ -160,7 +158,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
       }
     }
   };
-
+  
 export const handle_chunck = async (
   dispatch: AppDispatch,  // Add dispatch as a parameter
   workorder_id: string,
@@ -191,7 +189,6 @@ export const handle_chunck = async (
   formData.append("file_token", file_token);
 
 
-
   console.log("FormData contents:");
   for (const pair of formData.entries()) {
     console.log(pair[0] + ':', pair[1]);
@@ -211,8 +208,9 @@ export const handle_chunck = async (
     if (response.ok) {
       const data = await response.json();
       const fileId = data.id;
+       console.log(file,fileId,fileType)
+      storeFileInIndexedDB(file,fileId,fileType)
 
-      // here 
       dispatch(addUploadingFile({type:fileType,file:{ id: fileId, progress: 0, file }}))
       setIsLoading(false);
       if (fileType === "attachements") {
@@ -271,18 +269,17 @@ export const handle_resuming_upload = async (
       case 200: {
         const data = await response.json();
         const { total, uploaded_chunks } = data;
-  
+
         // Calculate progress
         const progress: number = Number(((uploaded_chunks[uploaded_chunks.length - 1] / total) * 100).toFixed(2));
-  
+        setIsLoading(false);
         // Update the progress with the calculated value
         dispatch(addUploadingFile({
           type: fileType,
           file: { id: fileId, progress, file }
         }));
-  
-        console.log(data);
-  
+        storeFileInIndexedDB(file, fileId, fileType);
+
         await uploadRemainingChunks(dispatch, file, fileType, fileId, total, uploaded_chunks);
         fetchFunc();
         dispatch(removeUploadingFile({ type: fileType, fileId }));
@@ -290,7 +287,7 @@ export const handle_resuming_upload = async (
       }
 
       case 406:
-        enqueueSnackbar("It's not the same file. Please select the correct file!", {
+        enqueueSnackbar("Either it is not the same file or the file content has been changed.", {
           variant: 'error',
           autoHideDuration: 3000, // 3 seconds
         });
@@ -305,7 +302,6 @@ export const handle_resuming_upload = async (
     setIsLoading(false);
   }
 };
-
 
 export const handle_files_with_one_chunk = async (
   dispatch: AppDispatch,  // Add dispatch as a parameter

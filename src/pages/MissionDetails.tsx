@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, ChangeEvent } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import WorkOrderStatus from "../components/WorkOrderStatus";
 import SideBar from "../components/SideBar";
@@ -21,7 +21,7 @@ import {
   handle_chunck,
   upload_or_delete_workorder_files_for_attachements,
   handle_resuming_upload,
-  handle_files_with_one_chunk
+  handle_files_with_one_chunk,
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
 import { formatDate } from "../func/formatDatr&Time";
@@ -34,8 +34,16 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 import { RootState } from "../Redux/store";
-import { handle_edit_or_reqUpdate_report,handle_update_cert_type } from "../func/otherworkorderApis";
-import { generateFileToken } from "../func/generateFileToken";
+import {
+  handle_edit_or_reqUpdate_report,
+  handle_update_cert_type,
+} from "../func/otherworkorderApis";
+import {
+  generateFileToken,
+  getFilesByIdFromIndexedDB,
+  IndexedDBFile,
+  storeFileInIndexedDB,
+} from "../func/generateFileToken";
 import { useSnackbar } from "notistack";
 
 type WorkorderProperties = {
@@ -56,6 +64,7 @@ const MissionDetails = () => {
   const [visibleCoordPopup, setVisibleCoordPopup] = useState<boolean>(false);
   const [workorder, setWorkorder] = useState<ResOfOneMission | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAttach, setIsLoadingAttach] = useState(false);
   const [isLoadingFinalize, setisLoadingFinalize] = useState(false);
   const [isLoadingMaildPersons, setIsLoadingMaildPersons] = useState(false);
 
@@ -128,27 +137,20 @@ const MissionDetails = () => {
   };
 
   const handleFileInputChangeOfResumeUpload = async (
-    e: ChangeEvent<HTMLInputElement>
+    file: IndexedDBFile,
   ) => {
-    const file = e.target.files ? e.target.files[0] : null;
-
-    if (
-      file &&
-      selectedIdFileForResumeUpload !== null &&
-      selectedFileTypeForResumeUpload !== null
-    ) {
+    if (file) {
       try {
-        const file_token = await generateFileToken(file);
 
-        // Immediately reset the file input value
-        e.target.value = "";
+
+        const file_token = await generateFileToken(file.fileContent);
 
         // Call the handle_resuming_upload function without waiting for it to complete
         handle_resuming_upload(
           dispatch,
-          selectedIdFileForResumeUpload!,
-          file,
-          selectedFileTypeForResumeUpload!,
+          file.fileId,
+          file.fileContent,
+          file.fileType,
           file_token,
           setIsLoading,
           fetchOneWorkOrder,
@@ -264,7 +266,6 @@ const MissionDetails = () => {
       }
 
       const data = await response.json();
-
       setWorkorder(data);
       setBasicDataWorkorder({
         title: data.workorder.title,
@@ -280,7 +281,7 @@ const MissionDetails = () => {
     }
   }, [id]);
 
-  console.log(workorder)
+  console.log(workorder);
 
   const handleEditWorkorder = async (properties: WorkorderProperties = {}) => {
     const token =
@@ -302,17 +303,14 @@ const MissionDetails = () => {
     console.log(JSON.stringify(body));
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${baseUrl}/workorder/update-workorder`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body), // No need to wrap body in another object
-        }
-      );
+      const response = await fetch(`${baseUrl}/workorder/update-workorder`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body), // No need to wrap body in another object
+      });
 
       if (response) {
         switch (response.status) {
@@ -523,64 +521,67 @@ const MissionDetails = () => {
                     )}
                   </div>
                   <div className="flex-grow" />
-                {workorder.history !== null &&  workorder.history.length !== 0 &&
-                  <div className="relative">
-                    <svg
-                      className="cursor-pointer hover:scale-105"
-                      onClick={() => {
-                        setVisibleHistory(!visibleHistory);
-                      }}
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <path
-                        d="M12 8V12L14 14"
-                        stroke="#6F6C8F"
-                        stroke-width="1.66667"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                      <path
-                        d="M3.0498 10.9999C3.2739 8.8 4.30007 6.75956 5.93254 5.26791C7.56501 3.77627 9.6895 2.93783 11.9007 2.91257C14.1119 2.88732 16.255 3.67701 17.9211 5.13098C19.5872 6.58495 20.6597 8.60142 20.934 10.7957C21.2083 12.9899 20.6651 15.2084 19.4082 17.0277C18.1512 18.8471 16.2684 20.14 14.1191 20.6598C11.9697 21.1796 9.70421 20.8899 7.7548 19.846C5.80539 18.8021 4.30853 17.077 3.5498 14.9999M3.0498 19.9999V14.9999H8.0498"
-                        stroke="#6F6C8F"
-                        stroke-width="1.66667"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                    {visibleHistory && (
-                      <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start">
-                        {workorder.history.map((action, index) => {
-                          return (
-                            <div
-                              key={index}
-                              className={`flex flex-col items-start gap-1 py-[10px] ${++index !== workorder.history.length && " border-b-[1px] border-b-n300"}`}
-                            >
-                              <h6 className="text-[13px] leading-5 font-medium text-n800 text-nowrap">
-                                {action.status === 2
-                                  ? "workorder has been executed"
-                                  : action.status === 3
-                                  ? "workorder has been validated"
-                                  : action.status === 4
-                                  ? "workorder has been Accepted"
-                                  : action.status === 5
-                                  ? "workorder is Closed"
-                                  : null}
-                              </h6>
-                              <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
-                                {formatDate(action.at)}
-                              </span>
-                            </div>
-                          );
-                        })}
+                  {workorder.history !== null &&
+                    workorder.history.length !== 0 && (
+                      <div className="relative">
+                        <svg
+                          className="cursor-pointer hover:scale-105"
+                          onClick={() => {
+                            setVisibleHistory(!visibleHistory);
+                          }}
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <path
+                            d="M12 8V12L14 14"
+                            stroke="#6F6C8F"
+                            stroke-width="1.66667"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M3.0498 10.9999C3.2739 8.8 4.30007 6.75956 5.93254 5.26791C7.56501 3.77627 9.6895 2.93783 11.9007 2.91257C14.1119 2.88732 16.255 3.67701 17.9211 5.13098C19.5872 6.58495 20.6597 8.60142 20.934 10.7957C21.2083 12.9899 20.6651 15.2084 19.4082 17.0277C18.1512 18.8471 16.2684 20.14 14.1191 20.6598C11.9697 21.1796 9.70421 20.8899 7.7548 19.846C5.80539 18.8021 4.30853 17.077 3.5498 14.9999M3.0498 19.9999V14.9999H8.0498"
+                            stroke="#6F6C8F"
+                            stroke-width="1.66667"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        {visibleHistory && (
+                          <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start">
+                            {workorder.history.map((action, index) => {
+                              return (
+                                <div
+                                  key={index}
+                                  className={`flex flex-col items-start gap-1 py-[10px] ${
+                                    ++index !== workorder.history.length &&
+                                    " border-b-[1px] border-b-n300"
+                                  }`}
+                                >
+                                  <h6 className="text-[13px] leading-5 font-medium text-n800 text-nowrap">
+                                    {action.status === 2
+                                      ? "workorder has been executed"
+                                      : action.status === 3
+                                      ? "workorder has been validated"
+                                      : action.status === 4
+                                      ? "workorder has been Accepted"
+                                      : action.status === 5
+                                      ? "workorder is Closed"
+                                      : null}
+                                  </h6>
+                                  <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
+                                    {formatDate(action.at)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
-                }
-
                 </div>
 
                 <div className="w-full flex flex-col items-start gap-[15px]">
@@ -1300,50 +1301,53 @@ const MissionDetails = () => {
                                         : "border-[2px] border-[#DB2C2C]"
                                     }`}
                                     onClick={() => {
-                                      downloadFile(
-                                        attach.id,
-                                        "download-workorder-attachment",
-                                        attach.file_name,
-                                        (progress) => {
-                                          setWorkorder((prev) => {
-                                            if (!prev) return null;
+                                      if (attach.is_completed) {
+                                        downloadFile(
+                                          attach.id,
+                                          "download-workorder-attachment",
+                                          attach.file_name,
+                                          (progress) => {
+                                            setWorkorder((prev) => {
+                                              if (!prev) return null;
+  
+                                              return {
+                                                ...prev,
+                                                attachments: prev.attachments.map(
+                                                  (att) =>
+                                                    att.id === attach.id
+                                                      ? {
+                                                          ...att,
+                                                          downloadProgress: `${progress.toFixed(
+                                                            0
+                                                          )}`,
+                                                        }
+                                                      : att
+                                                ),
+                                              };
+                                            });
+                                          },
+                                          () => {
+                                            // Reset progress to 0% after download is complete
+                                            setWorkorder((prev) => {
+                                              if (!prev) return null;
+  
+                                              return {
+                                                ...prev,
+                                                attachments: prev.attachments.map(
+                                                  (att) =>
+                                                    att.id === attach.id
+                                                      ? {
+                                                          ...att,
+                                                          downloadProgress: `0`,
+                                                        }
+                                                      : att
+                                                ),
+                                              };
+                                            });
+                                          }
+                                        );
+                                      }
 
-                                            return {
-                                              ...prev,
-                                              attachments: prev.attachments.map(
-                                                (att) =>
-                                                  att.id === attach.id
-                                                    ? {
-                                                        ...att,
-                                                        downloadProgress: `${progress.toFixed(
-                                                          0
-                                                        )}`,
-                                                      }
-                                                    : att
-                                              ),
-                                            };
-                                          });
-                                        },
-                                        () => {
-                                          // Reset progress to 0% after download is complete
-                                          setWorkorder((prev) => {
-                                            if (!prev) return null;
-
-                                            return {
-                                              ...prev,
-                                              attachments: prev.attachments.map(
-                                                (att) =>
-                                                  att.id === attach.id
-                                                    ? {
-                                                        ...att,
-                                                        downloadProgress: `0`,
-                                                      }
-                                                    : att
-                                              ),
-                                            };
-                                          });
-                                        }
-                                      );
                                     }}
                                   >
                                     <div className="flex items-center gap-[9px] w-[90%]">
@@ -1431,12 +1435,23 @@ const MissionDetails = () => {
                                       <label
                                         className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
                                         htmlFor="reupload"
-                                        onClick={(e) => {
+                                        onClick={async (e) => {
                                           e.stopPropagation();
-                                          handleLabelClick(
-                                            attach.id,
-                                            "attachements"
-                                          );
+
+                                          const fileFromIndexedDB =
+                                            await getFilesByIdFromIndexedDB(
+                                              attach.id
+                                            );
+                                          if (fileFromIndexedDB[0]) {
+                                            handleFileInputChangeOfResumeUpload(
+                                              fileFromIndexedDB[0]
+                                            );
+                                          } else {
+                                            handleLabelClick(
+                                              attach.id,
+                                              "attachements"
+                                            );
+                                          }
                                         }}
                                       >
                                         <svg
@@ -1477,7 +1492,7 @@ const MissionDetails = () => {
                               )
                               .map((attach, index) => {
                                 return (
-                                  <div className="sm:w-[46%]" key={index}>
+                                  <div className=" w-[100%] sm:w-[46%]" key={index}>
                                     <UploadingFile
                                       key={index}
                                       fetchFunc={fetchOneWorkOrder}
@@ -1505,23 +1520,29 @@ const MissionDetails = () => {
                                   Array.from(files).forEach(async (file) => {
                                     if (file.size > 20 * 1024 * 1024) {
                                       // Alert when the file is larger than 20MB
-                                      alert(`${file.name} exceeds the 20MB limit.`);
+                                      alert(
+                                        `${file.name} exceeds the 20MB limit.`
+                                      );
                                     } else if (file.size <= 512 * 1024) {
                                       // Call `handle_files_with_one_chunk` when the file is smaller than 512KB
-                                      handle_files_with_one_chunk(dispatch,
+                                      handle_files_with_one_chunk(
+                                        dispatch,
                                         workorder.workorder.id,
                                         "attachements",
-                                      file,setIsLoading,
-                                      fetchOneWorkOrder);
+                                        file,
+                                        setIsLoadingAttach,
+                                        fetchOneWorkOrder
+                                      );
                                     } else {
-                                      const file_token = await generateFileToken(file);
+                                      const file_token =
+                                        await generateFileToken(file);
                                       handle_chunck(
                                         dispatch,
                                         workorder.workorder.id,
                                         "attachements",
                                         file,
                                         file_token,
-                                        setIsLoading,
+                                        setIsLoadingAttach,
                                         fetchOneWorkOrder
                                       );
                                     }
@@ -1541,22 +1562,28 @@ const MissionDetails = () => {
                                     : null;
                                   if (file) {
                                     if (file.size > 20 * 1024 * 1024) {
-                                      alert(`${file.name} exceeds the 20MB limit.`);
+                                      alert(
+                                        `${file.name} exceeds the 20MB limit.`
+                                      );
                                     } else if (file.size <= 512 * 1024) {
-                                      handle_files_with_one_chunk(dispatch,
+                                      handle_files_with_one_chunk(
+                                        dispatch,
                                         workorder.workorder.id,
                                         "attachements",
-                                      file,setIsLoading,
-                                      fetchOneWorkOrder);
+                                        file,
+                                        setIsLoading,
+                                        fetchOneWorkOrder
+                                      );
                                     } else {
-                                      const file_token = await generateFileToken(file);
+                                      const file_token =
+                                        await generateFileToken(file);
                                       handle_chunck(
                                         dispatch,
                                         workorder.workorder.id,
                                         "attachements",
                                         file,
                                         file_token,
-                                        setIsLoading,
+                                        setIsLoadingAttach,
                                         fetchOneWorkOrder
                                       );
                                     }
@@ -1568,29 +1595,42 @@ const MissionDetails = () => {
                                 htmlFor="attachement"
                                 className="cursor-pointer w-full px-[12px] py-[15px] flex items-center justify-start gap-[14px] border-dashed border-[2px] border-n400 rounded-[15px]"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="18"
-                                  height="22"
-                                  viewBox="0 0 18 22"
-                                  fill="none"
-                                >
-                                  <path
-                                    opacity="0.2"
-                                    d="M17.125 4.91406V16.2891C17.125 16.5046 17.0394 16.7112 16.887 16.8636C16.7347 17.016 16.528 17.1016 16.3125 17.1016H13.875V8.16406L9.8125 4.10156H4.125V1.66406C4.125 1.44857 4.2106 1.24191 4.36298 1.08954C4.51535 0.937165 4.72201 0.851562 4.9375 0.851562H13.0625L17.125 4.91406Z"
-                                    fill="#6F6C8F"
-                                  />
-                                  <path
-                                    d="M17.6998 4.33922L13.6373 0.276719C13.5618 0.201291 13.4722 0.14148 13.3736 0.100702C13.2749 0.0599241 13.1692 0.0389788 13.0625 0.0390628H4.9375C4.50652 0.0390628 4.0932 0.210268 3.78845 0.515014C3.48371 0.819761 3.3125 1.23309 3.3125 1.66406V3.28906H1.6875C1.25652 3.28906 0.843198 3.46027 0.538451 3.76501C0.233705 4.06976 0.0625 4.48309 0.0625 4.91406V19.5391C0.0625 19.97 0.233705 20.3834 0.538451 20.6881C0.843198 20.9929 1.25652 21.1641 1.6875 21.1641H13.0625C13.4935 21.1641 13.9068 20.9929 14.2115 20.6881C14.5163 20.3834 14.6875 19.97 14.6875 19.5391V17.9141H16.3125C16.7435 17.9141 17.1568 17.7429 17.4615 17.4381C17.7663 17.1334 17.9375 16.72 17.9375 16.2891V4.91406C17.9376 4.80733 17.9166 4.70163 17.8759 4.603C17.8351 4.50436 17.7753 4.41473 17.6998 4.33922ZM13.0625 19.5391H1.6875V4.91406H9.47633L13.0625 8.50023V19.5391ZM16.3125 16.2891H14.6875V8.16406C14.6876 8.05733 14.6666 7.95163 14.6259 7.853C14.5851 7.75436 14.5253 7.66473 14.4498 7.58922L10.3873 3.52672C10.3118 3.45129 10.2222 3.39148 10.1236 3.3507C10.0249 3.30992 9.91923 3.28898 9.8125 3.28906H4.9375V1.66406H12.7263L16.3125 5.25023V16.2891ZM10.625 13.0391C10.625 13.2546 10.5394 13.4612 10.387 13.6136C10.2347 13.766 10.028 13.8516 9.8125 13.8516H4.9375C4.72201 13.8516 4.51535 13.766 4.36298 13.6136C4.2106 13.4612 4.125 13.2546 4.125 13.0391C4.125 12.8236 4.2106 12.6169 4.36298 12.4645C4.51535 12.3122 4.72201 12.2266 4.9375 12.2266H9.8125C10.028 12.2266 10.2347 12.3122 10.387 12.4645C10.5394 12.6169 10.625 12.8236 10.625 13.0391ZM10.625 16.2891C10.625 16.5046 10.5394 16.7112 10.387 16.8636C10.2347 17.016 10.028 17.1016 9.8125 17.1016H4.9375C4.72201 17.1016 4.51535 17.016 4.36298 16.8636C4.2106 16.7112 4.125 16.5046 4.125 16.2891C4.125 16.0736 4.2106 15.8669 4.36298 15.7145C4.51535 15.5622 4.72201 15.4766 4.9375 15.4766H9.8125C10.028 15.4766 10.2347 15.5622 10.387 15.7145C10.5394 15.8669 10.625 16.0736 10.625 16.2891Z"
-                                    fill="#6F6C8F"
-                                  />
-                                </svg>
-                                <span className="text-[13px] text-n600 font-medium leading-[13px]">
-                                  Drag & drop your files here or{" "}
-                                  <span className="text-primary">
-                                    choose files
-                                  </span>
-                                </span>
+                                {isLoadingAttach ? (
+                                  <div className="w-full flex items-center justify-center">
+                                    <RotatingLines
+                                      visible={true}
+                                      width="20"
+                                      strokeWidth="3"
+                                      strokeColor="#4A3AFF"
+                                    />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="18"
+                                      height="22"
+                                      viewBox="0 0 18 22"
+                                      fill="none"
+                                    >
+                                      <path
+                                        opacity="0.2"
+                                        d="M17.125 4.91406V16.2891C17.125 16.5046 17.0394 16.7112 16.887 16.8636C16.7347 17.016 16.528 17.1016 16.3125 17.1016H13.875V8.16406L9.8125 4.10156H4.125V1.66406C4.125 1.44857 4.2106 1.24191 4.36298 1.08954C4.51535 0.937165 4.72201 0.851562 4.9375 0.851562H13.0625L17.125 4.91406Z"
+                                        fill="#6F6C8F"
+                                      />
+                                      <path
+                                        d="M17.6998 4.33922L13.6373 0.276719C13.5618 0.201291 13.4722 0.14148 13.3736 0.100702C13.2749 0.0599241 13.1692 0.0389788 13.0625 0.0390628H4.9375C4.50652 0.0390628 4.0932 0.210268 3.78845 0.515014C3.48371 0.819761 3.3125 1.23309 3.3125 1.66406V3.28906H1.6875C1.25652 3.28906 0.843198 3.46027 0.538451 3.76501C0.233705 4.06976 0.0625 4.48309 0.0625 4.91406V19.5391C0.0625 19.97 0.233705 20.3834 0.538451 20.6881C0.843198 20.9929 1.25652 21.1641 1.6875 21.1641H13.0625C13.4935 21.1641 13.9068 20.9929 14.2115 20.6881C14.5163 20.3834 14.6875 19.97 14.6875 19.5391V17.9141H16.3125C16.7435 17.9141 17.1568 17.7429 17.4615 17.4381C17.7663 17.1334 17.9375 16.72 17.9375 16.2891V4.91406C17.9376 4.80733 17.9166 4.70163 17.8759 4.603C17.8351 4.50436 17.7753 4.41473 17.6998 4.33922ZM13.0625 19.5391H1.6875V4.91406H9.47633L13.0625 8.50023V19.5391ZM16.3125 16.2891H14.6875V8.16406C14.6876 8.05733 14.6666 7.95163 14.6259 7.853C14.5851 7.75436 14.5253 7.66473 14.4498 7.58922L10.3873 3.52672C10.3118 3.45129 10.2222 3.39148 10.1236 3.3507C10.0249 3.30992 9.91923 3.28898 9.8125 3.28906H4.9375V1.66406H12.7263L16.3125 5.25023V16.2891ZM10.625 13.0391C10.625 13.2546 10.5394 13.4612 10.387 13.6136C10.2347 13.766 10.028 13.8516 9.8125 13.8516H4.9375C4.72201 13.8516 4.51535 13.766 4.36298 13.6136C4.2106 13.4612 4.125 13.2546 4.125 13.0391C4.125 12.8236 4.2106 12.6169 4.36298 12.4645C4.51535 12.3122 4.72201 12.2266 4.9375 12.2266H9.8125C10.028 12.2266 10.2347 12.3122 10.387 12.4645C10.5394 12.6169 10.625 12.8236 10.625 13.0391ZM10.625 16.2891C10.625 16.5046 10.5394 16.7112 10.387 16.8636C10.2347 17.016 10.028 17.1016 9.8125 17.1016H4.9375C4.72201 17.1016 4.51535 17.016 4.36298 16.8636C4.2106 16.7112 4.125 16.5046 4.125 16.2891C4.125 16.0736 4.2106 15.8669 4.36298 15.7145C4.51535 15.5622 4.72201 15.4766 4.9375 15.4766H9.8125C10.028 15.4766 10.2347 15.5622 10.387 15.7145C10.5394 15.8669 10.625 16.0736 10.625 16.2891Z"
+                                        fill="#6F6C8F"
+                                      />
+                                    </svg>
+                                    <span className="text-[13px] text-n600 font-medium leading-[13px]">
+                                      Drag & drop your files here or{" "}
+                                      <span className="text-primary">
+                                        choose files
+                                      </span>
+                                    </span>
+                                  </>
+                                )}
                               </label>
                             </div>
                           )}
@@ -1661,54 +1701,57 @@ const MissionDetails = () => {
                                     "border-[2px] border-[#db2c2c]"
                                   } `}
                                   onClick={() => {
-                                    downloadFile(
-                                      report.id,
-                                      "download-workorder-report",
-                                      report.file_name,
-                                      (progress) => {
-                                        console.log(
-                                          `Download progress: ${progress.toFixed(
-                                            2
-                                          )}%`
-                                        );
-                                        // You can update the progress in the state to show it in the UI
-                                        setWorkorder((prev) => {
-                                          if (!prev) return null;
+                                    if (report.is_completed) {
+                                      downloadFile(
+                                        report.id,
+                                        "download-workorder-report",
+                                        report.file_name,
+                                        (progress) => {
+                                          console.log(
+                                            `Download progress: ${progress.toFixed(
+                                              2
+                                            )}%`
+                                          );
+                                          // You can update the progress in the state to show it in the UI
+                                          setWorkorder((prev) => {
+                                            if (!prev) return null;
+  
+                                            return {
+                                              ...prev,
+                                              reports: prev.reports?.map((rep) =>
+                                                rep.id === report.id
+                                                  ? {
+                                                      ...rep,
+                                                      downloadProgress: `${progress.toFixed(
+                                                        0
+                                                      )}`,
+                                                    }
+                                                  : rep
+                                              ),
+                                            };
+                                          });
+                                        },
+                                        () => {
+                                          // Reset progress to 0% after download is complete
+                                          setWorkorder((prev) => {
+                                            if (!prev) return null;
+  
+                                            return {
+                                              ...prev,
+                                              reports: prev.reports?.map((rep) =>
+                                                rep.id === report.id
+                                                  ? {
+                                                      ...rep,
+                                                      downloadProgress: `0`,
+                                                    }
+                                                  : rep
+                                              ),
+                                            };
+                                          });
+                                        }
+                                      );
+                                    }
 
-                                          return {
-                                            ...prev,
-                                            reports: prev.reports?.map((rep) =>
-                                              rep.id === report.id
-                                                ? {
-                                                    ...rep,
-                                                    downloadProgress: `${progress.toFixed(
-                                                      0
-                                                    )}`,
-                                                  }
-                                                : rep
-                                            ),
-                                          };
-                                        });
-                                      },
-                                      () => {
-                                        // Reset progress to 0% after download is complete
-                                        setWorkorder((prev) => {
-                                          if (!prev) return null;
-
-                                          return {
-                                            ...prev,
-                                            reports: prev.reports?.map((rep) =>
-                                              rep.id === report.id
-                                                ? {
-                                                    ...rep,
-                                                    downloadProgress: `0`,
-                                                  }
-                                                : rep
-                                            ),
-                                          };
-                                        });
-                                      }
-                                    );
                                   }}
                                 >
                                   <div className="flex items-center justify-between w-full">
@@ -1744,7 +1787,7 @@ const MissionDetails = () => {
                                       </svg>
                                       <div className="flex flex-col items-start gap-1 w-full">
                                         <span
-                                          className={`text-[13px] font-medium leading-[20px] overflow-hidden w-full text-ellipsis ${
+                                          className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${
                                             report.is_completed
                                               ? "text-n600"
                                               : "text-[#db2c2c]"
@@ -1759,7 +1802,7 @@ const MissionDetails = () => {
                                               : "text-[#db2c2c]"
                                           }`}
                                         >
-                                        sssssssssss
+                                          partial
                                         </span>
                                         <span
                                           className={`text-[12px] leading-[20px] ${
@@ -1776,9 +1819,23 @@ const MissionDetails = () => {
                                       <label
                                         className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
                                         htmlFor="reupload"
-                                        onClick={(e) => {
+                                        onClick={async (e) => {
                                           e.stopPropagation();
-                                          handleLabelClick(report.id, "report");
+
+                                          const fileFromIndexedDB =
+                                            await getFilesByIdFromIndexedDB(
+                                              report.id
+                                            );
+                                          if (fileFromIndexedDB[0]) {
+                                            handleFileInputChangeOfResumeUpload(
+                                              fileFromIndexedDB[0]
+                                            );
+                                          } else {
+                                            handleLabelClick(
+                                              report.id,
+                                              "report"
+                                            );
+                                          }
                                         }}
                                       >
                                         <svg
@@ -1814,7 +1871,7 @@ const MissionDetails = () => {
                         {uploadingFiles.reportFiles.length > 0 &&
                           uploadingFiles.reportFiles.map((report, index) => {
                             return (
-                              <div className="w-[25%]" key={index}>
+                              <div className="w-full sm:w-[48%] lg:w-[24%]" key={index}>
                                 <UploadingFile
                                   id={report.id}
                                   fetchFunc={fetchOneWorkOrder}
@@ -1940,56 +1997,59 @@ const MissionDetails = () => {
                                       "border-[2px] border-[#db2c2c]"
                                     }`}
                                     onClick={() => {
-                                      downloadFile(
-                                        certificate.id,
-                                        "download-workorder-acceptance-certificate",
-                                        certificate.file_name,
-                                        (progress) => {
-                                          console.log(
-                                            `Download progress: ${progress.toFixed(
-                                              2
-                                            )}%`
-                                          );
-                                          setWorkorder((prev) => {
-                                            if (!prev) return null;
+                                      if (certificate.is_completed) {
+                                        downloadFile(
+                                          certificate.id,
+                                          "download-workorder-acceptance-certificate",
+                                          certificate.file_name,
+                                          (progress) => {
+                                            console.log(
+                                              `Download progress: ${progress.toFixed(
+                                                2
+                                              )}%`
+                                            );
+                                            setWorkorder((prev) => {
+                                              if (!prev) return null;
+  
+                                              return {
+                                                ...prev,
+                                                acceptance_certificates:
+                                                  prev.acceptance_certificates?.map(
+                                                    (cert) =>
+                                                      cert.id === certificate.id
+                                                        ? {
+                                                            ...cert,
+                                                            downloadProgress: `${progress.toFixed(
+                                                              0
+                                                            )}`,
+                                                          }
+                                                        : cert
+                                                  ),
+                                              };
+                                            });
+                                          },
+                                          () => {
+                                            setWorkorder((prev) => {
+                                              if (!prev) return null;
+  
+                                              return {
+                                                ...prev,
+                                                acceptance_certificates:
+                                                  prev.acceptance_certificates?.map(
+                                                    (cert) =>
+                                                      cert.id === certificate.id
+                                                        ? {
+                                                            ...cert,
+                                                            downloadProgress: `0`,
+                                                          }
+                                                        : cert
+                                                  ),
+                                              };
+                                            });
+                                          }
+                                        );
+                                      }
 
-                                            return {
-                                              ...prev,
-                                              acceptance_certificates:
-                                                prev.acceptance_certificates?.map(
-                                                  (cert) =>
-                                                    cert.id === certificate.id
-                                                      ? {
-                                                          ...cert,
-                                                          downloadProgress: `${progress.toFixed(
-                                                            0
-                                                          )}`,
-                                                        }
-                                                      : cert
-                                                ),
-                                            };
-                                          });
-                                        },
-                                        () => {
-                                          setWorkorder((prev) => {
-                                            if (!prev) return null;
-
-                                            return {
-                                              ...prev,
-                                              acceptance_certificates:
-                                                prev.acceptance_certificates?.map(
-                                                  (cert) =>
-                                                    cert.id === certificate.id
-                                                      ? {
-                                                          ...cert,
-                                                          downloadProgress: `0`,
-                                                        }
-                                                      : cert
-                                                ),
-                                            };
-                                          });
-                                        }
-                                      );
                                     }}
                                   >
                                     <div className="flex items-center gap-[9px] w-full">
@@ -2090,68 +2150,82 @@ const MissionDetails = () => {
                                               />
                                             </svg>
                                             {showEditCertificatType && (
+                                              <div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
+                                                <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
+                                                  {certeficatTypes.map(
+                                                    (type) => {
+                                                      return (
+                                                        <span
+                                                          key={index}
+                                                          className={`cursor-pointer text-nowrap px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
+                                                          style={{
+                                                            backgroundColor:
+                                                              type.type ===
+                                                              certType
+                                                                ? `${type.color}`
+                                                                : "white",
+                                                            color:
+                                                              type.type ===
+                                                              certType
+                                                                ? "white"
+                                                                : `${type.color}`,
+                                                            border: `solid 1px ${type.color}`,
+                                                          }}
+                                                          onClick={() => {
+                                                            setCertType(
+                                                              type.type
+                                                            );
+                                                          }}
+                                                        >
+                                                          {type.name}
+                                                        </span>
+                                                      );
+                                                    }
+                                                  )}
+                                                </div>
 
-<div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
-
-                                              <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
-                                                {certeficatTypes.map((type) => {
-                                                  return (
-                                                    <span
-                                                      key={index}
-                                                      className={`cursor-pointer text-nowrap px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
-                                                      style={{
-                                                        backgroundColor:
-                                                          type.type === certType
-                                                            ? `${type.color}`
-                                                            : "white",
-                                                        color:
-                                                          type.type === certType
-                                                            ? "white"
-                                                            : `${type.color}`,
-                                                        border: `solid 1px ${type.color}`,
-                                                      }}
+                                                {workorder
+                                                  .acceptance_certificates[
+                                                  workorder
+                                                    .acceptance_certificates
+                                                    .length - 1
+                                                ].type !== certType && (
+                                                  <div className="flex items-center gap-[6px] w-full">
+                                                    <button
+                                                      className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
                                                       onClick={() => {
-                                                        setCertType(type.type);
+                                                        setCertType(
+                                                          workorder.acceptance_certificates![
+                                                            workorder.acceptance_certificates!
+                                                              .length - 1
+                                                          ].type
+                                                        );
+                                                        setShowEditCertificatType(
+                                                          false
+                                                        );
                                                       }}
                                                     >
-                                                      {type.name}
-                                                    </span>
-                                                  );
-                                                })}
+                                                      Cancel
+                                                    </button>
+                                                    <button
+                                                      className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                                                      onClick={async () => {
+                                                        await handle_update_cert_type(
+                                                          workorder.workorder
+                                                            .id,
+                                                          certType,
+                                                          fetchOneWorkOrder
+                                                        );
+                                                        setShowEditCertificatType(
+                                                          false
+                                                        );
+                                                      }}
+                                                    >
+                                                      Save
+                                                    </button>
+                                                  </div>
+                                                )}
                                               </div>
-
-
-             {workorder.acceptance_certificates[workorder.acceptance_certificates.length - 1].type !== certType &&
-             <div className="flex items-center gap-[6px] w-full">
-                              <button
-                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
-                                onClick={() => {
-                                  setCertType(workorder.acceptance_certificates![workorder.acceptance_certificates!.length - 1].type)
-                                  setShowEditCertificatType(false);
-                                }}  
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
-                                onClick={async () => {
-                                 await  handle_update_cert_type(
-                                     workorder.workorder.id,
-                                     certType,
-                                     fetchOneWorkOrder
-                                  );
-                                  setShowEditCertificatType(false);
-                                }} 
-                              >
-                                Save
-                              </button>
-                            </div>
-             }
-
-
-                                            </div>
-
-
                                             )}
                                           </div>
                                         )}
@@ -2160,12 +2234,23 @@ const MissionDetails = () => {
                                           <label
                                             className=" absolute right-2 top-[20%] translate-y-[-50%]  px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
                                             htmlFor="reupload"
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                               e.stopPropagation();
-                                              handleLabelClick(
-                                                certificate.id,
-                                                "certificate"
-                                              );
+
+                                              const fileFromIndexedDB =
+                                                await getFilesByIdFromIndexedDB(
+                                                  certificate.id
+                                                );
+                                              if (fileFromIndexedDB[0]) {
+                                                handleFileInputChangeOfResumeUpload(
+                                                  fileFromIndexedDB[0]
+                                                );
+                                              } else {
+                                                handleLabelClick(
+                                                  certificate.id,
+                                                  "certificate"
+                                                );
+                                              }
                                             }}
                                           >
                                             <svg
@@ -2204,7 +2289,7 @@ const MissionDetails = () => {
                               (acceptence, index) => {
                                 return (
                                   <div
-                                    className="sm:w-[48%] lg:w-[24%]"
+                                    className="w-full sm:w-[48%] lg:w-[24%]"
                                     key={index}
                                   >
                                     <UploadingFile
@@ -2240,7 +2325,14 @@ const MissionDetails = () => {
                         <div className="flex justify-end w-full">
                           {workorder.workorder.status < 4 && (
                             <button
-                              className={`px-[30px] py-[11px] rounded-[30px] border-[2px] text-[14px] font-semibold leading-[20px] w-fit ${workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ?"cursor-pointer border-primary text-primary" :"cursor-not-allowed border-n500 text-n500"}`}
+                              className={`px-[30px] py-[11px] rounded-[30px] border-[2px] text-[14px] font-semibold leading-[20px] w-fit ${
+                                workorder.acceptance_certificates &&
+                                workorder.acceptance_certificates[
+                                  workorder.acceptance_certificates.length - 1
+                                ].type === 1
+                                  ? "cursor-pointer border-primary text-primary"
+                                  : "cursor-not-allowed border-n500 text-n500"
+                              }`}
                               onClick={() => {
                                 handle_Validate_and_Acceptence(
                                   workorder.workorder.id,
@@ -2249,8 +2341,22 @@ const MissionDetails = () => {
                                   fetchOneWorkOrder
                                 );
                               }}
-                              disabled={workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ? false: true} 
-                              title={workorder.acceptance_certificates && workorder.acceptance_certificates[workorder.acceptance_certificates.length -1].type === 1 ? "": "upload accepted certificate first"}
+                              disabled={
+                                workorder.acceptance_certificates &&
+                                workorder.acceptance_certificates[
+                                  workorder.acceptance_certificates.length - 1
+                                ].type === 1
+                                  ? false
+                                  : true
+                              }
+                              title={
+                                workorder.acceptance_certificates &&
+                                workorder.acceptance_certificates[
+                                  workorder.acceptance_certificates.length - 1
+                                ].type === 1
+                                  ? ""
+                                  : "upload accepted certificate first"
+                              }
                             >
                               {isLoading ? (
                                 <RotatingLines
@@ -2398,7 +2504,15 @@ const MissionDetails = () => {
         type="file"
         className="hidden"
         name="reupload"
-        onChange={handleFileInputChangeOfResumeUpload}
+        onChange={(e) => {
+          handleFileInputChangeOfResumeUpload(
+            {
+              fileId: selectedIdFileForResumeUpload!,
+              fileType: selectedFileTypeForResumeUpload!,
+              fileContent: e.target.files![0],
+            }
+          );
+        }}
       />
 
       <AddCertificatPopup

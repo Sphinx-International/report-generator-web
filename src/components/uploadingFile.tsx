@@ -1,6 +1,7 @@
 import { TheUploadingFile } from "../assets/types/Mission";
 import { formatFileSize } from "../func/formatFileSize";
 import React, { Dispatch, SetStateAction } from "react";
+import { deleteFileFromIndexedDB } from "../func/generateFileToken";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 
@@ -36,6 +37,7 @@ const uploadingFile: React.FC<UploadingFilePopup> = (props) => {
         if (props.setFile) {
           props.setFile(undefined);
         }
+        await deleteFileFromIndexedDB(fileID);
       }
     } catch (error) {
       console.error("Error canceling upload:", error);

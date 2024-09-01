@@ -26,6 +26,8 @@ import {
 } from "../Redux/slices/uploadingFilesSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
+import { generateFileToken,storeFileInIndexedDB, deleteFileFromIndexedDB } from "../func/generateFileToken";
+
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -93,27 +95,32 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
     };
 
-    const handleAddingFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const handleAddingFileChange = async (
+      event: ChangeEvent<HTMLInputElement>
+    ) => {
       const file = event.target.files?.[0];
 
       if (file) {
-        if (file.size <= 20 * 1024 * 1024) {
-          handle_chunck(file);
-        } else {
+        if (file.size > 20 * 1024 * 1024) {
           alert(`${file.name} exceeds the 20MB limit.`);
+        } else if (file.size <= 512 * 1024) {
+          handle_files_with_one_chunk(file);
+        } else {
+          const file_token = await generateFileToken(file);
+          handle_chunck(file, file_token);
         }
       }
     };
 
-    const handleAddingFileChangeWithDragAndDrop = (files: FileList) => {
+    const handleAddingFileChangeWithDragAndDrop = async (files: FileList) => {
       if (files) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          handle_chunck(file);
+          const file_token = await generateFileToken(file);
+          handle_chunck(file,file_token);
         }
       }
     };
-    
 
     const updateAttachmentProgress = (id: number, newProgress: number) => {
       setformValues((prevValues) => ({
@@ -167,8 +174,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setFormErrs((prev) => ({ ...prev, emails: "" }));
     };
 
-
-
     const handleFirstSubmit = (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
     ) => {
@@ -184,18 +189,16 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
     };
 
-
-
-
     const handleCreateWorkorder = async (e: FormEvent) => {
       e.preventDefault();
-    
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
         console.error("No token found");
         return;
       }
-    
+
       const formData = new FormData();
       formData.append("title", formValues.title);
       formData.append("id", formValues.id?.toString() || "");
@@ -208,34 +211,31 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       if (formValues.assigned_to) {
         formData.append("assigned_to", formValues.assigned_to);
       }
-    
+
       formValues.emails.forEach((mail) => {
         formData.append("emails", mail);
       });
-    
+
       if (formValues.attachments) {
         formValues.attachments.forEach((attach) => {
           formData.append("attachments", attach.id!.toString());
         });
       }
-    
+
       setIsLoading(true);
-    
+
       try {
-        const response = await fetch(
-          `${baseUrl}/workorder/create-workorder`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-            body: formData,
-          }
-        );
+        const response = await fetch(`${baseUrl}/workorder/create-workorder`, {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+          body: formData,
+        });
         if (response.ok) {
           const data = await response.json();
           console.log("Form submitted successfully", data);
-    
+
           if (response.status === 200) {
             closeDialog(e);
           }
@@ -251,7 +251,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         localStorage.setItem("selectedFilter", "all");
       }
     };
-    
+
     const handleSecondSubmit = (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
     ) => {
@@ -334,22 +334,22 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   type: "attachements",
                   fileId,
                   progress: 100.0,
-                })
+                }),
+                deleteFileFromIndexedDB(fileId)
               );
 
               updateAttachmentProgress(fileId, 100.0);
               break;
 
-            case 404:
-              {
-                setformValues((prevValues) => ({
-                  ...prevValues,
-                  attachments: prevValues.attachments.filter(
-                    (attachment) => attachment.id !== fileId
-                  ),
-                }));
-                return;
-              }
+            case 404: {
+              setformValues((prevValues) => ({
+                ...prevValues,
+                attachments: prevValues.attachments.filter(
+                  (attachment) => attachment.id !== fileId
+                ),
+              }));
+              return;
+            }
 
             default:
               console.error("Failed to upload chunk");
@@ -362,7 +362,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       }
     };
 
-    const handle_chunck = async (file: File) => {
+    const handle_chunck = async (file: File, file_token: string) => {
       const token =
         localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
@@ -381,6 +381,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       formData.append("type", "1");
       formData.append("total_chunks", chunks.toString());
       formData.append("file", firstChunk, `${file.name}.part`);
+      formData.append("file_token", file_token);
 
       for (const pair of formData.entries()) {
         console.log(`${pair[0]}: ${pair[1]}`);
@@ -389,20 +390,18 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setIsLoading(true);
 
       try {
-        const response = await fetch(
-          `${baseUrl}/file/upload-first-chunk`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Token ${token}`,
-            },
-            body: formData,
-          }
-        );
+        const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+          body: formData,
+        });
         console.log(response.status);
         if (response.ok) {
           const data = await response.json();
           const fileId = data.id;
+          storeFileInIndexedDB(file,fileId,"attachements")
           setformValues((prevFormValues) => ({
             ...prevFormValues,
             attachments: [
@@ -420,6 +419,60 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           await uploadRemainingChunks(file, fileId, chunks);
 
           dispatch(removeUploadingFile({ type: "attachements", fileId }));
+        } else {
+          console.error("Failed to upload first chunk");
+        }
+      } catch (err) {
+        console.error("Error submitting first chunk", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    const handle_files_with_one_chunk = async (file: File) => {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+      const formData = new FormData();
+      formData.append("name", file.name);
+      formData.append("type", "1");
+      formData.append("file", file);
+
+      for (const pair of formData.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
+      }
+
+      setIsLoading(true);
+
+      try {
+        const response = await fetch(`${baseUrl}/file/upload-file`, {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+          body: formData,
+        });
+        console.log(response.status);
+        if (response.ok) {
+          const data = await response.json();
+          const fileId = data.id;
+
+          setformValues((prevFormValues) => ({
+            ...prevFormValues,
+            attachments: [
+              ...(prevFormValues.attachments || []),
+              { id: fileId, progress:  100.0,  file },
+            ],
+          }));
+          dispatch(
+            updateFileProgress({
+              type: "attachements",
+              fileId,
+              progress: 100.0,
+            })
+          );
         } else {
           console.error("Failed to upload first chunk");
         }

@@ -30,7 +30,6 @@ const Header: React.FC<headerProps> = (props) => {
     (state: RootState) => state.uploadingFiles
   );
 
-console.log(alerts)
   const fetchAlerts = async () => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -59,13 +58,13 @@ console.log(alerts)
       setAlerts(data);
     } catch (err) {
       console.error("Error: ", err);
-    } 
+    }
   };
 
   useEffect(() => {
     fetchAlerts();
   }, []);
-  
+
   return (
     <div className="flex flex-col gap-[18px]">
       <img
@@ -224,76 +223,105 @@ console.log(alerts)
                 )}
               </div>
             )}
-            {alerts.length > 0 && 
-                        <div className="relative">
-                        <svg
-                         onClick={() => { setShowAlertDropDown(true) }}
-                          className=" p-[3px] rounded-[50%] border-[1px] border-n300 cursor-pointer"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          height="33"
-                          viewBox="0 0 24 24"
-                          width="33"
+            {alerts.length > 0 && (
+              <div className="relative">
+                <svg
+                  onClick={() => {
+                    setShowAlertDropDown(true);
+                  }}
+                  className=" p-[3px] rounded-[50%] border-[1px] border-n300 cursor-pointer"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  height="33"
+                  viewBox="0 0 24 24"
+                  width="33"
+                >
+                  <path
+                    d="m4.9522 16.3536 5.263-10.49702c.7379-1.47177 2.8387-1.47138 3.5761.00065l5.2582 10.49707c.6661 1.3298-.3008 2.8957-1.7882 2.8957h-10.52123c-1.48773 0-2.45467-1.5665-1.78787-2.8964z"
+                    stroke="#141414"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="m12 10v2"
+                    stroke="#141414"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                  <circle cx="12" cy="16" fill="#141414" r="1" />
+                </svg>
+
+                {showAlertDropDown && (
+                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-lg flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
+                    <div className="flex w-full items-center justify-between">
+                      <h5 className="text-[15px] text-n800 font-semibold">
+                        Alerts
+                      </h5>
+                      <svg
+                        onClick={() => {
+                          setShowAlertDropDown(false);
+                        }}
+                        className="cursor-pointer"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                      >
+                        <path
+                          d="M6.99996 14.167L9.99996 11.167L13 14.167L14.1666 13.0003L11.1666 10.0003L14.1666 7.00033L13 5.83366L9.99996 8.83366L6.99996 5.83366L5.83329 7.00033L8.83329 10.0003L5.83329 13.0003L6.99996 14.167ZM9.99996 18.3337C8.84718 18.3337 7.76385 18.1148 6.74996 17.677C5.73607 17.2392 4.85413 16.6456 4.10413 15.8962C3.35413 15.1467 2.76052 14.2648 2.32329 13.2503C1.88607 12.2359 1.66718 11.1525 1.66663 10.0003C1.66607 8.8481 1.88496 7.76477 2.32329 6.75033C2.76163 5.73588 3.35524 4.85394 4.10413 4.10449C4.85302 3.35505 5.73496 2.76144 6.74996 2.32366C7.76496 1.88588 8.84829 1.66699 9.99996 1.66699C11.1516 1.66699 12.235 1.88588 13.25 2.32366C14.265 2.76144 15.1469 3.35505 15.8958 4.10449C16.6447 4.85394 17.2386 5.73588 17.6775 6.75033C18.1163 7.76477 18.335 8.8481 18.3333 10.0003C18.3316 11.1525 18.1127 12.2359 17.6766 13.2503C17.2405 14.2648 16.6469 15.1467 15.8958 15.8962C15.1447 16.6456 14.2627 17.2395 13.25 17.6778C12.2372 18.1162 11.1538 18.3348 9.99996 18.3337ZM9.99996 16.667C11.8611 16.667 13.4375 16.0212 14.7291 14.7295C16.0208 13.4378 16.6666 11.8614 16.6666 10.0003C16.6666 8.13921 16.0208 6.56283 14.7291 5.27116C13.4375 3.97949 11.8611 3.33366 9.99996 3.33366C8.13885 3.33366 6.56246 3.97949 5.27079 5.27116C3.97913 6.56283 3.33329 8.13921 3.33329 10.0003C3.33329 11.8614 3.97913 13.4378 5.27079 14.7295C6.56246 16.0212 8.13885 16.667 9.99996 16.667Z"
+                          fill="#514F6E"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col gap-[13px] w-full">
+                      {alerts?.map((workorder, index) => (
+                        <div
+                          key={index}
+                          className="px-[45px] py-[15px] rounded-[22px] w-full flex items-center gap-[16px] border-[2.5px] border-[#FF3B30]"
                         >
-                          <path
-                            d="m4.9522 16.3536 5.263-10.49702c.7379-1.47177 2.8387-1.47138 3.5761.00065l5.2582 10.49707c.6661 1.3298-.3008 2.8957-1.7882 2.8957h-10.52123c-1.48773 0-2.45467-1.5665-1.78787-2.8964z"
-                            stroke="#141414"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="1.5"
-                          />
-                          <path
-                            d="m12 10v2"
-                            stroke="#141414"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                          />
-                          <circle cx="12" cy="16" fill="#141414" r="1" />
-                        </svg>
-          
-                        { showAlertDropDown &&  
-                        <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-lg flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
-                          <div className="flex w-full items-center justify-between">
-                            <h5 className="text-[15px] text-n800 font-semibold">
-                              Alerts
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="49"
+                            height="47"
+                            viewBox="0 0 49 47"
+                            fill="none"
+                          >
+                            <path
+                              d="M9.19628 18.1907C14.7261 8.40295 17.4921 3.51024 21.2871 2.24982C23.3731 1.55735 25.627 1.55735 27.713 2.24982C31.508 3.51024 34.274 8.40295 39.8038 18.1907C45.3359 27.9761 48.0996 32.8711 47.2723 36.8586C46.814 39.054 45.6911 41.0432 44.0594 42.5419C41.094 45.2713 35.5619 45.2713 24.5 45.2713C13.4382 45.2713 7.90607 45.2713 4.94065 42.5442C3.30266 41.0316 2.17917 39.0443 1.72774 36.8609C0.898153 32.8734 3.6642 27.9784 9.19628 18.1907Z"
+                              stroke="#FF3B30"
+                              stroke-width="2.8"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M25.0546 34.9583V25.7917C25.0546 24.7123 25.0546 24.1715 24.72 23.8346C24.3831 23.5 23.8446 23.5 22.7629 23.5M24.4817 16.625H24.5023"
+                              stroke="#FF3B30"
+                              stroke-width="2.8"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <div className="flex flex-col items-center gap-[9px]">
+                            <h5 className="text-[13px] text-n800 font-semibold leading-[19.5px]">
+                              {workorder.title}
                             </h5>
-                            <svg
-                              onClick={() => {
-                                setShowAlertDropDown(false);
-                              }}
-                              className="cursor-pointer"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 20 20"
-                              fill="none"
-                            >
-                              <path
-                                d="M6.99996 14.167L9.99996 11.167L13 14.167L14.1666 13.0003L11.1666 10.0003L14.1666 7.00033L13 5.83366L9.99996 8.83366L6.99996 5.83366L5.83329 7.00033L8.83329 10.0003L5.83329 13.0003L6.99996 14.167ZM9.99996 18.3337C8.84718 18.3337 7.76385 18.1148 6.74996 17.677C5.73607 17.2392 4.85413 16.6456 4.10413 15.8962C3.35413 15.1467 2.76052 14.2648 2.32329 13.2503C1.88607 12.2359 1.66718 11.1525 1.66663 10.0003C1.66607 8.8481 1.88496 7.76477 2.32329 6.75033C2.76163 5.73588 3.35524 4.85394 4.10413 4.10449C4.85302 3.35505 5.73496 2.76144 6.74996 2.32366C7.76496 1.88588 8.84829 1.66699 9.99996 1.66699C11.1516 1.66699 12.235 1.88588 13.25 2.32366C14.265 2.76144 15.1469 3.35505 15.8958 4.10449C16.6447 4.85394 17.2386 5.73588 17.6775 6.75033C18.1163 7.76477 18.335 8.8481 18.3333 10.0003C18.3316 11.1525 18.1127 12.2359 17.6766 13.2503C17.2405 14.2648 16.6469 15.1467 15.8958 15.8962C15.1447 16.6456 14.2627 17.2395 13.25 17.6778C12.2372 18.1162 11.1538 18.3348 9.99996 18.3337ZM9.99996 16.667C11.8611 16.667 13.4375 16.0212 14.7291 14.7295C16.0208 13.4378 16.6666 11.8614 16.6666 10.0003C16.6666 8.13921 16.0208 6.56283 14.7291 5.27116C13.4375 3.97949 11.8611 3.33366 9.99996 3.33366C8.13885 3.33366 6.56246 3.97949 5.27079 5.27116C3.97913 6.56283 3.33329 8.13921 3.33329 10.0003C3.33329 11.8614 3.97913 13.4378 5.27079 14.7295C6.56246 16.0212 8.13885 16.667 9.99996 16.667Z"
-                                fill="#514F6E"
-                              />
-                            </svg>
-                          </div>
-                          <div className="flex flex-col gap-[13px] w-full">
-                            {alerts?.map((workorder, index) => (
-                              <div key={index} className="px-[45px] py-[15px] rounded-[22px] w-full flex items-center gap-[16px] border-[2.5px] border-[#FF3B30]">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="49" height="47" viewBox="0 0 49 47" fill="none">
-          <path d="M9.19628 18.1907C14.7261 8.40295 17.4921 3.51024 21.2871 2.24982C23.3731 1.55735 25.627 1.55735 27.713 2.24982C31.508 3.51024 34.274 8.40295 39.8038 18.1907C45.3359 27.9761 48.0996 32.8711 47.2723 36.8586C46.814 39.054 45.6911 41.0432 44.0594 42.5419C41.094 45.2713 35.5619 45.2713 24.5 45.2713C13.4382 45.2713 7.90607 45.2713 4.94065 42.5442C3.30266 41.0316 2.17917 39.0443 1.72774 36.8609C0.898153 32.8734 3.6642 27.9784 9.19628 18.1907Z" stroke="#FF3B30" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M25.0546 34.9583V25.7917C25.0546 24.7123 25.0546 24.1715 24.72 23.8346C24.3831 23.5 23.8446 23.5 22.7629 23.5M24.4817 16.625H24.5023" stroke="#FF3B30" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-                                <div className="flex flex-col items-center gap-[9px]">
-                                  <h5 className="text-[13px] text-n800 font-semibold leading-[19.5px]">{workorder.title}</h5>
-                                  <p className="text-[10px] text-n600 font-semibold leading-[15px] text-center">This workorder hasn’t been updated with a certificate for {calculateDaysSinceCreation(workorder.created_at)} days</p>
-                                  </div>  
-                              </div>
-                            ))}
+                            <p className="text-[10px] text-n600 font-semibold leading-[15px] text-center">
+                              This workorder hasn’t been updated with a
+                              certificate for{" "}
+                              {calculateDaysSinceCreation(workorder.created_at)}{" "}
+                              days
+                            </p>
                           </div>
                         </div>
-                        }
-                      </div>
-            }
-
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <svg
