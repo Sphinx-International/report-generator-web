@@ -1,8 +1,8 @@
 import { TheUploadingFile } from "../assets/types/Mission";
 import { formatFileSize } from "../func/formatFileSize";
 import React, { Dispatch, SetStateAction } from "react";
-import { deleteFileFromIndexedDB } from "../func/generateFileToken";
-const baseUrl = import.meta.env.VITE_BASE_URL;
+import { handleCancelUpload } from "../func/chunkUpload";
+
 
 
  interface UploadingFilePopup extends TheUploadingFile {
@@ -13,37 +13,7 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 const uploadingFile: React.FC<UploadingFilePopup> = (props) => {
 
 
-  const handleCancelUpload = async (fileID: number) => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
 
-    try {
-      const response = await fetch(`${baseUrl}/file/cancel-upload/${fileID}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-      });
-
-      if (response.status === 200) {
-        if (props.fetchFunc) {
-          props.fetchFunc();
-        }
-
-        if (props.setFile) {
-          props.setFile(undefined);
-        }
-        await deleteFileFromIndexedDB(fileID);
-      }
-    } catch (error) {
-      console.error("Error canceling upload:", error);
-      alert("Failed to cancel the upload");
-    }
-  };
 
 
 
@@ -79,7 +49,7 @@ const uploadingFile: React.FC<UploadingFilePopup> = (props) => {
         </div>
         <span
           className="px-[3px] rounded-[50%] text-white bg-550 text-[12px] cursor-pointer hover:scale-105"
-          onClick={() => {handleCancelUpload(props.id!)}}
+          onClick={() => {handleCancelUpload(props.id!, props.fetchFunc, props.setFile)}}
         >
           🗙
         </span>

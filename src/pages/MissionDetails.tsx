@@ -22,6 +22,7 @@ import {
   upload_or_delete_workorder_files_for_attachements,
   handle_resuming_upload,
   handle_files_with_one_chunk,
+  handleCancelUpload
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
 import { formatDate } from "../func/formatDatr&Time";
@@ -122,7 +123,7 @@ const MissionDetails = () => {
 
   const [visibleHistory, setVisibleHistory] = useState<boolean>(false);
 
-  const { enqueueSnackbar } = useSnackbar(); // Get enqueueSnackbar function
+  const { enqueueSnackbar,closeSnackbar } = useSnackbar(); // Get enqueueSnackbar function
 
   const handleLabelClick = (
     fileId: number,
@@ -152,12 +153,13 @@ const MissionDetails = () => {
               padding: '6px 12px',
               cursor: 'pointer',
             }}
-            onClick={() => {
+            onClick={async () => {
               // Custom delete logic here, e.g., deleting from IndexedDB
              // deleteFileFromIndexedDB(file.fileId);
-              // Close the snackbar
-             // closeSnackbar(key);
              console.log("clicked")
+            await handleCancelUpload(file.fileId)
+            fetchOneWorkOrder()
+             closeSnackbar(key);
             }}
           >
             Delete

@@ -1,8 +1,10 @@
 const baseUrl = import.meta.env.VITE_BASE_URL;
-import React from 'react'; // Import React to use JSX
 import { AppDispatch } from "../Redux/store";
 import { addUploadingFile,removeUploadingFile,updateFileProgress } from "../Redux/slices/uploadingFilesSlice";
 import { storeFileInIndexedDB, deleteFileFromIndexedDB } from "./generateFileToken";
+import React, { Dispatch, SetStateAction } from "react";
+import { TheUploadingFile } from '../assets/types/Mission';
+
 
 export const upload_or_delete_workorder_files_for_attachements = async (
     workorder_id: string,
@@ -364,5 +366,38 @@ export const handle_files_with_one_chunk = async (
     console.error("Error submitting file", err);
   } finally {
     setIsLoading(false);
+  }
+};
+
+
+export const handleCancelUpload = async (fileID: number, fetchFunc?: ()=>void, setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>) => {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/file/cancel-upload/${fileID}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (response.status === 200) {
+      if (fetchFunc) {
+        fetchFunc();
+      }
+
+      if (setFile) {
+        setFile(undefined);
+      }
+      await deleteFileFromIndexedDB(fileID);
+    }
+  } catch (error) {
+    console.error("Error canceling upload:", error);
+    alert("Failed to cancel the upload");
   }
 };
