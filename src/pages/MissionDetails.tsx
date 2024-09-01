@@ -42,7 +42,6 @@ import {
   generateFileToken,
   getFilesByIdFromIndexedDB,
   IndexedDBFile,
-  storeFileInIndexedDB,
 } from "../func/generateFileToken";
 import { useSnackbar } from "notistack";
 
@@ -141,10 +140,30 @@ const MissionDetails = () => {
   ) => {
     if (file) {
       try {
-
-
         const file_token = await generateFileToken(file.fileContent);
-
+  
+        // Define the button using JSX for the snackbar action
+        const snackbarAction = (key: string | number) => (
+          <button
+            style={{
+              color: 'white',
+              backgroundColor: 'red',
+              border: 'none',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              // Custom delete logic here, e.g., deleting from IndexedDB
+             // deleteFileFromIndexedDB(file.fileId);
+              // Close the snackbar
+             // closeSnackbar(key);
+             console.log("clicked")
+            }}
+          >
+            Delete
+          </button>
+        );
+  
         // Call the handle_resuming_upload function without waiting for it to complete
         handle_resuming_upload(
           dispatch,
@@ -154,9 +173,9 @@ const MissionDetails = () => {
           file_token,
           setIsLoading,
           fetchOneWorkOrder,
-          enqueueSnackbar
+          (message, options) => enqueueSnackbar(message, { ...options, action: snackbarAction }) // Pass the action with the JSX button
         );
-
+  
         // Reset the selected IDs
         setSelectedIdFileForResumeUpload(undefined);
         setSelectedFileTypeForResumeUpload(undefined);
@@ -165,6 +184,7 @@ const MissionDetails = () => {
       }
     }
   };
+  
 
   useEffect(() => {
     const certfDialog = addCertificatDialogRef.current;

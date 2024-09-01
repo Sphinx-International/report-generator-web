@@ -1,4 +1,5 @@
 const baseUrl = import.meta.env.VITE_BASE_URL;
+import React from 'react'; // Import React to use JSX
 import { AppDispatch } from "../Redux/store";
 import { addUploadingFile,removeUploadingFile,updateFileProgress } from "../Redux/slices/uploadingFilesSlice";
 import { storeFileInIndexedDB, deleteFileFromIndexedDB } from "./generateFileToken";
@@ -244,8 +245,7 @@ export const handle_resuming_upload = async (
   file_token: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc: () => void,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  enqueueSnackbar: (message: string, options?: any) => void // Add this parameter
+  enqueueSnackbar: (message: string, options?: any) => void // Accept the enqueueSnackbar as is
 ) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   if (!token) {
@@ -302,6 +302,7 @@ export const handle_resuming_upload = async (
     setIsLoading(false);
   }
 };
+
 
 export const handle_files_with_one_chunk = async (
   dispatch: AppDispatch,  // Add dispatch as a parameter
