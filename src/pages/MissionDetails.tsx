@@ -229,7 +229,7 @@ const MissionDetails = () => {
 
   useWebSocketSearch({
     searchQuery: searchQueryCoord,
-    endpointPath: "search-account/coordinator",
+    endpointPath: "search-mail",
     setResults: setSearchCoords,
     setLoader: setLoaderCoordSearch,
   });

@@ -39,8 +39,6 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
     const [loaderMailsSearch, setLoaderMailsSearch] = useState<boolean>(false);
     const [searchMails, setSearchMails] = useState<Resmail[]>([]);
 
-    console.log(editMembers);
-
     const inputRef = useRef<HTMLInputElement>(null);
 
     useWebSocketSearch({
@@ -69,7 +67,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
         return;
       }
       setIsLoading(true);
-
+      console.log(props.groupInfo.id)
       const url = `${baseUrl}/mail/get-group-members/${props.groupInfo.id}`;
       try {
         const response = await fetch(url, {
@@ -79,7 +77,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
             Authorization: `Token ${token}`,
           },
         });
-
+         console.log(response.status)
         if (!response.ok) {
           const errorText = await response.text(); // Read the response body as text
           console.error("Error response text: ", errorText);

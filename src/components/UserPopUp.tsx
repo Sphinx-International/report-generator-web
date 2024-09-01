@@ -131,7 +131,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     <dialog
       ref={ref}
       id="User-popup"
-      className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[40px] px-[20px] sm:pb-[35px] pt-[40px]  flex-col items-start gap-[20px] rounded-[34px] sm:w-[70vw] sm:h-fit w-[88vw] h-[80vh]`}
+      className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[40px] px-[20px] sm:pb-[35px] pt-[40px]  flex-col items-start gap-[20px] rounded-[34px] sm:w-[70vw] sm:h-fit w-[88vw] h-[80vh] overflow-y-visible`}
     >
       {/*   <div className="flex flex-col items-start gap-[10px]">
         <label

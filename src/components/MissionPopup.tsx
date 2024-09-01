@@ -277,7 +277,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     useWebSocketSearch({
       searchQuery: searchQueryCoord,
-      endpointPath: "search-account/coordinator",
+      endpointPath: "search-mail",
       setResults: setSearchCoords,
       setLoader: setLoaderCoordSearch,
     });
@@ -487,7 +487,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       <dialog
         ref={ref}
         id="Mission-popup"
-        className={`hidden fixed z-30 top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[56px] sm:py-[43px] px-[20px] pt-[25px] pb-[20px] flex-col sm:items-end items-center gap-[35px] rounded-[34px] lg:w-[56vw] sm:w-[75vw] w-[90vw]`}
+        className={`hidden fixed z-30 top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[56px] sm:py-[43px] px-[20px] pt-[25px] pb-[20px] flex-col sm:items-end items-center gap-[35px] rounded-[34px] lg:w-[56vw] sm:w-[75vw] w-[90vw] overflow-y-visible`}
       >
         {currentSliderIndex === 1 ? (
           <form className="w-full flex flex-col gap-[30px]">
@@ -637,7 +637,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       </svg>
                       {isFocusedAssignInput && searchQueryEng !== "" && (
                         <div
-                          className="rounded-[20px] py-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px] z-50"
+                          className="rounded-[20px] py-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px] z-50 overflow-auto"
                           style={{ top: "100%", left: 0 }}
                         >
                           {loaderAssignSearch ? (
