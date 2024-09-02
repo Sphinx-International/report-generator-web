@@ -61,15 +61,15 @@ const router = createBrowserRouter([
   },
   {
     path: "/mails",
-    element: <ProtectedRoute element={<Groups />} allowedRoles={[0]} />,
+    element: <ProtectedRoute element={<Groups />} allowedRoles={[0,1]} />,
   },
   {
     path: "/mails/groups",
-    element: <ProtectedRoute element={<Groups />} allowedRoles={[0]} />,
+    element: <ProtectedRoute element={<Groups />} allowedRoles={[0,1]} />,
   },
   {
     path: "/mails/individuals",
-    element: <ProtectedRoute element={<Individuals />} allowedRoles={[0]} />,
+    element: <ProtectedRoute element={<Individuals />} allowedRoles={[0,1]} />,
   },
   {
     path: "*",

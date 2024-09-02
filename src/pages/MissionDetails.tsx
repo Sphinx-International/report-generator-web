@@ -22,7 +22,7 @@ import {
   upload_or_delete_workorder_files_for_attachements,
   handle_resuming_upload,
   handle_files_with_one_chunk,
-  handleCancelUpload
+  handleCancelUpload,
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
 import { formatDate } from "../func/formatDatr&Time";
@@ -123,7 +123,7 @@ const MissionDetails = () => {
 
   const [visibleHistory, setVisibleHistory] = useState<boolean>(false);
 
-  const { enqueueSnackbar,closeSnackbar } = useSnackbar(); // Get enqueueSnackbar function
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar(); // Get enqueueSnackbar function
 
   const handleLabelClick = (
     fileId: number,
@@ -132,40 +132,37 @@ const MissionDetails = () => {
     setSelectedIdFileForResumeUpload(fileId);
     setSelectedFileTypeForResumeUpload(fileType);
 
-    // Open the file input by triggering a click on its ref
     fileInputOnReuploadRef.current?.click();
   };
 
-  const handleFileInputChangeOfResumeUpload = async (
-    file: IndexedDBFile,
-  ) => {
+  const handleFileInputChangeOfResumeUpload = async (file: IndexedDBFile) => {
     if (file) {
       try {
         const file_token = await generateFileToken(file.fileContent);
-  
+
         // Define the button using JSX for the snackbar action
         const snackbarAction = (key: string | number) => (
           <button
             style={{
-              color: 'white',
-              backgroundColor: 'red',
-              border: 'none',
-              padding: '6px 12px',
-              cursor: 'pointer',
+              color: "white",
+              backgroundColor: "red",
+              border: "none",
+              padding: "6px 12px",
+              cursor: "pointer",
             }}
             onClick={async () => {
               // Custom delete logic here, e.g., deleting from IndexedDB
-             // deleteFileFromIndexedDB(file.fileId);
-             console.log("clicked")
-            await handleCancelUpload(file.fileId)
-            fetchOneWorkOrder()
-             closeSnackbar(key);
+              // deleteFileFromIndexedDB(file.fileId);
+              console.log("clicked");
+              await handleCancelUpload(file.fileId);
+              fetchOneWorkOrder();
+              closeSnackbar(key);
             }}
           >
             Delete
           </button>
         );
-  
+
         // Call the handle_resuming_upload function without waiting for it to complete
         handle_resuming_upload(
           dispatch,
@@ -175,10 +172,10 @@ const MissionDetails = () => {
           file_token,
           setIsLoading,
           fetchOneWorkOrder,
-          (message, options) => enqueueSnackbar(message, { ...options, action: snackbarAction }) // Pass the action with the JSX button
+          (message, options) =>
+            enqueueSnackbar(message, { ...options, action: snackbarAction }) // Pass the action with the JSX button
         );
-  
-        // Reset the selected IDs
+
         setSelectedIdFileForResumeUpload(undefined);
         setSelectedFileTypeForResumeUpload(undefined);
       } catch (error) {
@@ -186,7 +183,38 @@ const MissionDetails = () => {
       }
     }
   };
-  
+
+
+  const handleFileChange = async (file: File) => {
+    if (file.size > 20 * 1024 * 1024) {
+      alert(`${file.name} exceeds the 20MB limit.`);
+    } else if (file.size <= 512 * 1024) {
+      handle_files_with_one_chunk(
+        dispatch,
+        workorder!.workorder.id,
+        "attachements",
+        file,
+        setIsLoading,
+        fetchOneWorkOrder
+      );
+    } else {
+      const file_token = await generateFileToken(file);
+      handle_chunck(
+        dispatch,
+        workorder!.workorder.id,
+        "attachements",
+        file,
+        file_token,
+        setIsLoadingAttach,
+        fetchOneWorkOrder
+      );
+    }
+    // Reset the file input value to allow re-selection of the same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
 
   useEffect(() => {
     const certfDialog = addCertificatDialogRef.current;
@@ -612,7 +640,9 @@ const MissionDetails = () => {
                       <div
                         className="relative w-[41px] h-[41px] rounded-[50%]"
                         onClick={() => {
-                          setVisibleEngPopup(!visibleEngPopup);
+                          if (getRole() !== 2) {
+                            setVisibleEngPopup(!visibleEngPopup);
+                          }
                         }}
                       >
                         <img
@@ -620,19 +650,21 @@ const MissionDetails = () => {
                           alt="avatar"
                           className="rounded-[50%] w-full h-full relative z-0"
                         />
-                        <span className="bg-550 bg-opacity-0 w-full h-full absolute z-30 top-0 group rounded-[50%] hover:bg-opacity-40 cursor-pointer flex items-center justify-center">
-                          <svg
-                            className="opacity-0 transition-opacity duration-100 ease-in-out group-hover:opacity-100"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="white"
-                          >
-                            <title>reassign</title>
-                            <path d="M15.65 4.35A8 8 0 1 0 17.4 13h-2.22a6 6 0 1 1-1-7.22L11 9h7V2z" />
-                          </svg>
-                        </span>
+                        {getRole() !== 2 && (
+                          <span className="bg-550 bg-opacity-0 w-full h-full absolute z-30 top-0 group rounded-[50%] hover:bg-opacity-40 cursor-pointer flex items-center justify-center">
+                            <svg
+                              className="opacity-0 transition-opacity duration-100 ease-in-out group-hover:opacity-100"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="white"
+                            >
+                              <title>reassign</title>
+                              <path d="M15.65 4.35A8 8 0 1 0 17.4 13h-2.22a6 6 0 1 1-1-7.22L11 9h7V2z" />
+                            </svg>
+                          </span>
+                        )}
                       </div>
                       <span className="text-[18px] text-n600 font-medium leading-[27px]">
                         {workorder.workorder.assigned_to}
@@ -1125,21 +1157,23 @@ const MissionDetails = () => {
                               alt="avatar"
                               className="w-[40px] rounded-[50%]"
                             />
-                            <span
-                              className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
-                              onClick={() => {
-                                handle_add_or_delete_mailedPerson(
-                                  workorder.workorder.id,
-                                  mail.id,
-                                  "delete",
-                                  setIsLoadingMaildPersons,
-                                  setVisibleCoordPopup,
-                                  fetchOneWorkOrder
-                                );
-                              }}
-                            >
-                              🗙
-                            </span>
+                            {getRole() !== 2 && (
+                              <span
+                                className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
+                                onClick={() => {
+                                  handle_add_or_delete_mailedPerson(
+                                    workorder.workorder.id,
+                                    mail.id,
+                                    "delete",
+                                    setIsLoadingMaildPersons,
+                                    setVisibleCoordPopup,
+                                    fetchOneWorkOrder
+                                  );
+                                }}
+                              >
+                                🗙
+                              </span>
+                            )}
 
                             {isLoadingMaildPersons && (
                               <span className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-n400 bg-opacity-95 z-20 cursor-not-allowed rounded-[50%]">
@@ -1299,12 +1333,24 @@ const MissionDetails = () => {
                   <div className="w-full flex flex-col items-end gap-[16px]">
                     <>
                       <div className="w-full flex flex-col gap-[12px]">
-                        <label
-                          htmlFor="attachements"
-                          className="text-[17px] text-n700 leading-[30px] font-medium"
-                        >
-                          Attachements
-                        </label>
+                        {getRole() !== 2 ? (
+                          <label
+                            htmlFor="attachements"
+                            className="text-[17px] text-n700 leading-[30px] font-medium"
+                          >
+                            Attachements
+                          </label>
+                        ) : (
+                          workorder.attachments.length !== 0 && (
+                            <label
+                              htmlFor="attachements"
+                              className="text-[17px] text-n700 leading-[30px] font-medium"
+                            >
+                              Attachements
+                            </label>
+                          )
+                        )}
+
                         <div className="flex gap-[20px] flex-wrap">
                           {workorder.attachments.length > 0 &&
                             workorder.attachments
@@ -1331,11 +1377,11 @@ const MissionDetails = () => {
                                           (progress) => {
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
-  
+
                                               return {
                                                 ...prev,
-                                                attachments: prev.attachments.map(
-                                                  (att) =>
+                                                attachments:
+                                                  prev.attachments.map((att) =>
                                                     att.id === attach.id
                                                       ? {
                                                           ...att,
@@ -1344,7 +1390,7 @@ const MissionDetails = () => {
                                                           )}`,
                                                         }
                                                       : att
-                                                ),
+                                                  ),
                                               };
                                             });
                                           },
@@ -1352,24 +1398,23 @@ const MissionDetails = () => {
                                             // Reset progress to 0% after download is complete
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
-  
+
                                               return {
                                                 ...prev,
-                                                attachments: prev.attachments.map(
-                                                  (att) =>
+                                                attachments:
+                                                  prev.attachments.map((att) =>
                                                     att.id === attach.id
                                                       ? {
                                                           ...att,
                                                           downloadProgress: `0`,
                                                         }
                                                       : att
-                                                ),
+                                                  ),
                                               };
                                             });
                                           }
                                         );
                                       }
-
                                     }}
                                   >
                                     <div className="flex items-center gap-[9px] w-[90%]">
@@ -1423,7 +1468,8 @@ const MissionDetails = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 && attach.is_completed ? (
+                                    {getRole() !== 2 ? 
+                                    attach.is_completed ? (
                                       <span
                                         className=" w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
                                         onClick={(e) => {
@@ -1500,7 +1546,7 @@ const MissionDetails = () => {
                                           </defs>
                                         </svg>
                                       </label>
-                                    )}
+                                    ):null}
                                   </div>
                                 );
                               })}
@@ -1514,7 +1560,10 @@ const MissionDetails = () => {
                               )
                               .map((attach, index) => {
                                 return (
-                                  <div className=" w-[100%] sm:w-[46%]" key={index}>
+                                  <div
+                                    className=" w-[100%] sm:w-[46%]"
+                                    key={index}
+                                  >
                                     <UploadingFile
                                       key={index}
                                       fetchFunc={fetchOneWorkOrder}
@@ -1540,34 +1589,7 @@ const MissionDetails = () => {
                                 // Ensure files is not null and handle each file
                                 if (files) {
                                   Array.from(files).forEach(async (file) => {
-                                    if (file.size > 20 * 1024 * 1024) {
-                                      // Alert when the file is larger than 20MB
-                                      alert(
-                                        `${file.name} exceeds the 20MB limit.`
-                                      );
-                                    } else if (file.size <= 512 * 1024) {
-                                      // Call `handle_files_with_one_chunk` when the file is smaller than 512KB
-                                      handle_files_with_one_chunk(
-                                        dispatch,
-                                        workorder.workorder.id,
-                                        "attachements",
-                                        file,
-                                        setIsLoadingAttach,
-                                        fetchOneWorkOrder
-                                      );
-                                    } else {
-                                      const file_token =
-                                        await generateFileToken(file);
-                                      handle_chunck(
-                                        dispatch,
-                                        workorder.workorder.id,
-                                        "attachements",
-                                        file,
-                                        file_token,
-                                        setIsLoadingAttach,
-                                        fetchOneWorkOrder
-                                      );
-                                    }
+                                    await handleFileChange(file);
                                   });
                                 }
                               }}
@@ -1583,32 +1605,7 @@ const MissionDetails = () => {
                                     ? e.target.files[0]
                                     : null;
                                   if (file) {
-                                    if (file.size > 20 * 1024 * 1024) {
-                                      alert(
-                                        `${file.name} exceeds the 20MB limit.`
-                                      );
-                                    } else if (file.size <= 512 * 1024) {
-                                      handle_files_with_one_chunk(
-                                        dispatch,
-                                        workorder.workorder.id,
-                                        "attachements",
-                                        file,
-                                        setIsLoading,
-                                        fetchOneWorkOrder
-                                      );
-                                    } else {
-                                      const file_token =
-                                        await generateFileToken(file);
-                                      handle_chunck(
-                                        dispatch,
-                                        workorder.workorder.id,
-                                        "attachements",
-                                        file,
-                                        file_token,
-                                        setIsLoadingAttach,
-                                        fetchOneWorkOrder
-                                      );
-                                    }
+                                    await handleFileChange(file);
                                   }
                                 }}
                                 className="hidden"
@@ -1701,7 +1698,7 @@ const MissionDetails = () => {
                       className={`w-full flex flex-col gap-[20px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]`}
                     >
                       <label
-                        htmlFor="report"
+                        htmlFor="report-label"
                         className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
                       >
                         Report
@@ -1737,18 +1734,19 @@ const MissionDetails = () => {
                                           // You can update the progress in the state to show it in the UI
                                           setWorkorder((prev) => {
                                             if (!prev) return null;
-  
+
                                             return {
                                               ...prev,
-                                              reports: prev.reports?.map((rep) =>
-                                                rep.id === report.id
-                                                  ? {
-                                                      ...rep,
-                                                      downloadProgress: `${progress.toFixed(
-                                                        0
-                                                      )}`,
-                                                    }
-                                                  : rep
+                                              reports: prev.reports?.map(
+                                                (rep) =>
+                                                  rep.id === report.id
+                                                    ? {
+                                                        ...rep,
+                                                        downloadProgress: `${progress.toFixed(
+                                                          0
+                                                        )}`,
+                                                      }
+                                                    : rep
                                               ),
                                             };
                                           });
@@ -1757,23 +1755,23 @@ const MissionDetails = () => {
                                           // Reset progress to 0% after download is complete
                                           setWorkorder((prev) => {
                                             if (!prev) return null;
-  
+
                                             return {
                                               ...prev,
-                                              reports: prev.reports?.map((rep) =>
-                                                rep.id === report.id
-                                                  ? {
-                                                      ...rep,
-                                                      downloadProgress: `0`,
-                                                    }
-                                                  : rep
+                                              reports: prev.reports?.map(
+                                                (rep) =>
+                                                  rep.id === report.id
+                                                    ? {
+                                                        ...rep,
+                                                        downloadProgress: `0`,
+                                                      }
+                                                    : rep
                                               ),
                                             };
                                           });
                                         }
                                       );
                                     }
-
                                   }}
                                 >
                                   <div className="flex items-center justify-between w-full">
@@ -1893,7 +1891,10 @@ const MissionDetails = () => {
                         {uploadingFiles.reportFiles.length > 0 &&
                           uploadingFiles.reportFiles.map((report, index) => {
                             return (
-                              <div className="w-full sm:w-[48%] lg:w-[24%]" key={index}>
+                              <div
+                                className="w-full sm:w-[48%] lg:w-[24%]"
+                                key={index}
+                              >
                                 <UploadingFile
                                   id={report.id}
                                   fetchFunc={fetchOneWorkOrder}
@@ -1943,52 +1944,54 @@ const MissionDetails = () => {
                             )}
                           </button>
                         ) : (
-                          <div className="flex items-center gap-[12px]">
-                            <button
-                              className="px-[26px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
-                              onClick={() => {
-                                handle_edit_or_reqUpdate_report(
-                                  workorder.workorder.id,
-                                  false,
-                                  setisLoadingFinalize,
-                                  fetchOneWorkOrder
-                                );
-                              }}
-                            >
-                              {isLoadingFinalize ? (
-                                <RotatingLines
-                                  visible={true}
-                                  width="20"
-                                  strokeWidth="3"
-                                  strokeColor="#4A3AFF"
-                                />
-                              ) : (
-                                "Edit reports"
-                              )}
-                            </button>
-                            <button
-                              className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
-                              onClick={() => {
-                                handle_edit_or_reqUpdate_report(
-                                  workorder.workorder.id,
-                                  true,
-                                  setisLoadingFinalize,
-                                  fetchOneWorkOrder
-                                );
-                              }}
-                            >
-                              {isLoadingFinalize ? (
-                                <RotatingLines
-                                  visible={true}
-                                  width="20"
-                                  strokeWidth="3"
-                                  strokeColor="#4A3AFF"
-                                />
-                              ) : (
-                                "Request Update"
-                              )}
-                            </button>
-                          </div>
+                          getRole() !== 2 && (
+                            <div className="flex items-center gap-[12px]">
+                              <button
+                                className="px-[26px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
+                                onClick={() => {
+                                  handle_edit_or_reqUpdate_report(
+                                    workorder.workorder.id,
+                                    false,
+                                    setisLoadingFinalize,
+                                    fetchOneWorkOrder
+                                  );
+                                }}
+                              >
+                                {isLoadingFinalize ? (
+                                  <RotatingLines
+                                    visible={true}
+                                    width="20"
+                                    strokeWidth="3"
+                                    strokeColor="#4A3AFF"
+                                  />
+                                ) : (
+                                  "Edit reports"
+                                )}
+                              </button>
+                              <button
+                                className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
+                                onClick={() => {
+                                  handle_edit_or_reqUpdate_report(
+                                    workorder.workorder.id,
+                                    true,
+                                    setisLoadingFinalize,
+                                    fetchOneWorkOrder
+                                  );
+                                }}
+                              >
+                                {isLoadingFinalize ? (
+                                  <RotatingLines
+                                    visible={true}
+                                    width="20"
+                                    strokeWidth="3"
+                                    strokeColor="#4A3AFF"
+                                  />
+                                ) : (
+                                  "Request Update"
+                                )}
+                              </button>
+                            </div>
+                          )
                         )}
                       </div>
                     </div>
@@ -1996,7 +1999,7 @@ const MissionDetails = () => {
                     {workorder.workorder.require_acceptence && (
                       <div className="w-full flex flex-col gap-[20px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
                         <label
-                          htmlFor="acceptence"
+                          htmlFor="acceptence-label"
                           className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
                         >
                           Acceptance certificat
@@ -2032,7 +2035,7 @@ const MissionDetails = () => {
                                             );
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
-  
+
                                               return {
                                                 ...prev,
                                                 acceptance_certificates:
@@ -2053,7 +2056,7 @@ const MissionDetails = () => {
                                           () => {
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
-  
+
                                               return {
                                                 ...prev,
                                                 acceptance_certificates:
@@ -2071,7 +2074,6 @@ const MissionDetails = () => {
                                           }
                                         );
                                       }
-
                                     }}
                                   >
                                     <div className="flex items-center gap-[9px] w-full">
@@ -2527,13 +2529,11 @@ const MissionDetails = () => {
         className="hidden"
         name="reupload"
         onChange={(e) => {
-          handleFileInputChangeOfResumeUpload(
-            {
-              fileId: selectedIdFileForResumeUpload!,
-              fileType: selectedFileTypeForResumeUpload!,
-              fileContent: e.target.files![0],
-            }
-          );
+          handleFileInputChangeOfResumeUpload({
+            fileId: selectedIdFileForResumeUpload!,
+            fileType: selectedFileTypeForResumeUpload!,
+            fileContent: e.target.files![0],
+          });
         }}
       />
 

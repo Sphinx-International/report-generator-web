@@ -3,7 +3,7 @@ interface sideBarItem {
   svg: string;
   activeSvg: string;
   link: string;
-  access: "admin" | "all";
+  access: "admin" | "all" | "coord";
   subItem?: sideBarItem[];
 }
 
@@ -65,7 +65,7 @@ export const sideBarTab: sideBarItem[] = [
 </defs>
 </svg>`,
     link: "/mails",
-    access: "admin",
+    access: "coord",
     subItem: [
       {
         title: "Individuals",
