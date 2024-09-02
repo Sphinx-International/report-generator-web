@@ -153,7 +153,6 @@ const MissionDetails = () => {
             onClick={async () => {
               // Custom delete logic here, e.g., deleting from IndexedDB
               // deleteFileFromIndexedDB(file.fileId);
-              console.log("clicked");
               await handleCancelUpload(file.fileId);
               fetchOneWorkOrder();
               closeSnackbar(key);
