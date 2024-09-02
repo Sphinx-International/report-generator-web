@@ -430,9 +430,9 @@ const ResetPassword = () => {
                       <path
                         d="M6.87516 11.0007L9.62516 13.7507L15.1252 8.25065M20.1668 11.0007C20.1668 16.0633 16.0628 20.1673 11.0002 20.1673C5.93755 20.1673 1.8335 16.0633 1.8335 11.0007C1.8335 5.93804 5.93755 1.83398 11.0002 1.83398C16.0628 1.83398 20.1668 5.93804 20.1668 11.0007Z"
                         stroke="#D0D5DD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
                     <span className="text-[14px] leading-[22px] text-[#475467]">
@@ -450,9 +450,9 @@ const ResetPassword = () => {
                       <path
                         d="M6.87516 11.0007L9.62516 13.7507L15.1252 8.25065M20.1668 11.0007C20.1668 16.0633 16.0628 20.1673 11.0002 20.1673C5.93755 20.1673 1.8335 16.0633 1.8335 11.0007C1.8335 5.93804 5.93755 1.83398 11.0002 1.83398C16.0628 1.83398 20.1668 5.93804 20.1668 11.0007Z"
                         stroke="#D0D5DD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
                     <span className="text-[14px] leading-[22px] text-[#475467]">

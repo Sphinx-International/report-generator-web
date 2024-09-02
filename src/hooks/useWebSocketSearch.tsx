@@ -17,7 +17,7 @@ const useWebSocketSearch = ({
 }: UseWebSocketSearchProps) => {
   useEffect(() => {
     if (!searchQuery) {
-      console.log("No search query provided");
+      null
       setLoader(false);
       return;
     }

@@ -74,8 +74,8 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
               <path
                 d="M11 2L3 7L11 12"
                 stroke={currentReportTypeIndex === 1 ? "#4A3AFF" : "#DB2C9F"}
-                stroke-width="2.5"
-                stroke-linecap="round"
+                strokeWidth="2.5"
+                strokeLinecap="round"
               />
             </svg>
 
@@ -115,8 +115,8 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
               <path
                 d="M11 2L3 7L11 12"
                 stroke={currentReportTypeIndex === 1 ? "#4A3AFF" : "#DB2C9F"}
-                stroke-width="2.5"
-                stroke-linecap="round"
+                strokeWidth="2.5"
+                strokeLinecap="round"
               />
             </svg>
           </div>

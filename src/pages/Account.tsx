@@ -125,14 +125,14 @@ const Account = () => {
                       <path
                         d="M3.3335 18.0001V17.1667C3.3335 14.4053 5.57207 12.1667 8.3335 12.1667H11.6668C14.4282 12.1667 16.6668 14.4053 16.6668 17.1667V18.0001"
                         stroke={slectedNav === nav ? "#4A3AFF" : "#6F6C8F"}
-                        stroke-width="1.66667"
-                        stroke-linecap="round"
+                        strokeWidth="1.66667"
+                        strokeLinecap="round"
                       />
                       <path
                         d="M10.0003 9.66667C8.15938 9.66667 6.66699 8.17428 6.66699 6.33333C6.66699 4.49238 8.15938 3 10.0003 3C11.8412 3 13.3337 4.49238 13.3337 6.33333C13.3337 8.17428 11.8412 9.66667 10.0003 9.66667Z"
                         stroke={slectedNav === nav ? "#4A3AFF" : "#6F6C8F"}
-                        stroke-width="1.66667"
-                        stroke-linecap="round"
+                        strokeWidth="1.66667"
+                        strokeLinecap="round"
                       />
                     </svg>{" "}
                     {nav}
@@ -165,9 +165,9 @@ const Account = () => {
                           <path
                             d="M10.5003 4.49996L12.5003 6.49996M9.16699 13.8333H14.5003M3.83366 11.1666L3.16699 13.8333L5.83366 13.1666L13.5577 5.44263C13.8076 5.19259 13.948 4.85351 13.948 4.49996C13.948 4.14641 13.8076 3.80733 13.5577 3.55729L13.443 3.44263C13.193 3.19267 12.8539 3.05225 12.5003 3.05225C12.1468 3.05225 11.8077 3.19267 11.5577 3.44263L3.83366 11.1666Z"
                             stroke="#4A3AFF"
-                            stroke-width="1.66667"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            strokeWidth="1.66667"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                           />
                         </svg>{" "}
                         Edit

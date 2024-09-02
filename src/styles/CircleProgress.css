@@ -11,7 +11,7 @@
   
   .circular-progress circle {
     fill: none;
-    stroke-width: 4;
+    strokeWidth: 4;
   }
   
   .circular-progress .background {

@@ -623,16 +623,16 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                         <path
                           d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                           stroke="#6F6C8F"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
                         <path
                           d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                           stroke="#6F6C8F"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
                       </svg>
                       {isFocusedAssignInput && searchQueryEng !== "" && (
@@ -652,6 +652,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             searchEngs.map((eng) => {
                               return (
                                 <div
+                                key={eng.id}
                                   className="flex items-center gap-[8px] px-[18px] w-full cursor-pointer hover:bg-slate-100"
                                   onClick={() => {
                                     setformValues((prev) => ({
@@ -711,8 +712,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             ? "#FFAA29"
                             : "#DB2C2C"
                         }
-                        stroke-width="2.5"
-                        stroke-linecap="round"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
                       />
                     </svg>
 
@@ -770,8 +771,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             ? "#FFAA29"
                             : "#DB2C2C"
                         }
-                        stroke-width="2.5"
-                        stroke-linecap="round"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
                       />
                     </svg>
                   </div>
@@ -876,16 +877,16 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     <path
                       d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                       stroke="#6F6C8F"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                     <path
                       d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                       stroke="#6F6C8F"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </svg>
 
@@ -903,6 +904,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                         searchCoords.map((coord) => {
                           return (
                             <div
+                             key={coord.id}
                               className="flex items-center px-[18px] gap-[8px] w-full cursor-pointer hover:bg-slate-100"
                               onClick={() => {
                                 setformValues((prev) => {

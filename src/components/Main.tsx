@@ -76,9 +76,10 @@ const Main: React.FC<HeaderProps> = (props) => {
           <div className="flex items-center gap-[7px]">
             {props.functionalties.secondaryFuncs &&
             localStorage.getItem("role") === "0"
-              ? props.functionalties.secondaryFuncs.map((button) => {
+              ? props.functionalties.secondaryFuncs.map((button,index) => {
                   return (
                     <button
+                    key={index}
                       className={`flex items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
                         selectedWorkorders.length === 0
                           ? "text-n600 border-n400"
@@ -129,8 +130,8 @@ const Main: React.FC<HeaderProps> = (props) => {
               fill="none"
             >
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M9.3405 0.215332L5.42905 4.266L1.54938 0.215332L0.358935 1.44815L5.41939 6.73163L10.5213 1.44815L9.3405 0.215332Z"
                 fill="#4A3AFF"
               />
