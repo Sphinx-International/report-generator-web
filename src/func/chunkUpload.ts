@@ -165,7 +165,7 @@ const uploadRemainingChunks = async (
           body: formData,
         }
       );
-      console.log(response.status);
+      console.log(await response.json())
       if (response.status === 200) {
         const progress = ((index + 1) / totalChunks) * 100;
         dispatch(updateFileProgress({ type: fileType, fileId, progress }));
@@ -444,7 +444,7 @@ export const handle_files_with_one_chunk = async (
 };
 
 export const handleCancelUpload = async (
-  fileID: number,
+  fileId: number,  dispatch: AppDispatch,   fileType: "attachements" | "report" | "certificate",
   setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc?: () => void,
   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>
@@ -460,7 +460,7 @@ export const handleCancelUpload = async (
   }
 
   try {
-    const response = await fetch(`${baseUrl}/file/cancel-upload/${fileID}`, {
+    const response = await fetch(`${baseUrl}/file/cancel-upload/${fileId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -472,11 +472,11 @@ export const handleCancelUpload = async (
       if (fetchFunc) {
         fetchFunc();
       }
-
       if (setFile) {
         setFile(undefined);
       }
-      await deleteFileFromIndexedDB(fileID);
+      dispatch(removeUploadingFile({ type: fileType, fileId }));
+      await deleteFileFromIndexedDB(fileId);
     }
   } catch (error) {
     console.error("Error canceling upload:", error);

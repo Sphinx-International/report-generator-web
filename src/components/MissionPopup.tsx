@@ -26,8 +26,12 @@ import {
 } from "../Redux/slices/uploadingFilesSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
-import { generateFileToken,storeFileInIndexedDB, deleteFileFromIndexedDB } from "../func/generateFileToken";
-
+import {
+  generateFileToken,
+  storeFileInIndexedDB,
+  deleteFileFromIndexedDB,
+} from "../func/generateFileToken";
+import { fetchGroupMembers } from "../func/groupsApi";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -46,8 +50,16 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const [searchQueryEng, setSearchQueryEng] = useState("");
     const [searchQueryCoord, setSearchQueryCoord] = useState("");
 
+    const [typeOfSearchForCoord, setTypeOfSearchForCoord] = useState<
+      "Emails" | "Groupes"
+    >("Emails");
+    const [typeOfSearchPopupVisible, setTypeOfSearchPopupVisible] =
+      useState<boolean>(false);
+
     const [searchEngs, setSearchEngs] = useState<User[]>([]);
-    const [searchCoords, setSearchCoords] = useState<User[]>([]);
+    const [searchCoords, setSearchCoords] = useState<
+      { email: string; id: number; name: string }[]
+    >([]);
 
     const [selectedEng, setSelectedEng] = useState<string | null>(null);
     const [selectedCoord, setSelectedCoord] = useState<string[]>([]);
@@ -57,6 +69,9 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
     const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
+
+    const [loaderGettingGroupMembers, setLoaderGettingGroupMembers] = useState(false);
+
 
     const priorities = ["Low", "Medium", "High", "Urgent"];
     const [currentPriorityIndex, setCurrentPriorityIndex] = useState<
@@ -75,6 +90,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const [isLoading, setIsLoading] = useState(false);
 
     const [formErrs, setFormErrs] = useState<FormErrors>({});
+
+
     const closeDialog = (
       eo: MouseEvent<HTMLButtonElement> | React.FormEvent
     ) => {
@@ -117,7 +134,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const file_token = await generateFileToken(file);
-          handle_chunck(file,file_token);
+          handle_chunck(file, file_token);
         }
       }
     };
@@ -277,7 +294,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     useWebSocketSearch({
       searchQuery: searchQueryCoord,
-      endpointPath: "search-mail",
+      endpointPath:
+        typeOfSearchForCoord === "Emails" ? "search-mail" : "search-group",
       setResults: setSearchCoords,
       setLoader: setLoaderCoordSearch,
     });
@@ -401,7 +419,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         if (response.ok) {
           const data = await response.json();
           const fileId = data.id;
-          storeFileInIndexedDB(file,fileId,"attachements")
+          storeFileInIndexedDB(file, fileId, "attachements");
           setformValues((prevFormValues) => ({
             ...prevFormValues,
             attachments: [
@@ -463,7 +481,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             ...prevFormValues,
             attachments: [
               ...(prevFormValues.attachments || []),
-              { id: fileId, progress:  100.0,  file },
+              { id: fileId, progress: 100.0, file },
             ],
           }));
           dispatch(
@@ -587,7 +605,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                           className="w-[40px"
                         />
                         <span
-                          className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
+                          className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-30 hover:opacity-100 cursor-pointer rounded-[50%]"
                           onClick={removeEng}
                         >
                           🗙
@@ -652,7 +670,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             searchEngs.map((eng) => {
                               return (
                                 <div
-                                key={eng.id}
+                                  key={eng.id}
                                   className="flex items-center gap-[8px] px-[18px] w-full cursor-pointer hover:bg-slate-100"
                                   onClick={() => {
                                     setformValues((prev) => ({
@@ -889,9 +907,63 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       strokeLinejoin="round"
                     />
                   </svg>
+                  <div className="absolute right-[14px] top-[50%] translate-y-[-50%] z-50">
+                    <svg
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
+                      }}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="16"
+                      viewBox="0 0 18 16"
+                      fill="none"
+                    >
+                      <path
+                        d="M16.7077 8.00023H6.41185M2.77768 8.00023H1.29102M2.77768 8.00023C2.77768 7.51842 2.96908 7.05635 3.30977 6.71566C3.65046 6.37497 4.11254 6.18357 4.59435 6.18357C5.07616 6.18357 5.53824 6.37497 5.87893 6.71566C6.21962 7.05635 6.41102 7.51842 6.41102 8.00023C6.41102 8.48204 6.21962 8.94412 5.87893 9.28481C5.53824 9.6255 5.07616 9.8169 4.59435 9.8169C4.11254 9.8169 3.65046 9.6255 3.30977 9.28481C2.96908 8.94412 2.77768 8.48204 2.77768 8.00023ZM16.7077 13.5061H11.9177M11.9177 13.5061C11.9177 13.988 11.7258 14.4506 11.3851 14.7914C11.0443 15.1321 10.5821 15.3236 10.1002 15.3236C9.61837 15.3236 9.1563 15.1313 8.81561 14.7906C8.47491 14.45 8.28352 13.9879 8.28352 13.5061M11.9177 13.5061C11.9177 13.0241 11.7258 12.5624 11.3851 12.2216C11.0443 11.8808 10.5821 11.6894 10.1002 11.6894C9.61837 11.6894 9.1563 11.8808 8.81561 12.2215C8.47491 12.5622 8.28352 13.0243 8.28352 13.5061M8.28352 13.5061H1.29102M16.7077 2.4944H14.1202M10.486 2.4944H1.29102M10.486 2.4944C10.486 2.01259 10.6774 1.55051 11.0181 1.20982C11.3588 0.869133 11.8209 0.677734 12.3027 0.677734C12.5412 0.677734 12.7775 0.724724 12.9979 0.81602C13.2183 0.907316 13.4186 1.04113 13.5873 1.20982C13.756 1.37852 13.8898 1.57878 13.9811 1.79919C14.0724 2.0196 14.1193 2.25583 14.1193 2.4944C14.1193 2.73297 14.0724 2.9692 13.9811 3.18961C13.8898 3.41002 13.756 3.61028 13.5873 3.77898C13.4186 3.94767 13.2183 4.08149 12.9979 4.17278C12.7775 4.26408 12.5412 4.31107 12.3027 4.31107C11.8209 4.31107 11.3588 4.11967 11.0181 3.77898C10.6774 3.43829 10.486 2.97621 10.486 2.4944Z"
+                        stroke="#A0A3BD"
+                        stroke-width="1.25"
+                        stroke-miterlimit="10"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    {typeOfSearchPopupVisible && (
+                      <div className="bg-white shadow-xl shadow-slate-400 p-[17px] rounded-[10px] flex flex-col items-start gap-[14px] absolute right-1">
+                        <span className="text-[13px] text-n700 font-medium">
+                          Search by :{" "}
+                        </span>
+                        <div className="flex items-center gap-[4px]">
+                          <button
+                            className={`px-[20px] py-[5px] rounded-[26px] border-[1px]  text-[12px] leading-[18px]  font-medium ${
+                              typeOfSearchForCoord === "Emails"
+                                ? "text-primary border-primary"
+                                : "text-n600 border-n400"
+                            }`}
+                            onClick={() => {
+                              setTypeOfSearchForCoord("Emails");
+                            }}
+                          >
+                            Emails
+                          </button>
+                          <button
+                            className={`px-[20px] py-[5px] rounded-[26px] border-[1px] text-[12px] leading-[18px] font-medium ${
+                              typeOfSearchForCoord === "Groupes"
+                                ? "text-primary border-primary"
+                                : "text-n600 border-n400"
+                            }`}
+                            onClick={() => {
+                              setTypeOfSearchForCoord("Groupes");
+                            }}
+                          >
+                            Groupes
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                  {isFocusedMailInput && searchQueryCoord !== "" && (
-                    <div className="rounded-[20px] py-[18px] z-50 bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
+                  {isFocusedMailInput && searchQueryCoord !== "" ? (
+                    <div className="rounded-[20px] py-[18px] z-40 bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
                       {loaderCoordSearch ? (
                         <div className="w-full px-[18px] py-[10px] flex items-center justify-center">
                           <RotatingLines
@@ -901,14 +973,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                           />
                         </div>
                       ) : searchCoords.length > 0 ? (
-                        searchCoords.map((coord) => {
-                          return (
+                        searchCoords.map((coord) =>
+                          typeOfSearchForCoord === "Emails" ? (
                             <div
-                             key={coord.id}
+                              key={coord.id}
                               className="flex items-center px-[18px] gap-[8px] w-full cursor-pointer hover:bg-slate-100"
                               onClick={() => {
                                 setformValues((prev) => {
-                                  if (!prev.emails.includes(coord.email)) {
+                                  if (!prev.emails.includes(coord.email!)) {
                                     return {
                                       ...prev,
                                       emails: [...prev.emails, coord.email],
@@ -917,7 +989,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                   return prev;
                                 });
                                 setSelectedCoord((prev) => {
-                                  if (!prev.includes(coord.email)) {
+                                  if (!prev.includes(coord.email!)) {
                                     return [...prev, coord.email];
                                   }
                                   return prev;
@@ -934,15 +1006,33 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                 {coord.email}
                               </span>
                             </div>
-                          );
-                        })
+                          ) : (
+                            <div
+                              key={coord.id}
+                              className="flex items-center px-[18px] gap-[8px] w-full cursor-pointer hover:bg-slate-100"
+                              onClick={() => {
+                            fetchGroupMembers(coord.id,setSelectedCoord,setLoaderGettingGroupMembers,setformValues)
+                            setSearchQueryCoord("");  
+                              }}
+                            >
+                              <img
+                                src="avatar.png"
+                                alt="avatar"
+                                className="w-[35px]"
+                              />
+                              <span className="text-n700 text-[14px]">
+                                {coord.name}
+                              </span>
+                            </div>
+                          )
+                        )
                       ) : (
                         <span className="text-n700 w-full flex justify-center text-[14px]">
-                          no result founded
+                          no result found
                         </span>
                       )}
                     </div>
-                  )}
+                  ): loaderGettingGroupMembers && typeOfSearchForCoord === "Groupes" &&<div className="rounded-[20px] py-[18px] z-40 bg-white absolute w-full shadow-md flex justify-center items-center text-[14px] text-primary font-medium">Getting group members ...</div>}
                 </div>
                 {formErrs.emails !== "" && formErrs.emails !== undefined ? (
                   <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
@@ -960,7 +1050,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                               className="w-[35px]"
                             />
                             <span
-                              className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-50 hover:opacity-100 cursor-pointer rounded-[50%]"
+                              className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
                               onClick={() => {
                                 removeCoord(coord);
                               }}
@@ -1044,6 +1134,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             id={file.id}
                             file={file.file}
                             progress={file.progress}
+                            fileType="attachements"
                           />
                         );
                       })}

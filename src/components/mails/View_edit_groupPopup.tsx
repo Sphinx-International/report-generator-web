@@ -67,7 +67,6 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
         return;
       }
       setIsLoading(true);
-      console.log(props.groupInfo.id)
       const url = `${baseUrl}/mail/get-group-members/${props.groupInfo.id}`;
       try {
         const response = await fetch(url, {

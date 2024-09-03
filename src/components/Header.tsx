@@ -166,6 +166,7 @@ const Header: React.FC<headerProps> = (props) => {
                                   id={attach.id}
                                   progress={attach.progress}
                                   file={attach.file}
+                                  fileType="attachements"
                                 />
                               );
                             })}
@@ -187,6 +188,7 @@ const Header: React.FC<headerProps> = (props) => {
                                       id={report.id}
                                       progress={report.progress}
                                       file={report.file}
+                                      fileType="report"
                                     />
                                   );
                                 }
@@ -210,6 +212,7 @@ const Header: React.FC<headerProps> = (props) => {
                                       id={cert.id}
                                       progress={cert.progress}
                                       file={cert.file}
+                                      fileType="certificate"
                                     />
                                   );
                                 }

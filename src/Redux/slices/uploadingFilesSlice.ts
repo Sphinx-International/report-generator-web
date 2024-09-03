@@ -21,7 +21,7 @@ interface AddFilePayload {
 
 interface RemoveFilePayload {
   type: "attachements" |"report" |"certificate";
-  fileId: number; // Assuming file ID is of type string, adjust as needed
+  fileId: number;
 }
 
 interface UpdateProgressPayload {

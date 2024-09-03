@@ -58,3 +58,9 @@ input[type="password"]::-ms-reveal {
 input[type="password"]::-webkit-password-field {
   appearance: none;
 }
+/* Remove the clear button for search inputs in WebKit browsers (Chrome, Safari) */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
