@@ -1,4 +1,4 @@
-import { Resmail } from "../assets/types/Mails";
+import { Resmail } from "../assets/types/Mails&Notifications";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 import { EditingGroupMembers } from "../components/mails/View_edit_groupPopup";
 

@@ -1,7 +1,7 @@
 import { forwardRef, useRef } from "react";
 import { handleCloseDialog } from "../../func/openDialog";
 import { useState, useEffect, useCallback } from "react";
-import { Resgroup, Resmail } from "../../assets/types/Mails";
+import { Resgroup, Resmail } from "../../assets/types/Mails&Notifications";
 import useWebSocketSearch from "../../hooks/useWebSocketSearch";
 import { RotatingLines } from "react-loader-spinner";
 import { fetchGroupMembersForEditing } from "../../func/groupsApi";

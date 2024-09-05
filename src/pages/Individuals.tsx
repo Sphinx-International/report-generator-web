@@ -3,7 +3,7 @@ import SideBar from "../components/SideBar";
 import AddEmailPopup from "../components/mails/AddEmailPopup";
 import { handleOpenDialog } from "../func/openDialog";
 import { useRef, useState, useEffect } from "react";
-import { Resmail } from "../assets/types/Mails";
+import { Resmail } from "../assets/types/Mails&Notifications";
 import { RotatingLines } from "react-loader-spinner";
 import EmptyData from "../components/EmptyData";
 

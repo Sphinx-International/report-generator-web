@@ -8,7 +8,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UploadingFile from "./uploadingFile";
 import { alertWorkorder } from "../assets/types/Mission";
+import { Notification } from "../assets/types/Mails&Notifications";
 import { calculateDaysSinceCreation } from "../func/formatDatr&Time";
+import { formatDate } from "../func/formatDatr&Time";
+import { useNavigate } from "react-router-dom";
+import useWebSocketNotification from "../hooks/UseWebSocketNotification";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface headerProps {
@@ -17,13 +21,22 @@ interface headerProps {
 }
 
 const Header: React.FC<headerProps> = (props) => {
+  const navigate = useNavigate();
+
   const dispatch = useDispatch<AppDispatch>();
   const [showDropDown, setshowDropDown] = useState<boolean>(false);
   const [showUploadDropDown, setShowUploadDropDown] = useState<boolean>(false);
   const [showAlertDropDown, setShowAlertDropDown] = useState<boolean>(false);
+  const [showNotificationDropDown, setShowNotificationDropDown] =
+    useState<boolean>(false);
 
   const [alerts, setAlerts] = useState<alertWorkorder[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationPopup, setNotificationPopup] = useState<Notification[]>(
+    []
+  );
 
+  console.log(notificationPopup)
   const user: User = JSON.parse(localStorage.getItem("user")!);
 
   const uploadingFiles = useSelector(
@@ -61,9 +74,89 @@ const Header: React.FC<headerProps> = (props) => {
     }
   };
 
+  const fetchNotifications = async () => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    const url = `${baseUrl}/notification/get-notifications?offset=0&limit=20`;
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text(); // Read the response body as text
+        console.error("Error response text: ", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setNotifications(data.data);
+    } catch (err) {
+      console.error("Error: ", err);
+    }
+  };
+
+  useWebSocketNotification({
+    endpointPath: "notifications",
+    setNotifications: setNotificationPopup,
+  });
+
   useEffect(() => {
     fetchAlerts();
+    fetchNotifications();
   }, []);
+
+  const getActionTitle = (actionNumber: number): string => {
+    const actionTitles: { [key: number]: string } = {
+      100: "New account created",
+      101: "Account updated",
+      102: "Account deleted",
+      200: "New mail created",
+      201: "New group created",
+      300: "New workorder created",
+      301: "Workorder updated",
+      302: "Workorder assigned",
+      303: "Workorder drop assign",
+      304: "Workorder executed",
+      305: "Workorder report uploaded",
+      306: "Workorder validated",
+      307: "Workorder certificate uploaded",
+      308: "Workorder accepted",
+    };
+
+    return actionTitles[actionNumber] || "Unknown action";
+  };
+  const getActionDescription = (actionNumber: number): string => {
+    const actionDescriptions: { [key: number]: string } = {
+      100: "A new account has been created.",
+      101: "An account has been updated.",
+      102: "An account has been deleted.",
+      200: "A new mail has been created.",
+      201: "A new group has been created.",
+      300: "A new work order has been created.",
+      301: "A work order has been updated.",
+      302: "A new mission has been assigned.",
+      303: "A work order assignment has been dropped.",
+      304: "A work order has been executed.",
+      305: "A work order report has been uploaded.",
+      306: "A work order has been validated.",
+      307: "A work order certificate has been uploaded.",
+      308: "A work order has been accepted.",
+    };
+
+    return (
+      actionDescriptions[actionNumber] ||
+      "No description available for this action."
+    );
+  };
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -83,25 +176,116 @@ const Header: React.FC<headerProps> = (props) => {
         </div>
         <div className="flex items-center md:gap-[32px] md:justify-end justify-between md:w-fit w-full">
           <div className=" items-center gap-[10px] hidden md:flex flex-row-reverse">
-            <svg
-              className=" p-[6px] rounded-[50%] border-[1px] border-n300 cursor-pointer"
-              xmlns="http://www.w3.org/2000/svg"
-              width="34"
-              height="34"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M6.8499 8.9999C6.8499 7.68101 7.29049 6.38991 8.1352 5.43961C8.96601 4.50496 10.2306 3.8499 11.9999 3.8499C13.7693 3.8499 15.0338 4.50496 15.8646 5.43961C16.7093 6.38991 17.1499 7.68101 17.1499 8.9999C17.1499 10.2595 17.7765 11.1981 18.2541 11.9136L18.2927 11.9714C18.8109 12.7488 19.1499 13.2937 19.1499 13.9999C19.1499 14.9742 18.4562 15.7577 17.0163 16.3362C15.5989 16.9057 13.7184 17.1499 11.9999 17.1499C10.2814 17.1499 8.4009 16.9057 6.98347 16.3362C5.54363 15.7577 4.8499 14.9742 4.8499 13.9999C4.8499 13.3064 5.17412 12.8296 5.69801 12.0753C6.20164 11.3503 6.8499 10.4078 6.8499 8.9999ZM11.9999 2.1499C9.76925 2.1499 8.0338 2.99485 6.86461 4.31019C5.70932 5.60989 5.1499 7.31879 5.1499 8.9999C5.1499 9.83343 4.79817 10.3909 4.30179 11.1055L4.23206 11.2056C3.76246 11.8784 3.1499 12.756 3.1499 13.9999C3.1499 16.0257 4.6784 17.2421 6.34968 17.9136C8.04336 18.5941 10.1628 18.8499 11.9999 18.8499C13.837 18.8499 15.9564 18.5941 17.6501 17.9136C19.3214 17.2421 20.8499 16.0257 20.8499 13.9999C20.8499 12.7403 20.2233 11.8017 19.7457 11.0862L19.7071 11.0284C19.1889 10.251 18.8499 9.70612 18.8499 8.9999C18.8499 7.31879 18.2905 5.60989 17.1352 4.31019C15.966 2.99485 14.2306 2.1499 11.9999 2.1499ZM9.52841 19.2927C9.91593 19.0343 10.4384 19.1362 10.7009 19.5192L10.7073 19.5277C10.7163 19.5396 10.734 19.562 10.7602 19.5914C10.8131 19.651 10.8969 19.7351 11.0099 19.8199C11.2334 19.9876 11.5589 20.1499 11.9999 20.1499C12.4409 20.1499 12.7664 19.9876 12.9899 19.8199C13.1029 19.7351 13.1867 19.651 13.2396 19.5914C13.2658 19.562 13.2835 19.5396 13.2925 19.5277L13.2989 19.5192C13.5614 19.1362 14.0839 19.0343 14.4714 19.2927C14.862 19.5531 14.9675 20.0808 14.7071 20.4714L13.9999 19.9999C14.7071 20.4714 14.7069 20.4717 14.7067 20.472L14.7063 20.4727L14.7053 20.4741L14.7032 20.4773L14.6982 20.4846L14.6848 20.5037C14.6744 20.5183 14.6611 20.5366 14.6448 20.558C14.6122 20.6008 14.5674 20.6565 14.5102 20.7209C14.3964 20.8488 14.2302 21.0147 14.0099 21.1799C13.5668 21.5122 12.8922 21.8499 11.9999 21.8499C11.1076 21.8499 10.433 21.5122 9.9899 21.1799C9.76961 21.0147 9.60336 20.8488 9.4896 20.7209C9.43243 20.6565 9.38763 20.6008 9.35504 20.558C9.33871 20.5366 9.32537 20.5183 9.315 20.5037L9.30164 20.4846L9.2966 20.4773L9.2945 20.4741L9.29354 20.4727L9.29309 20.472C9.29287 20.4717 9.29266 20.4714 9.9999 19.9999L9.29266 20.4714C9.03226 20.0808 9.13781 19.5531 9.52841 19.2927Z"
-                fill="#170F49"
-              />
-              <path
-                d="M24 2C24 3.10457 23.1046 4 22 4C20.8954 4 20 3.10457 20 2C20 0.895431 20.8954 0 22 0C23.1046 0 24 0.895431 24 2Z"
-                fill="#FF3B30"
-              />
-            </svg>
+            <div className="relative">
+              <svg
+                onClick={() => {
+                  setShowNotificationDropDown(!showNotificationDropDown);
+                  setShowAlertDropDown(false);
+                  setShowUploadDropDown(false);
+                }}
+                className=" p-[6px] rounded-[50%] border-[1px] border-n300 cursor-pointer"
+                xmlns="http://www.w3.org/2000/svg"
+                width="34"
+                height="34"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M6.8499 8.9999C6.8499 7.68101 7.29049 6.38991 8.1352 5.43961C8.96601 4.50496 10.2306 3.8499 11.9999 3.8499C13.7693 3.8499 15.0338 4.50496 15.8646 5.43961C16.7093 6.38991 17.1499 7.68101 17.1499 8.9999C17.1499 10.2595 17.7765 11.1981 18.2541 11.9136L18.2927 11.9714C18.8109 12.7488 19.1499 13.2937 19.1499 13.9999C19.1499 14.9742 18.4562 15.7577 17.0163 16.3362C15.5989 16.9057 13.7184 17.1499 11.9999 17.1499C10.2814 17.1499 8.4009 16.9057 6.98347 16.3362C5.54363 15.7577 4.8499 14.9742 4.8499 13.9999C4.8499 13.3064 5.17412 12.8296 5.69801 12.0753C6.20164 11.3503 6.8499 10.4078 6.8499 8.9999ZM11.9999 2.1499C9.76925 2.1499 8.0338 2.99485 6.86461 4.31019C5.70932 5.60989 5.1499 7.31879 5.1499 8.9999C5.1499 9.83343 4.79817 10.3909 4.30179 11.1055L4.23206 11.2056C3.76246 11.8784 3.1499 12.756 3.1499 13.9999C3.1499 16.0257 4.6784 17.2421 6.34968 17.9136C8.04336 18.5941 10.1628 18.8499 11.9999 18.8499C13.837 18.8499 15.9564 18.5941 17.6501 17.9136C19.3214 17.2421 20.8499 16.0257 20.8499 13.9999C20.8499 12.7403 20.2233 11.8017 19.7457 11.0862L19.7071 11.0284C19.1889 10.251 18.8499 9.70612 18.8499 8.9999C18.8499 7.31879 18.2905 5.60989 17.1352 4.31019C15.966 2.99485 14.2306 2.1499 11.9999 2.1499ZM9.52841 19.2927C9.91593 19.0343 10.4384 19.1362 10.7009 19.5192L10.7073 19.5277C10.7163 19.5396 10.734 19.562 10.7602 19.5914C10.8131 19.651 10.8969 19.7351 11.0099 19.8199C11.2334 19.9876 11.5589 20.1499 11.9999 20.1499C12.4409 20.1499 12.7664 19.9876 12.9899 19.8199C13.1029 19.7351 13.1867 19.651 13.2396 19.5914C13.2658 19.562 13.2835 19.5396 13.2925 19.5277L13.2989 19.5192C13.5614 19.1362 14.0839 19.0343 14.4714 19.2927C14.862 19.5531 14.9675 20.0808 14.7071 20.4714L13.9999 19.9999C14.7071 20.4714 14.7069 20.4717 14.7067 20.472L14.7063 20.4727L14.7053 20.4741L14.7032 20.4773L14.6982 20.4846L14.6848 20.5037C14.6744 20.5183 14.6611 20.5366 14.6448 20.558C14.6122 20.6008 14.5674 20.6565 14.5102 20.7209C14.3964 20.8488 14.2302 21.0147 14.0099 21.1799C13.5668 21.5122 12.8922 21.8499 11.9999 21.8499C11.1076 21.8499 10.433 21.5122 9.9899 21.1799C9.76961 21.0147 9.60336 20.8488 9.4896 20.7209C9.43243 20.6565 9.38763 20.6008 9.35504 20.558C9.33871 20.5366 9.32537 20.5183 9.315 20.5037L9.30164 20.4846L9.2966 20.4773L9.2945 20.4741L9.29354 20.4727L9.29309 20.472C9.29287 20.4717 9.29266 20.4714 9.9999 19.9999L9.29266 20.4714C9.03226 20.0808 9.13781 19.5531 9.52841 19.2927Z"
+                  fill="#170F49"
+                />
+                <path
+                  d="M24 2C24 3.10457 23.1046 4 22 4C20.8954 4 20 3.10457 20 2C20 0.895431 20.8954 0 22 0C23.1046 0 24 0.895431 24 2Z"
+                  fill="#FF3B30"
+                />
+              </svg>
+
+              {showNotificationDropDown && (
+                <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-lg flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
+
+                  {notifications.length > 0 ? (
+                    <>
+                                      <h5 className="text-[15px] text-n800 font-semibold">
+                    Notifications
+                  </h5>
+                                      <div className="flex flex-col items-start gap-[12px] w-full ">
+                      {notifications.map((notif) => {
+                        return (
+                          <div
+                            className="cursor-pointer p-[13px] rounded-[15px] border-[1px] border-primary flex flex-col items-start gap-[10px] w-full"
+                            onClick={() => {
+                              navigate(
+                                `/${
+                                  notif.action >= 100 && notif.action < 200
+                                    ? `edit-user/${notif.on}`
+                                    : notif.action >= 200 && notif.action < 300
+                                    ? "mails/groups"
+                                    : `missions/${notif.on}`
+                                }`
+                              );
+                            }}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-[8px]">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="22"
+                                  height="22"
+                                  viewBox="0 0 22 22"
+                                  fill="none"
+                                >
+                                  <rect
+                                    width="22"
+                                    height="22"
+                                    rx="6"
+                                    fill="#4A3AFF"
+                                    fill-opacity="0.74"
+                                  />
+                                  <g clip-path="url(#clip0_1390_692)">
+                                    <path
+                                      d="M10.5834 15.5231C10.1846 15.4323 9.80149 15.2826 9.44672 15.079M12.4167 7.47754C13.328 7.68566 14.1415 8.19698 14.7243 8.9278C15.307 9.65862 15.6243 10.5656 15.6243 11.5003C15.6243 12.435 15.307 13.342 14.7243 14.0729C14.1415 14.8037 13.328 15.315 12.4167 15.5231M8.09876 13.8346C7.84901 13.4712 7.65914 13.0701 7.53638 12.6466M7.43188 10.8128C7.50522 10.3774 7.64638 9.96491 7.84438 9.58679L7.92184 9.447M9.16576 8.09904C9.59485 7.80428 10.0759 7.5934 10.5834 7.47754"
+                                      stroke="white"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                    />
+                                  </g>
+                                  <defs>
+                                    <clipPath id="clip0_1390_692">
+                                      <rect
+                                        width="11"
+                                        height="11"
+                                        fill="white"
+                                        transform="translate(6 6)"
+                                      />
+                                    </clipPath>
+                                  </defs>
+                                </svg>
+                                <h6 className="text-n800 font-medium leading-7">
+                                  {getActionTitle(notif.action)}
+                                </h6>
+                              </div>
+                              <span className="text-550 text-[11px] leading-4">
+                                {formatDate(notif.at, true)}
+                              </span>
+                            </div>
+                            <p className="text-[13px] text-550 leading-5">
+                              {getActionDescription(notif.action)}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+
+                  ) : (
+                    <div className="w-full flex items-center justify-center text-n600 font-medium">No notification found for you</div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {uploadingFiles.acceptenceFiles.length +
               uploadingFiles.attachFiles.length +
               uploadingFiles.reportFiles.length >
@@ -115,7 +299,9 @@ const Header: React.FC<headerProps> = (props) => {
                   viewBox="0 0 20 20"
                   fill="none"
                   onClick={() => {
-                    setShowUploadDropDown(true);
+                    setShowUploadDropDown(!showUploadDropDown);
+                    setShowAlertDropDown(false);
+                    setShowNotificationDropDown(false);
                   }}
                 >
                   <path
@@ -135,22 +321,6 @@ const Header: React.FC<headerProps> = (props) => {
                       <h5 className="text-[15px] text-n800 font-semibold">
                         Uploads
                       </h5>
-                      <svg
-                        onClick={() => {
-                          setShowUploadDropDown(false);
-                        }}
-                        className="cursor-pointer"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                      >
-                        <path
-                          d="M6.99996 14.167L9.99996 11.167L13 14.167L14.1666 13.0003L11.1666 10.0003L14.1666 7.00033L13 5.83366L9.99996 8.83366L6.99996 5.83366L5.83329 7.00033L8.83329 10.0003L5.83329 13.0003L6.99996 14.167ZM9.99996 18.3337C8.84718 18.3337 7.76385 18.1148 6.74996 17.677C5.73607 17.2392 4.85413 16.6456 4.10413 15.8962C3.35413 15.1467 2.76052 14.2648 2.32329 13.2503C1.88607 12.2359 1.66718 11.1525 1.66663 10.0003C1.66607 8.8481 1.88496 7.76477 2.32329 6.75033C2.76163 5.73588 3.35524 4.85394 4.10413 4.10449C4.85302 3.35505 5.73496 2.76144 6.74996 2.32366C7.76496 1.88588 8.84829 1.66699 9.99996 1.66699C11.1516 1.66699 12.235 1.88588 13.25 2.32366C14.265 2.76144 15.1469 3.35505 15.8958 4.10449C16.6447 4.85394 17.2386 5.73588 17.6775 6.75033C18.1163 7.76477 18.335 8.8481 18.3333 10.0003C18.3316 11.1525 18.1127 12.2359 17.6766 13.2503C17.2405 14.2648 16.6469 15.1467 15.8958 15.8962C15.1447 16.6456 14.2627 17.2395 13.25 17.6778C12.2372 18.1162 11.1538 18.3348 9.99996 18.3337ZM9.99996 16.667C11.8611 16.667 13.4375 16.0212 14.7291 14.7295C16.0208 13.4378 16.6666 11.8614 16.6666 10.0003C16.6666 8.13921 16.0208 6.56283 14.7291 5.27116C13.4375 3.97949 11.8611 3.33366 9.99996 3.33366C8.13885 3.33366 6.56246 3.97949 5.27079 5.27116C3.97913 6.56283 3.33329 8.13921 3.33329 10.0003C3.33329 11.8614 3.97913 13.4378 5.27079 14.7295C6.56246 16.0212 8.13885 16.667 9.99996 16.667Z"
-                          fill="#514F6E"
-                        />
-                      </svg>
                     </div>
                     <div className="flex flex-col gap-[15px] w-full">
                       {uploadingFiles.attachFiles.length > 0 && (
@@ -230,7 +400,9 @@ const Header: React.FC<headerProps> = (props) => {
               <div className="relative">
                 <svg
                   onClick={() => {
-                    setShowAlertDropDown(true);
+                    setShowAlertDropDown(!showAlertDropDown);
+                    setShowNotificationDropDown(false);
+                    setShowUploadDropDown(false);
                   }}
                   className=" p-[3px] rounded-[50%] border-[1px] border-n300 cursor-pointer"
                   xmlns="http://www.w3.org/2000/svg"
@@ -262,22 +434,6 @@ const Header: React.FC<headerProps> = (props) => {
                       <h5 className="text-[15px] text-n800 font-semibold">
                         Alerts
                       </h5>
-                      <svg
-                        onClick={() => {
-                          setShowAlertDropDown(false);
-                        }}
-                        className="cursor-pointer"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                      >
-                        <path
-                          d="M6.99996 14.167L9.99996 11.167L13 14.167L14.1666 13.0003L11.1666 10.0003L14.1666 7.00033L13 5.83366L9.99996 8.83366L6.99996 5.83366L5.83329 7.00033L8.83329 10.0003L5.83329 13.0003L6.99996 14.167ZM9.99996 18.3337C8.84718 18.3337 7.76385 18.1148 6.74996 17.677C5.73607 17.2392 4.85413 16.6456 4.10413 15.8962C3.35413 15.1467 2.76052 14.2648 2.32329 13.2503C1.88607 12.2359 1.66718 11.1525 1.66663 10.0003C1.66607 8.8481 1.88496 7.76477 2.32329 6.75033C2.76163 5.73588 3.35524 4.85394 4.10413 4.10449C4.85302 3.35505 5.73496 2.76144 6.74996 2.32366C7.76496 1.88588 8.84829 1.66699 9.99996 1.66699C11.1516 1.66699 12.235 1.88588 13.25 2.32366C14.265 2.76144 15.1469 3.35505 15.8958 4.10449C16.6447 4.85394 17.2386 5.73588 17.6775 6.75033C18.1163 7.76477 18.335 8.8481 18.3333 10.0003C18.3316 11.1525 18.1127 12.2359 17.6766 13.2503C17.2405 14.2648 16.6469 15.1467 15.8958 15.8962C15.1447 16.6456 14.2627 17.2395 13.25 17.6778C12.2372 18.1162 11.1538 18.3348 9.99996 18.3337ZM9.99996 16.667C11.8611 16.667 13.4375 16.0212 14.7291 14.7295C16.0208 13.4378 16.6666 11.8614 16.6666 10.0003C16.6666 8.13921 16.0208 6.56283 14.7291 5.27116C13.4375 3.97949 11.8611 3.33366 9.99996 3.33366C8.13885 3.33366 6.56246 3.97949 5.27079 5.27116C3.97913 6.56283 3.33329 8.13921 3.33329 10.0003C3.33329 11.8614 3.97913 13.4378 5.27079 14.7295C6.56246 16.0212 8.13885 16.667 9.99996 16.667Z"
-                          fill="#514F6E"
-                        />
-                      </svg>
                     </div>
                     <div className="flex flex-col gap-[13px] w-full">
                       {alerts?.map((workorder, index) => (

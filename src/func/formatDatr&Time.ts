@@ -1,5 +1,15 @@
-export const formatDate = (dateString: string | Date) => {
+export const formatDate = (
+  dateString: string | Date, 
+  hideIfToday: boolean = false // Optional parameter, defaults to false
+) => {
   const date = new Date(dateString);
+  const today = new Date();
+
+  // Check if the date is the current day
+  const isToday =
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
 
   const options: Intl.DateTimeFormatOptions = {
     day: '2-digit',
@@ -12,11 +22,19 @@ export const formatDate = (dateString: string | Date) => {
     minute: '2-digit',
   };
 
-  const formattedDate = date.toLocaleDateString('en-GB', options);
   const formattedTime = date.toLocaleTimeString('en-GB', timeOptions);
 
-  return `${formattedDate} , ${formattedTime}`;
+  // If hideIfToday is true and the date is today, return only the time
+  if (hideIfToday && isToday) {
+    return formattedTime;
+  }
+
+  const formattedDate = date.toLocaleDateString('en-GB', options);
+
+  return `${formattedDate}, ${formattedTime}`;
 };
+
+
 
 
 export function calculateDaysSinceCreation(creationDate: string | Date): number {

@@ -2,7 +2,7 @@ import { isValidEmail } from "../../func/authValidation";
 import { handleCloseDialog } from "../../func/openDialog";
 import { forwardRef, useState, useEffect } from "react";
 import { RotatingLines } from "react-loader-spinner";
-import { Resmail } from "../../assets/types/Mails";
+import { Resmail } from "../../assets/types/Mails&Notifications";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 

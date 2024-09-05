@@ -4,7 +4,7 @@ import CreateGroupPopup from "../components/mails/CreateGroupPopup";
 import View_edit_groupPopup from "../components/mails/View_edit_groupPopup";
 import { useRef, useState, useEffect } from "react";
 import { handleOpenDialog } from "../func/openDialog";
-import { Resgroup } from "../assets/types/Mails";
+import { Resgroup } from "../assets/types/Mails&Notifications";
 import { RotatingLines } from "react-loader-spinner";
 import EmptyData from "../components/EmptyData";
 const baseUrl = import.meta.env.VITE_BASE_URL;

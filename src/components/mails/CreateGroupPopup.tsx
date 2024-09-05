@@ -2,7 +2,7 @@ import { forwardRef, useState, useRef } from "react";
 import { handleCloseDialog } from "../../func/openDialog";
 import { RotatingLines } from "react-loader-spinner";
 import useWebSocketSearch from "../../hooks/useWebSocketSearch";
-import { Resmail } from "../../assets/types/Mails";
+import { Resmail } from "../../assets/types/Mails&Notifications";
 import { fetchGroupMembersForResmailArray } from "../../func/groupsApi";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
