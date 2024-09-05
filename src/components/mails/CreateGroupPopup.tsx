@@ -3,6 +3,7 @@ import { handleCloseDialog } from "../../func/openDialog";
 import { RotatingLines } from "react-loader-spinner";
 import useWebSocketSearch from "../../hooks/useWebSocketSearch";
 import { Resmail } from "../../assets/types/Mails";
+import { fetchGroupMembersForResmailArray } from "../../func/groupsApi";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -18,8 +19,16 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
     const [visibleErr, setVisibleErr] = useState<boolean>(false);
     const [err, setErr] = useState<string>("");
     const [loaderMailsSearch, setLoaderMailsSearch] = useState<boolean>(false);
-    const [searchMails, setSearchMails] = useState<Resmail[]>([]);
+    const [searchMails, setSearchMails] = useState<
+      { id: number; email: string; name: string }[]
+    >([]);
     const [selectedMails, setSelectedMails] = useState<Resmail[]>([]);
+
+    const [typeOfSearch, setTypeOfSearch] = useState<"Emails" | "Groupes">(
+      "Emails"
+    );
+    const [typeOfSearchPopupVisible, setTypeOfSearchPopupVisible] =
+      useState<boolean>(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -88,14 +97,14 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
 
     useWebSocketSearch({
       searchQuery: searchQueryMail,
-      endpointPath: "search-mail",
+      endpointPath: typeOfSearch === "Emails" ? "search-mail" : "search-group",
       setResults: setSearchMails,
       setLoader: setLoaderMailsSearch,
     });
     return (
       <dialog
         ref={ref}
-        className="bg-white rounded-[40px] p-[32px] hidden flex-col items-center gap-[20px] sm:w-[55%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"
+        className="bg-white rounded-[40px] p-[32px] hidden flex-col items-center gap-[20px] sm:w-[55%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] overflow-visible"
       >
         <h6 className="text-[20px] leading-[20px] font-semibold text-n800">
           Create group
@@ -118,6 +127,7 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
                 setName(eo.target.value);
               }}
             />
+
             {visibleErr && (
               <span className="text-[11px] text-[#DB2C2C] font-medium leading-[20px] ml-[15px]">
                 {err}
@@ -125,15 +135,72 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
             )}
           </div>
           <div className="flex flex-col items-start gap-[7px] w-full">
+            <div className="flex items-center justify-between w-full">
             <label
               htmlFor="members"
               className="text-[15px] text-550 leading-[20px] font-medium"
             >
               Group members
             </label>
+            <div className="relative mr-4 z-50 p-1 rounded-[50%] border-[1px] border-n500">
+                <svg
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
+                  }}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="16"
+                  viewBox="0 0 18 16"
+                  fill="none"
+                >
+                  <path
+                    d="M16.7077 8.00023H6.41185M2.77768 8.00023H1.29102M2.77768 8.00023C2.77768 7.51842 2.96908 7.05635 3.30977 6.71566C3.65046 6.37497 4.11254 6.18357 4.59435 6.18357C5.07616 6.18357 5.53824 6.37497 5.87893 6.71566C6.21962 7.05635 6.41102 7.51842 6.41102 8.00023C6.41102 8.48204 6.21962 8.94412 5.87893 9.28481C5.53824 9.6255 5.07616 9.8169 4.59435 9.8169C4.11254 9.8169 3.65046 9.6255 3.30977 9.28481C2.96908 8.94412 2.77768 8.48204 2.77768 8.00023ZM16.7077 13.5061H11.9177M11.9177 13.5061C11.9177 13.988 11.7258 14.4506 11.3851 14.7914C11.0443 15.1321 10.5821 15.3236 10.1002 15.3236C9.61837 15.3236 9.1563 15.1313 8.81561 14.7906C8.47491 14.45 8.28352 13.9879 8.28352 13.5061M11.9177 13.5061C11.9177 13.0241 11.7258 12.5624 11.3851 12.2216C11.0443 11.8808 10.5821 11.6894 10.1002 11.6894C9.61837 11.6894 9.1563 11.8808 8.81561 12.2215C8.47491 12.5622 8.28352 13.0243 8.28352 13.5061M8.28352 13.5061H1.29102M16.7077 2.4944H14.1202M10.486 2.4944H1.29102M10.486 2.4944C10.486 2.01259 10.6774 1.55051 11.0181 1.20982C11.3588 0.869133 11.8209 0.677734 12.3027 0.677734C12.5412 0.677734 12.7775 0.724724 12.9979 0.81602C13.2183 0.907316 13.4186 1.04113 13.5873 1.20982C13.756 1.37852 13.8898 1.57878 13.9811 1.79919C14.0724 2.0196 14.1193 2.25583 14.1193 2.4944C14.1193 2.73297 14.0724 2.9692 13.9811 3.18961C13.8898 3.41002 13.756 3.61028 13.5873 3.77898C13.4186 3.94767 13.2183 4.08149 12.9979 4.17278C12.7775 4.26408 12.5412 4.31107 12.3027 4.31107C11.8209 4.31107 11.3588 4.11967 11.0181 3.77898C10.6774 3.43829 10.486 2.97621 10.486 2.4944Z"
+                    stroke="#A0A3BD"
+                    stroke-width="1.25"
+                    stroke-miterlimit="10"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                {typeOfSearchPopupVisible && (
+                  <div className="bg-white shadow-xl shadow-slate-400 p-[17px] rounded-[10px] flex flex-col items-start gap-[14px] absolute right-1 top-6">
+                    <span className="text-[13px] text-n700 font-medium">
+                      Search by :{" "}
+                    </span>
+                    <div className="flex items-center gap-[4px]">
+                      <button
+                        className={`px-[20px] py-[5px] rounded-[26px] border-[1px]  text-[12px] leading-[18px]  font-medium ${
+                          typeOfSearch === "Emails"
+                            ? "text-primary border-primary"
+                            : "text-n600 border-n400"
+                        }`}
+                        onClick={() => {
+                          setTypeOfSearch("Emails");
+                        }}
+                      >
+                        Emails
+                      </button>
+                      <button
+                        className={`px-[20px] py-[5px] rounded-[26px] border-[1px] text-[12px] leading-[18px] font-medium ${
+                          typeOfSearch === "Groupes"
+                            ? "text-primary border-primary"
+                            : "text-n600 border-n400"
+                        }`}
+                        onClick={() => {
+                          setTypeOfSearch("Groupes");
+                        }}
+                      >
+                        Groupes
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div
               id="members"
-              className="w-full h-[200px] flex gap-x-[13px] gap-y-[6px] rounded-[46px] shadow-md shadow-slate-300 px-[24px] py-[16px] flex-wrap overflow-auto"
+              className="w-full h-[200px] flex gap-x-[13px] gap-y-[6px] rounded-[46px] shadow-md shadow-slate-300 px-[24px] py-[16px] flex-wrap overflow-auto relative"
               onClick={handleDivClick}
             >
               {selectedMails.length > 0 &&
@@ -200,11 +267,11 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
                         strokeColor="#4A3AFF"
                         width="25"
                       />
-                    ) : (
-                      searchMails.map((mail,index) => {
+                    ) : typeOfSearch === "Emails" ? (
+                      searchMails.map((mail, index) => {
                         return (
                           <div
-                          key={index}
+                            key={index}
                             className="flex items-center gap-[6px] cursor-pointer w-full px-[15px] hover:bg-gray-200"
                             onClick={() => {
                               const isMailAlreadySelected = selectedMails.some(
@@ -220,6 +287,24 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
                             <img src="/avatar.png" alt="avatar" />
                             <span className="text-[14px] text-n600">
                               {mail.email}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      searchMails.map((group, index) => {
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center gap-[6px] cursor-pointer w-full px-[15px] hover:bg-gray-200"
+                            onClick={async () => {
+                            await  fetchGroupMembersForResmailArray(group.id,setSelectedMails,setIsLoading)
+                              setSearchQueryMail("")
+                            }} 
+                          >
+                            <img src="/avatar.png" alt="avatar" />
+                            <span className="text-[14px] text-n600">
+                              {group.name}
                             </span>
                           </div>
                         );

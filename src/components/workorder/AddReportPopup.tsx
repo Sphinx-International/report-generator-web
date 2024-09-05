@@ -128,6 +128,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
               uploadingReportFiles[uploadingReportFiles.length - 1]?.progress
             }
             file={file.file}
+            fileType="report"
             fetchFunc={props.fetchOneWorkOrder}
             setFile={setFile}
           />

@@ -72,6 +72,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                 ?.progress
             }
             file={file.file}
+            fileType="certificate"
             fetchFunc={props.fetchOneWorkOrder}
             setFile={setFile}
           />

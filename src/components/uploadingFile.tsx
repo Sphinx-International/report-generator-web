@@ -2,16 +2,18 @@ import { TheUploadingFile } from "../assets/types/Mission";
 import { formatFileSize } from "../func/formatFileSize";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { handleCancelUpload } from "../func/chunkUpload";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Redux/store";
 
- interface UploadingFilePopup extends TheUploadingFile {
-   fetchFunc?: ()=>void
-   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>;
- }
+interface UploadingFilePopup extends TheUploadingFile {
+  fileType:"attachements" | "report" | "certificate",
+  fetchFunc?: () => void;
+  setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>;
+}
 
 const UploadingFile: React.FC<UploadingFilePopup> = (props) => {
-
- const [loadingCancel, setLoadingCancel] = useState(false);
-
+  const dispatch = useDispatch<AppDispatch>();
+  const [loadingCancel, setLoadingCancel] = useState(false);
 
   return (
     <div className="w-full flex flex-col items-start px-[12px] py-[1px] bg-white shadow-lg rounded-[15px]">
@@ -44,16 +46,21 @@ const UploadingFile: React.FC<UploadingFilePopup> = (props) => {
           </div>
         </div>
 
-{ !loadingCancel &&
-
-<span
-className="px-[3px] rounded-[50%] text-white bg-550 text-[12px] cursor-pointer hover:scale-105"
-onClick={() => {handleCancelUpload(props.id!,setLoadingCancel, props.fetchFunc, props.setFile)}}
->
-🗙
-</span>
-}
-
+        {!loadingCancel && props.progress !== 100 &&(
+          <span
+            className="px-[3px] rounded-[50%] text-white bg-550 text-[12px] cursor-pointer hover:scale-105"
+            onClick={() => {
+              handleCancelUpload(
+                props.id!,
+                dispatch,props.fileType,setLoadingCancel,
+                props.fetchFunc,
+                props.setFile
+              );
+            }}
+          >
+            🗙
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-[13px] w-full">
