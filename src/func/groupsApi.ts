@@ -1,4 +1,6 @@
+import { Resmail } from "../assets/types/Mails";
 const baseUrl = import.meta.env.VITE_BASE_URL;
+import { EditingGroupMembers } from "../components/mails/View_edit_groupPopup";
 
 export const fetchGroupMembers = async (
   group_id: number,
@@ -6,8 +8,7 @@ export const fetchGroupMembers = async (
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   updateFormValues?: React.Dispatch<React.SetStateAction<any>> // Optional parameter
 ) => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   if (!token) {
     console.error("No token found");
     return;
@@ -31,37 +32,22 @@ export const fetchGroupMembers = async (
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: Resmail[] = await response.json();
 
-    // Extract emails from the returned data
-    const emails = data.map((member: { email: string }) => member.email);
-
-    // Update the state with the new unique emails
+    // Extract emails and update the state
+    const emails = data.map((member) => member.email);
     setGroupMember((prevMembers) => {
-      // Flatten prevMembers if it contains nested arrays
-      const flatPrevMembers = prevMembers.flat();
-
-      // Filter out new emails that are not in the existing flattened list
-      const newMembers = emails.filter(
-        (email: string) => !flatPrevMembers.includes(email)
-      );
-
-      console.log(newMembers);
-
-      // Log for debugging
-
-      return [...flatPrevMembers, ...newMembers]; // Combine and update state
+      const newEmails = emails.filter((email) => !prevMembers.includes(email));
+      return [...prevMembers, ...newEmails];
     });
 
-    // If the optional updateFormValues function is provided, update the form values
+    // Update form values if function provided
     if (updateFormValues) {
       updateFormValues((prev: any) => {
-        const newEmails = emails.filter(
-          (email: string) => !prev.emails.includes(email)
-        );
+        const newEmails = emails.filter((email) => !prev.emails.includes(email));
         return {
           ...prev,
-          emails: [...prev.emails, ...newEmails], // Append new unique emails to existing ones
+          emails: [...prev.emails, ...newEmails],
         };
       });
     }
@@ -71,6 +57,139 @@ export const fetchGroupMembers = async (
     setIsLoading(false);
   }
 };
+
+export const fetchGroupMembersForResmailArray = async (
+  group_id: number,
+  setGroupMember: React.Dispatch<React.SetStateAction<Resmail[]>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  updateFormValues?: React.Dispatch<React.SetStateAction<any>> // Optional parameter
+) => {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  setIsLoading(true);
+  const url = `${baseUrl}/mail/get-group-members/${group_id}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error response text: ", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: Resmail[] = await response.json();
+
+    setGroupMember((prevMembers) => {
+      const newMembers = data.filter(
+        (member) =>
+          !prevMembers.some(
+            (existingMember) => existingMember.email === member.email
+          )
+      );
+
+      return [...prevMembers, ...newMembers];
+    });
+
+    // Update form values if function provided
+    if (updateFormValues) {
+      updateFormValues((prev: any) => {
+        const newEmails = data
+          .map((member) => member.email)
+          .filter((email) => !prev.emails.includes(email));
+        return {
+          ...prev,
+          emails: [...prev.emails, ...newEmails],
+        };
+      });
+    }
+  } catch (err) {
+    console.error("Error: ", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const fetchGroupMembersForEditing = async (
+  group_id: number,
+  setGroupMember: React.Dispatch<React.SetStateAction<EditingGroupMembers>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  existingMembers: Resmail[], // New parameter for existing members
+  updateFormValues?: React.Dispatch<React.SetStateAction<any>> // Optional parameter
+) => {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  setIsLoading(true);
+  const url = `${baseUrl}/mail/get-group-members/${group_id}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error response text: ", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: Resmail[] = await response.json();
+
+    // Update the state with new members after double-checking for duplicates
+    setGroupMember((prevState) => {
+      const currentAddedEmails = new Set(prevState.add.map((member) => member.email));
+      const existingEmails = new Set(existingMembers.map((member) => member.email));
+
+      const newMembers = data.filter(
+        (member) =>
+          !existingEmails.has(member.email) && // Check if not in `existingMembers`
+          !currentAddedEmails.has(member.email) // Check if not already in `setGroupMember.add`
+      );
+
+      return {
+        ...prevState,
+        add: [...prevState.add, ...newMembers], // Add unique new members
+        group_id: group_id,
+      };
+    });
+
+    // Update form values if the function is provided
+    if (updateFormValues) {
+      updateFormValues((prev: any) => {
+        const newEmails = data
+          .map((member) => member.email)
+          .filter((email) => !prev.emails.includes(email));
+        return {
+          ...prev,
+          emails: [...prev.emails, ...newEmails],
+        };
+      });
+    }
+  } catch (err) {
+    console.error("Error: ", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
 export const fetchGroupMembersThenAddThemToWorkorder = async (
     workorder_id: string,
