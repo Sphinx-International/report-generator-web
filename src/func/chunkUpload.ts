@@ -343,6 +343,18 @@ export const handle_resuming_upload = async (
         break;
       }
 
+
+      case 404:
+        enqueueSnackbar(
+          "there is no token for this file to compare",
+          {
+            variant: "error",
+            autoHideDuration: 3000, // 3 seconds
+          }
+        );
+        break;
+
+
       case 406:
         enqueueSnackbar(
           "Either it is not the same file or the file content has been changed.",

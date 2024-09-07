@@ -126,14 +126,13 @@ const Missions = () => {
   const handleLastPage = () => setCurrentPage(totalPages);
 
   useEffect(() => {
-    const filter = localStorage.getItem("selectedFilter");
+    const filter = localStorage.getItem("selectedFilterForWorkorders");
 
     if (filter === "all" || !filter) {
       fetchWorkOrders((currentPage - 1) * limit, limit);
     } else {
       fetchWorkOrders((currentPage - 1) * limit, limit, filter);
     }
-
   }, [currentPage]);
 
   return (

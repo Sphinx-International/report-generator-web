@@ -25,7 +25,10 @@ interface HeaderProps {
 
 const Main: React.FC<HeaderProps> = (props) => {
   const getDefaultFilter = () => {
-    const storedFilter = localStorage.getItem("selectedFilter");
+    const storedFilter =
+      props.page === "accounts"
+        ? localStorage.getItem("selectedFilterForUsers")
+        : localStorage.getItem("selectedFilterForWorkorders");
     if (storedFilter) {
       return storedFilter;
     }
@@ -41,9 +44,12 @@ const Main: React.FC<HeaderProps> = (props) => {
 
   const handleFilterClick = (item: string) => {
     setSelectedFilter(item);
-    localStorage.setItem("selectedFilter", item.toLowerCase());
+    props.page === "accounts"
+      ? localStorage.setItem("selectedFilterForUsers", item.toLowerCase())
+      : localStorage.setItem("selectedFilterForWorkorders", item.toLowerCase());
+
     props.setCurrentPage(1);
-    const limit = props.page === "accounts" ? 4 : 8;
+    const limit = props.page === "accounts" ? 4 : 6;
 
     if (item === "all") {
       props.FiltrationFunc!(0, limit);
@@ -76,10 +82,10 @@ const Main: React.FC<HeaderProps> = (props) => {
           <div className="flex items-center gap-[7px]">
             {props.functionalties.secondaryFuncs &&
             localStorage.getItem("role") === "0"
-              ? props.functionalties.secondaryFuncs.map((button,index) => {
+              ? props.functionalties.secondaryFuncs.map((button, index) => {
                   return (
                     <button
-                    key={index}
+                      key={index}
                       className={`flex items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
                         selectedWorkorders.length === 0
                           ? "text-n600 border-n400"

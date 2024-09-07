@@ -1,6 +1,5 @@
 import { forwardRef } from "react";
 import { handleCloseDialog } from "../../func/openDialog";
-import { handle_chunck,handle_files_with_one_chunk } from "../../func/chunkUpload";
 import { useState } from "react";
 import { TheUploadingFile } from "../../assets/types/Mission";
 import UploadingFile from ".././uploadingFile";
@@ -10,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../Redux/store";
 import { useSelector } from "react-redux";
 import { RootState } from "../../Redux/store";
-import { generateFileToken } from "../../func/generateFileToken";
+import { handleFileChange } from "../../func/otherworkorderApis";
 
 interface AddReportProps {
   workorderId: string;
@@ -144,38 +143,18 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
               e.stopPropagation();
               const files = e.dataTransfer.files;
 
-              // Ensure files are not null and handle each file
               if (files) {
                 Array.from(files).forEach(async (file) => {
-                  if (file.size > 20 * 1024 * 1024) {
-                    alert(`${file.name} exceeds the 20MB limit.`);
-                  } else if (file.size <= 512 * 1024) {
-                    setFile({ file });
-
-                    handle_files_with_one_chunk(                      
-                      dispatch,
-                      props.workorderId,
-                      "report",
-                      file,
-                      setIsLoading,
-                      props.fetchOneWorkOrder,
-                      currentReportTypeIndex
-                    );
-                  } else {
-                    const file_token = await generateFileToken(file);
-                    setFile({ file });
-
-                    handle_chunck(
-                      dispatch,
-                      props.workorderId,
-                      "report",
-                      file,
-                      file_token,
-                      setIsLoading,
-                      props.fetchOneWorkOrder,
-                      currentReportTypeIndex
-                    );
-                  }
+                  await handleFileChange(
+                    dispatch,
+                    props.workorderId,
+                    "report",
+                    file,
+                    setIsLoading,
+                    props.fetchOneWorkOrder,
+                    undefined,
+                    currentReportTypeIndex
+                  );
                 });
               }
             }}
@@ -189,35 +168,16 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
               onChange={async (e) => {
                 const file = e.target.files ? e.target.files[0] : null;
                 if (file) {
-                  if (file.size > 20 * 1024 * 1024) {
-                    alert(`${file.name} exceeds the 20MB limit.`);
-                  } else if (file.size <= 512 * 1024) {
-                    setFile({ file });
-
-                    handle_files_with_one_chunk(                      
-                      dispatch,
-                      props.workorderId,
-                      "report",
-                      file,
-                      setIsLoading,
-                      props.fetchOneWorkOrder,
-                      currentReportTypeIndex
-                    );
-                  } else {
-                    const file_token = await generateFileToken(file);
-                    setFile({ file });
-
-                    handle_chunck(
-                      dispatch,
-                      props.workorderId,
-                      "report",
-                      file,
-                      file_token,
-                      setIsLoading,
-                      props.fetchOneWorkOrder,
-                      currentReportTypeIndex
-                    );
-                  }
+                  await handleFileChange(
+                    dispatch,
+                    props.workorderId,
+                    "report",
+                    file,
+                    setIsLoading,
+                    props.fetchOneWorkOrder,
+                    undefined,
+                    currentReportTypeIndex
+                  );
                 }
               }}
             />

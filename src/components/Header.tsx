@@ -13,7 +13,12 @@ import { calculateDaysSinceCreation } from "../func/formatDatr&Time";
 import { formatDate } from "../func/formatDatr&Time";
 import { useNavigate } from "react-router-dom";
 import useWebSocketNotification from "../hooks/UseWebSocketNotification";
-const baseUrl = import.meta.env.VITE_BASE_URL;
+import {
+  fetchAlerts,
+  fetchNotifications,
+  getActionNotificationTitle,
+  getActionNotificationDescription,
+} from "../func/heraderLogic";
 
 interface headerProps {
   pageSentence: string;
@@ -22,7 +27,6 @@ interface headerProps {
 
 const Header: React.FC<headerProps> = (props) => {
   const navigate = useNavigate();
-
   const dispatch = useDispatch<AppDispatch>();
   const [showDropDown, setshowDropDown] = useState<boolean>(false);
   const [showUploadDropDown, setShowUploadDropDown] = useState<boolean>(false);
@@ -32,131 +36,23 @@ const Header: React.FC<headerProps> = (props) => {
 
   const [alerts, setAlerts] = useState<alertWorkorder[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [notificationPopup, setNotificationPopup] = useState<Notification[]>(
-    []
-  );
 
-  console.log(notificationPopup)
+
   const user: User = JSON.parse(localStorage.getItem("user")!);
 
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
   );
 
-  const fetchAlerts = async () => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-
-    const url = `${baseUrl}/workorder/get-workorder-certificate-alert`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text(); // Read the response body as text
-        console.error("Error response text: ", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setAlerts(data);
-    } catch (err) {
-      console.error("Error: ", err);
-    }
-  };
-
-  const fetchNotifications = async () => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-
-    const url = `${baseUrl}/notification/get-notifications?offset=0&limit=20`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text(); // Read the response body as text
-        console.error("Error response text: ", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setNotifications(data.data);
-    } catch (err) {
-      console.error("Error: ", err);
-    }
-  };
-
   useWebSocketNotification({
     endpointPath: "notifications",
-    setNotifications: setNotificationPopup,
+    setNotifications: setNotifications,
   });
 
   useEffect(() => {
-    fetchAlerts();
-    fetchNotifications();
+    fetchAlerts(setAlerts);
+    fetchNotifications(setNotifications);
   }, []);
-
-  const getActionTitle = (actionNumber: number): string => {
-    const actionTitles: { [key: number]: string } = {
-      100: "New account created",
-      101: "Account updated",
-      102: "Account deleted",
-      200: "New mail created",
-      201: "New group created",
-      300: "New workorder created",
-      301: "Workorder updated",
-      302: "Workorder assigned",
-      303: "Workorder drop assign",
-      304: "Workorder executed",
-      305: "Workorder report uploaded",
-      306: "Workorder validated",
-      307: "Workorder certificate uploaded",
-      308: "Workorder accepted",
-    };
-
-    return actionTitles[actionNumber] || "Unknown action";
-  };
-  const getActionDescription = (actionNumber: number): string => {
-    const actionDescriptions: { [key: number]: string } = {
-      100: "A new account has been created.",
-      101: "An account has been updated.",
-      102: "An account has been deleted.",
-      200: "A new mail has been created.",
-      201: "A new group has been created.",
-      300: "A new work order has been created.",
-      301: "A work order has been updated.",
-      302: "A new mission has been assigned.",
-      303: "A work order assignment has been dropped.",
-      304: "A work order has been executed.",
-      305: "A work order report has been uploaded.",
-      306: "A work order has been validated.",
-      307: "A work order certificate has been uploaded.",
-      308: "A work order has been accepted.",
-    };
-
-    return (
-      actionDescriptions[actionNumber] ||
-      "No description available for this action."
-    );
-  };
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -203,84 +99,86 @@ const Header: React.FC<headerProps> = (props) => {
               </svg>
 
               {showNotificationDropDown && (
-                <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-lg flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
-
+                <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[310px] sm:w-[450px]">
                   {notifications.length > 0 ? (
                     <>
-                                      <h5 className="text-[15px] text-n800 font-semibold">
-                    Notifications
-                  </h5>
-                                      <div className="flex flex-col items-start gap-[12px] w-full ">
-                      {notifications.map((notif) => {
-                        return (
-                          <div
-                            className="cursor-pointer p-[13px] rounded-[15px] border-[1px] border-primary flex flex-col items-start gap-[10px] w-full"
-                            onClick={() => {
-                              navigate(
-                                `/${
-                                  notif.action >= 100 && notif.action < 200
-                                    ? `edit-user/${notif.on}`
-                                    : notif.action >= 200 && notif.action < 300
-                                    ? "mails/groups"
-                                    : `missions/${notif.on}`
-                                }`
-                              );
-                            }}
-                          >
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex items-center gap-[8px]">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="22"
-                                  height="22"
-                                  viewBox="0 0 22 22"
-                                  fill="none"
-                                >
-                                  <rect
+                      <h5 className="text-[15px] text-n800 font-semibold">
+                        Notifications
+                      </h5>
+                      <div className="flex flex-col items-start pr-2 gap-[12px] w-full max-h-[68vh] overflow-auto">
+                        {notifications.map((notif) => {
+                          return (
+                            <div
+                              className="cursor-pointer p-[13px] rounded-[15px] border-[1px] border-primary flex flex-col items-start gap-[10px] w-full"
+                              onClick={() => {
+                                navigate(
+                                  `/${
+                                    notif.action >= 100 && notif.action < 200
+                                      ? `edit-user/${notif.on}`
+                                      : notif.action >= 200 &&
+                                        notif.action < 300
+                                      ? "mails/groups"
+                                      : `missions/${notif.on}`
+                                  }`
+                                );
+                              }}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-[8px]">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
                                     width="22"
                                     height="22"
-                                    rx="6"
-                                    fill="#4A3AFF"
-                                    fill-opacity="0.74"
-                                  />
-                                  <g clip-path="url(#clip0_1390_692)">
-                                    <path
-                                      d="M10.5834 15.5231C10.1846 15.4323 9.80149 15.2826 9.44672 15.079M12.4167 7.47754C13.328 7.68566 14.1415 8.19698 14.7243 8.9278C15.307 9.65862 15.6243 10.5656 15.6243 11.5003C15.6243 12.435 15.307 13.342 14.7243 14.0729C14.1415 14.8037 13.328 15.315 12.4167 15.5231M8.09876 13.8346C7.84901 13.4712 7.65914 13.0701 7.53638 12.6466M7.43188 10.8128C7.50522 10.3774 7.64638 9.96491 7.84438 9.58679L7.92184 9.447M9.16576 8.09904C9.59485 7.80428 10.0759 7.5934 10.5834 7.47754"
-                                      stroke="white"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
+                                    viewBox="0 0 22 22"
+                                    fill="none"
+                                  >
+                                    <rect
+                                      width="22"
+                                      height="22"
+                                      rx="6"
+                                      fill="#4A3AFF"
+                                      fill-opacity="0.74"
                                     />
-                                  </g>
-                                  <defs>
-                                    <clipPath id="clip0_1390_692">
-                                      <rect
-                                        width="11"
-                                        height="11"
-                                        fill="white"
-                                        transform="translate(6 6)"
+                                    <g clip-path="url(#clip0_1390_692)">
+                                      <path
+                                        d="M10.5834 15.5231C10.1846 15.4323 9.80149 15.2826 9.44672 15.079M12.4167 7.47754C13.328 7.68566 14.1415 8.19698 14.7243 8.9278C15.307 9.65862 15.6243 10.5656 15.6243 11.5003C15.6243 12.435 15.307 13.342 14.7243 14.0729C14.1415 14.8037 13.328 15.315 12.4167 15.5231M8.09876 13.8346C7.84901 13.4712 7.65914 13.0701 7.53638 12.6466M7.43188 10.8128C7.50522 10.3774 7.64638 9.96491 7.84438 9.58679L7.92184 9.447M9.16576 8.09904C9.59485 7.80428 10.0759 7.5934 10.5834 7.47754"
+                                        stroke="white"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
                                       />
-                                    </clipPath>
-                                  </defs>
-                                </svg>
-                                <h6 className="text-n800 font-medium leading-7">
-                                  {getActionTitle(notif.action)}
-                                </h6>
+                                    </g>
+                                    <defs>
+                                      <clipPath id="clip0_1390_692">
+                                        <rect
+                                          width="11"
+                                          height="11"
+                                          fill="white"
+                                          transform="translate(6 6)"
+                                        />
+                                      </clipPath>
+                                    </defs>
+                                  </svg>
+                                  <h6 className="text-n800 text-[15px] font-medium leading-7">
+                                    {getActionNotificationTitle(notif.action)}
+                                  </h6>
+                                </div>
+                                <span className="text-550 text-[11px] leading-4">
+                                  {formatDate(notif.at, true)}
+                                </span>
                               </div>
-                              <span className="text-550 text-[11px] leading-4">
-                                {formatDate(notif.at, true)}
-                              </span>
+                              <p className="text-[13px] text-550 leading-5">
+                                {getActionNotificationDescription(notif.action)} on {""}
+                                {notif.on}
+                              </p>
                             </div>
-                            <p className="text-[13px] text-550 leading-5">
-                              {getActionDescription(notif.action)}
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-
+                          );
+                        })}
+                      </div>
+                    </>
                   ) : (
-                    <div className="w-full flex items-center justify-center text-n600 font-medium">No notification found for you</div>
+                    <div className="w-full flex items-center justify-center text-n600 font-medium">
+                      No notification found for you
+                    </div>
                   )}
                 </div>
               )}
@@ -316,13 +214,13 @@ const Header: React.FC<headerProps> = (props) => {
                   />
                 </svg>
                 {showUploadDropDown && (
-                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-lg flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
+                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
                     <div className="flex w-full items-center justify-between">
                       <h5 className="text-[15px] text-n800 font-semibold">
                         Uploads
                       </h5>
                     </div>
-                    <div className="flex flex-col gap-[15px] w-full">
+                    <div className="flex flex-col gap-[15px] w-full overflow-auto max-h-[68vh]">
                       {uploadingFiles.attachFiles.length > 0 && (
                         <div className="flex items-start flex-col gap-[10px] w-full">
                           <span className="text-[15px] font-semibold text-n600 ">
@@ -429,17 +327,20 @@ const Header: React.FC<headerProps> = (props) => {
                 </svg>
 
                 {showAlertDropDown && (
-                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-lg flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
+                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
                     <div className="flex w-full items-center justify-between">
                       <h5 className="text-[15px] text-n800 font-semibold">
                         Alerts
                       </h5>
                     </div>
-                    <div className="flex flex-col gap-[13px] w-full">
+                    <div className="flex flex-col gap-[13px] w-full max-h-[68vh] overflow-auto">
                       {alerts?.map((workorder, index) => (
                         <div
                           key={index}
-                          className="px-[45px] py-[15px] rounded-[22px] w-full flex items-center gap-[16px] border-[2.5px] border-[#FF3B30]"
+                          className="cursor-pointer px-[45px] py-[15px] rounded-[22px] w-full flex items-center gap-[16px] border-[2.5px] border-[#FF3B30]"
+                          onClick={() => {
+                            navigate(`/missions/${workorder.id}`);
+                          }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

@@ -148,7 +148,7 @@ const UserManagment = () => {
 
   useEffect(() => {
     const offset = (currentPage - 1) * limit;
-    const filter = localStorage.getItem("selectedFilter");
+    const filter = localStorage.getItem("selectedFilterForUsers");
 
     if (filter === "all" || !filter) {
       fetchUsers(offset, limit);

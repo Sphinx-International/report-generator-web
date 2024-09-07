@@ -38,6 +38,7 @@ import { RootState } from "../Redux/store";
 import {
   handle_edit_or_reqUpdate_report,
   handle_update_cert_type,
+  handleFileChange,
 } from "../func/otherworkorderApis";
 import {
   generateFileToken,
@@ -73,21 +74,25 @@ const MissionDetails = () => {
   const [searchQueryCoord, setSearchQueryCoord] = useState<string>("");
 
   const [searchEngs, setSearchEngs] = useState<User[]>([]);
-  const [searchCoords, setSearchCoords] = useState<{ email: string; id: number; name: string }[]>([]);
+  const [searchCoords, setSearchCoords] = useState<
+    { email: string; id: number; name: string }[]
+  >([]);
 
   const [selectedEng, setSelectedEng] = useState<string | null>(null);
 
   const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
   const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
 
-      const [typeOfSearchPopupVisible, setTypeOfSearchPopupVisible] =
-      useState<boolean>(false);
-      const [typeOfSearchForCoord, setTypeOfSearchForCoord] = useState<
-      "Emails" | "Groupes"
-    >("Emails");
-    const [selectedMembersFromGroup, setSelectedMembersFromGroup] = useState<string[]>([]);
-    const [loaderGettingGroupMembers, setLoaderGettingGroupMembers] = useState(false);
-
+  const [typeOfSearchPopupVisible, setTypeOfSearchPopupVisible] =
+    useState<boolean>(false);
+  const [typeOfSearchForCoord, setTypeOfSearchForCoord] = useState<
+    "Emails" | "Groupes"
+  >("Emails");
+  const [selectedMembersFromGroup, setSelectedMembersFromGroup] = useState<
+    string[]
+  >([]);
+  const [loaderGettingGroupMembers, setLoaderGettingGroupMembers] =
+    useState(false);
 
   const [HaveAccess, setHaveAccess] = useState(true);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -162,8 +167,7 @@ const MissionDetails = () => {
             }}
             onClick={async () => {
               // Custom delete logic here, e.g., deleting from IndexedDB
-              // deleteFileFromIndexedDB(file.fileId);
-              await handleCancelUpload(file.fileId,dispatch,file.fileType);
+              await handleCancelUpload(file.fileId, dispatch, file.fileType);
               fetchOneWorkOrder();
               closeSnackbar(key);
             }}
@@ -193,46 +197,9 @@ const MissionDetails = () => {
     }
   };
 
-
-  const handleFileChange = async (file: File) => {
-    if (file.size > 20 * 1024 * 1024) {
-      alert(`${file.name} exceeds the 20MB limit.`);
-    } else if (file.size <= 512 * 1024) {
-      handle_files_with_one_chunk(
-        dispatch,
-        workorder!.workorder.id,
-        "attachements",
-        file,
-        setIsLoading,
-        fetchOneWorkOrder
-      );
-    } else {
-      const file_token = await generateFileToken(file);
-      handle_chunck(
-        dispatch,
-        workorder!.workorder.id,
-        "attachements",
-        file,
-        file_token,
-        setIsLoadingAttach,
-        fetchOneWorkOrder
-      );
-    }
-    // Reset the file input value to allow re-selection of the same file
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-
   useEffect(() => {
-    const certfDialog = addCertificatDialogRef.current;
-
     // Cleanup function
     return () => {
-      if (certfDialog) {
-        certfDialog.style.display = "none";
-      }
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
@@ -289,7 +256,7 @@ const MissionDetails = () => {
   useWebSocketSearch({
     searchQuery: searchQueryCoord,
     endpointPath:
-    typeOfSearchForCoord === "Emails" ? "search-mail" : "search-group",
+      typeOfSearchForCoord === "Emails" ? "search-mail" : "search-group",
     setResults: setSearchCoords,
     setLoader: setLoaderCoordSearch,
   });
@@ -313,37 +280,47 @@ const MissionDetails = () => {
         },
       });
 
-      if (response.status === 403) {
-        setHaveAccess(false);
-        setIsPageLoading(false);
-        return;
-      }
+      switch (response.status) {
+        case 200:
+          {
+            const data = await response.json();
+            setWorkorder(data);
+            setBasicDataWorkorder({
+              title: data.workorder.title,
+              id: data.workorder.id,
+              priority: data.workorder.priority,
+              description: data.workorder.description,
+            });
+            setReqAcc(data.workorder.require_acceptence);
+            setSelectedMembersFromGroup(() => {
+              // Extract emails from data.workorder.mail_to
+              const newEmails = data.mail_to.map(
+                (mail: { id: number; workorder: number; email: string }) =>
+                  mail.email
+              );
+              return [newEmails];
+            });
+          }
+          break;
 
-      if (!response.ok) {
-        const errorText = await response.text(); // Read the response body as text
-        console.error("Error response text: ", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        case 403:
+          setHaveAccess(false);
+          setIsPageLoading(false);
+          break;
 
-      const data = await response.json();
-      setWorkorder(data);
-      setBasicDataWorkorder({
-        title: data.workorder.title,
-        id: data.workorder.id,
-        priority: data.workorder.priority,
-        description: data.workorder.description,
-      });
-      setReqAcc(data.workorder.require_acceptence);
-      setSelectedMembersFromGroup(() => {
-        // Extract emails from data.workorder.mail_to
-        const newEmails = data.mail_to.map((mail:{
-          id:number,
-          workorder: number,
-          email:string
-      }) => mail.email);
-        return [newEmails];
-      });  
-    
+          case 404:
+            setHaveAccess(false);
+            setIsPageLoading(false);
+            break;
+
+        default:
+          {
+            const errorText = await response.text(); // Read the response body as text
+            console.error("Error response text: ", errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          break;
+      }
     } catch (err) {
       console.error("Error: ", err);
     } finally {
@@ -420,7 +397,6 @@ const MissionDetails = () => {
   const handleeditReqAccStatus = (workorder_id: string, new_status: 0 | 1) => {
     setUndoMessageVisible(false);
     setUndo_req_acc_MessageVisible(true);
-    console.log("here");
     setTimeLeft(5); // Set countdown to 5 seconds
     undoActionTriggeredRef.current = true;
     undo_req_acc_ActionTriggeredRef.current = false;
@@ -1111,60 +1087,62 @@ const MissionDetails = () => {
                                 strokeLinejoin="round"
                               />
                             </svg>
-                  <div className="absolute right-[14px] top-[50%] translate-y-[-50%] z-50">
-                    <svg
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
-                      }}
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="16"
-                      viewBox="0 0 18 16"
-                      fill="none"
-                    >
-                      <path
-                        d="M16.7077 8.00023H6.41185M2.77768 8.00023H1.29102M2.77768 8.00023C2.77768 7.51842 2.96908 7.05635 3.30977 6.71566C3.65046 6.37497 4.11254 6.18357 4.59435 6.18357C5.07616 6.18357 5.53824 6.37497 5.87893 6.71566C6.21962 7.05635 6.41102 7.51842 6.41102 8.00023C6.41102 8.48204 6.21962 8.94412 5.87893 9.28481C5.53824 9.6255 5.07616 9.8169 4.59435 9.8169C4.11254 9.8169 3.65046 9.6255 3.30977 9.28481C2.96908 8.94412 2.77768 8.48204 2.77768 8.00023ZM16.7077 13.5061H11.9177M11.9177 13.5061C11.9177 13.988 11.7258 14.4506 11.3851 14.7914C11.0443 15.1321 10.5821 15.3236 10.1002 15.3236C9.61837 15.3236 9.1563 15.1313 8.81561 14.7906C8.47491 14.45 8.28352 13.9879 8.28352 13.5061M11.9177 13.5061C11.9177 13.0241 11.7258 12.5624 11.3851 12.2216C11.0443 11.8808 10.5821 11.6894 10.1002 11.6894C9.61837 11.6894 9.1563 11.8808 8.81561 12.2215C8.47491 12.5622 8.28352 13.0243 8.28352 13.5061M8.28352 13.5061H1.29102M16.7077 2.4944H14.1202M10.486 2.4944H1.29102M10.486 2.4944C10.486 2.01259 10.6774 1.55051 11.0181 1.20982C11.3588 0.869133 11.8209 0.677734 12.3027 0.677734C12.5412 0.677734 12.7775 0.724724 12.9979 0.81602C13.2183 0.907316 13.4186 1.04113 13.5873 1.20982C13.756 1.37852 13.8898 1.57878 13.9811 1.79919C14.0724 2.0196 14.1193 2.25583 14.1193 2.4944C14.1193 2.73297 14.0724 2.9692 13.9811 3.18961C13.8898 3.41002 13.756 3.61028 13.5873 3.77898C13.4186 3.94767 13.2183 4.08149 12.9979 4.17278C12.7775 4.26408 12.5412 4.31107 12.3027 4.31107C11.8209 4.31107 11.3588 4.11967 11.0181 3.77898C10.6774 3.43829 10.486 2.97621 10.486 2.4944Z"
-                        stroke="#A0A3BD"
-                        stroke-width="1.25"
-                        stroke-miterlimit="10"
-                        stroke-linecap="round"
-                      />
-                    </svg>
-                    {typeOfSearchPopupVisible && (
-                      <div className="bg-white shadow-xl shadow-slate-400 p-[17px] rounded-[10px] flex flex-col items-start gap-[14px] absolute right-1">
-                        <span className="text-[13px] text-n700 font-medium">
-                          Search by :{" "}
-                        </span>
-                        <div className="flex items-center gap-[4px]">
-                          <button
-                            className={`px-[20px] py-[5px] rounded-[26px] border-[1px]  text-[12px] leading-[18px]  font-medium ${
-                              typeOfSearchForCoord === "Emails"
-                                ? "text-primary border-primary"
-                                : "text-n600 border-n400"
-                            }`}
-                            onClick={() => {
-                              setTypeOfSearchForCoord("Emails");
-                            }}
-                          >
-                            Emails
-                          </button>
-                          <button
-                            className={`px-[20px] py-[5px] rounded-[26px] border-[1px] text-[12px] leading-[18px] font-medium ${
-                              typeOfSearchForCoord === "Groupes"
-                                ? "text-primary border-primary"
-                                : "text-n600 border-n400"
-                            }`}
-                            onClick={() => {
-                              setTypeOfSearchForCoord("Groupes");
-                            }}
-                          >
-                            Groupes
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                            <div className="absolute right-[14px] top-[50%] translate-y-[-50%] z-50">
+                              <svg
+                                className="cursor-pointer"
+                                onClick={() => {
+                                  setTypeOfSearchPopupVisible(
+                                    !typeOfSearchPopupVisible
+                                  );
+                                }}
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="16"
+                                viewBox="0 0 18 16"
+                                fill="none"
+                              >
+                                <path
+                                  d="M16.7077 8.00023H6.41185M2.77768 8.00023H1.29102M2.77768 8.00023C2.77768 7.51842 2.96908 7.05635 3.30977 6.71566C3.65046 6.37497 4.11254 6.18357 4.59435 6.18357C5.07616 6.18357 5.53824 6.37497 5.87893 6.71566C6.21962 7.05635 6.41102 7.51842 6.41102 8.00023C6.41102 8.48204 6.21962 8.94412 5.87893 9.28481C5.53824 9.6255 5.07616 9.8169 4.59435 9.8169C4.11254 9.8169 3.65046 9.6255 3.30977 9.28481C2.96908 8.94412 2.77768 8.48204 2.77768 8.00023ZM16.7077 13.5061H11.9177M11.9177 13.5061C11.9177 13.988 11.7258 14.4506 11.3851 14.7914C11.0443 15.1321 10.5821 15.3236 10.1002 15.3236C9.61837 15.3236 9.1563 15.1313 8.81561 14.7906C8.47491 14.45 8.28352 13.9879 8.28352 13.5061M11.9177 13.5061C11.9177 13.0241 11.7258 12.5624 11.3851 12.2216C11.0443 11.8808 10.5821 11.6894 10.1002 11.6894C9.61837 11.6894 9.1563 11.8808 8.81561 12.2215C8.47491 12.5622 8.28352 13.0243 8.28352 13.5061M8.28352 13.5061H1.29102M16.7077 2.4944H14.1202M10.486 2.4944H1.29102M10.486 2.4944C10.486 2.01259 10.6774 1.55051 11.0181 1.20982C11.3588 0.869133 11.8209 0.677734 12.3027 0.677734C12.5412 0.677734 12.7775 0.724724 12.9979 0.81602C13.2183 0.907316 13.4186 1.04113 13.5873 1.20982C13.756 1.37852 13.8898 1.57878 13.9811 1.79919C14.0724 2.0196 14.1193 2.25583 14.1193 2.4944C14.1193 2.73297 14.0724 2.9692 13.9811 3.18961C13.8898 3.41002 13.756 3.61028 13.5873 3.77898C13.4186 3.94767 13.2183 4.08149 12.9979 4.17278C12.7775 4.26408 12.5412 4.31107 12.3027 4.31107C11.8209 4.31107 11.3588 4.11967 11.0181 3.77898C10.6774 3.43829 10.486 2.97621 10.486 2.4944Z"
+                                  stroke="#A0A3BD"
+                                  stroke-width="1.25"
+                                  stroke-miterlimit="10"
+                                  stroke-linecap="round"
+                                />
+                              </svg>
+                              {typeOfSearchPopupVisible && (
+                                <div className="bg-white shadow-xl shadow-slate-400 p-[17px] rounded-[10px] flex flex-col items-start gap-[14px] absolute right-1">
+                                  <span className="text-[13px] text-n700 font-medium">
+                                    Search by :{" "}
+                                  </span>
+                                  <div className="flex items-center gap-[4px]">
+                                    <button
+                                      className={`px-[20px] py-[5px] rounded-[26px] border-[1px]  text-[12px] leading-[18px]  font-medium ${
+                                        typeOfSearchForCoord === "Emails"
+                                          ? "text-primary border-primary"
+                                          : "text-n600 border-n400"
+                                      }`}
+                                      onClick={() => {
+                                        setTypeOfSearchForCoord("Emails");
+                                      }}
+                                    >
+                                      Emails
+                                    </button>
+                                    <button
+                                      className={`px-[20px] py-[5px] rounded-[26px] border-[1px] text-[12px] leading-[18px] font-medium ${
+                                        typeOfSearchForCoord === "Groupes"
+                                          ? "text-primary border-primary"
+                                          : "text-n600 border-n400"
+                                      }`}
+                                      onClick={() => {
+                                        setTypeOfSearchForCoord("Groupes");
+                                      }}
+                                    >
+                                      Groupes
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div className="flex flex-col items-start gap-[12px] w-full">
                             {loaderCoordSearch ? (
@@ -1176,71 +1154,75 @@ const MissionDetails = () => {
                                 />
                               </div>
                             ) : searchQueryCoord !== "" ? (
-                              searchCoords.length > 0 ? 
+                              searchCoords.length > 0 ? (
+                                typeOfSearchForCoord === "Emails" ? (
+                                  searchCoords.map((user, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                      onClick={() => {
+                                        // Check if the email exists in workorder.mail_to
+                                        const emailExists =
+                                          workorder.mail_to.some(
+                                            (mailTo) =>
+                                              mailTo.email === user.email
+                                          );
 
-                                typeOfSearchForCoord === "Emails" ? 
-                                searchCoords.map((user, index) => 
-                                  <div
-                              key={index}
-                              className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                              onClick={() => {
-                                // Check if the email exists in workorder.mail_to
-                                const emailExists = workorder.mail_to.some(
-                                  (mailTo) => mailTo.email === user.email
-                                );
-                              
-                                if (!emailExists) {
-                                  handle_add_or_delete_mailedPerson(
-                                    workorder.workorder.id,
-                                    user.email,
-                                    "add",
-                                    setIsLoadingMaildPersons,
-                                    setVisibleCoordPopup,
-                                    fetchOneWorkOrder
-                                  );
-                                }
-                                setVisibleCoordPopup(false);
-                              }}
-                              >
-                              <img
-                                src="/avatar.png"
-                                alt="avatar"
-                                className="w-[31px] rounded-[50%]"
-                              />
-                              <span className="text-[14px] text-n600">
-                                {user.email}
-                              </span>
-                              </div>    
-                              
-                              ) : loaderGettingGroupMembers  ?                                 
-                              <span className="text-primary w-full flex justify-center text-[14px]">
-                              Getting group members ...
-                            </span>  :  searchCoords.map((user, index) => 
-
-                                <div
-                                key={index}
-                                className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                onClick={async () => {
-                                   await fetchGroupMembersThenAddThemToWorkorder(workorder.workorder.id,user.id,selectedMembersFromGroup,setLoaderGettingGroupMembers,fetchOneWorkOrder)
-                                    setVisibleCoordPopup(false)
-                                }}
-                               >
-                                <img
-                                  src="/avatar.png"
-                                  alt="avatar"
-                                  className="w-[31px] rounded-[50%]"
-                                />
-                                <span className="text-[14px] text-n600">
-                                  {user.name}
-                                </span>
-                               </div>
-                               )
-
-
-
-
-                               : 
-                              (
+                                        if (!emailExists) {
+                                          handle_add_or_delete_mailedPerson(
+                                            workorder.workorder.id,
+                                            user.email,
+                                            "add",
+                                            setIsLoadingMaildPersons,
+                                            setVisibleCoordPopup,
+                                            fetchOneWorkOrder
+                                          );
+                                        }
+                                        setVisibleCoordPopup(false);
+                                      }}
+                                    >
+                                      <img
+                                        src="/avatar.png"
+                                        alt="avatar"
+                                        className="w-[31px] rounded-[50%]"
+                                      />
+                                      <span className="text-[14px] text-n600">
+                                        {user.email}
+                                      </span>
+                                    </div>
+                                  ))
+                                ) : loaderGettingGroupMembers ? (
+                                  <span className="text-primary w-full flex justify-center text-[14px]">
+                                    Getting group members ...
+                                  </span>
+                                ) : (
+                                  searchCoords.map((user, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                      onClick={async () => {
+                                        await fetchGroupMembersThenAddThemToWorkorder(
+                                          workorder.workorder.id,
+                                          user.id,
+                                          selectedMembersFromGroup,
+                                          setLoaderGettingGroupMembers,
+                                          fetchOneWorkOrder
+                                        );
+                                        setVisibleCoordPopup(false);
+                                      }}
+                                    >
+                                      <img
+                                        src="/avatar.png"
+                                        alt="avatar"
+                                        className="w-[31px] rounded-[50%]"
+                                      />
+                                      <span className="text-[14px] text-n600">
+                                        {user.name}
+                                      </span>
+                                    </div>
+                                  ))
+                                )
+                              ) : (
                                 <span className="text-n700 w-full flex justify-center text-[14px]">
                                   no result founded
                                 </span>
@@ -1576,85 +1558,86 @@ const MissionDetails = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 ? 
-                                    attach.is_completed ? (
-                                      <span
-                                        className=" w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
+                                    {getRole() !== 2 ? (
+                                      attach.is_completed ? (
+                                        <span
+                                          className="w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
 
-                                          upload_or_delete_workorder_files_for_attachements(
-                                            workorder.workorder.id,
-                                            attach.id,
-                                            "delete",
-                                            setIsLoading,
-                                            fetchOneWorkOrder
-                                          );
-                                        }}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="17"
-                                          height="18"
-                                          viewBox="0 0 18 20"
-                                          fill="none"
-                                        >
-                                          <path
-                                            fillRule="evenodd"
-                                            clipRule="evenodd"
-                                            d="M15.412 4.5L14.611 18.117C14.5812 18.6264 14.3577 19.1051 13.9865 19.4551C13.6153 19.8052 13.1243 20.0001 12.614 20H5.386C4.87575 20.0001 4.38475 19.8052 4.0135 19.4551C3.64226 19.1051 3.41885 18.6264 3.389 18.117L2.59 4.5H0.5V3.5C0.5 3.36739 0.552679 3.24021 0.646447 3.14645C0.740215 3.05268 0.867392 3 1 3H17C17.1326 3 17.2598 3.05268 17.3536 3.14645C17.4473 3.24021 17.5 3.36739 17.5 3.5V4.5H15.412ZM7 0.5H11C11.1326 0.5 11.2598 0.552679 11.3536 0.646447C11.4473 0.740215 11.5 0.867392 11.5 1V2H6.5V1C6.5 0.867392 6.55268 0.740215 6.64645 0.646447C6.74021 0.552679 6.86739 0.5 7 0.5ZM6 7L6.5 16H8L7.6 7H6ZM10.5 7L10 16H11.5L12 7H10.5Z"
-                                            fill="#db2323"
-                                          />
-                                        </svg>
-                                      </span>
-                                    ) : (
-                                      <label
-                                        className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                        htmlFor="reupload"
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
-
-                                          const fileFromIndexedDB =
-                                            await getFilesByIdFromIndexedDB(
-                                              attach.id
-                                            );
-                                          if (fileFromIndexedDB[0]) {
-                                            handleFileInputChangeOfResumeUpload(
-                                              fileFromIndexedDB[0]
-                                            );
-                                          } else {
-                                            handleLabelClick(
+                                            upload_or_delete_workorder_files_for_attachements(
+                                              workorder.workorder.id,
                                               attach.id,
-                                              "attachements"
+                                              "delete",
+                                              setIsLoading,
+                                              fetchOneWorkOrder
                                             );
-                                          }
-                                        }}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 14 14"
-                                          fill="none"
+                                          }}
                                         >
-                                          <g clipPath="url(#clip0_968_6186)">
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="17"
+                                            height="18"
+                                            viewBox="0 0 18 20"
+                                            fill="none"
+                                          >
                                             <path
-                                              d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                              fill="#C70000"
+                                              fillRule="evenodd"
+                                              clipRule="evenodd"
+                                              d="M15.412 4.5L14.611 18.117C14.5812 18.6264 14.3577 19.1051 13.9865 19.4551C13.6153 19.8052 13.1243 20.0001 12.614 20H5.386C4.87575 20.0001 4.38475 19.8052 4.0135 19.4551C3.64226 19.1051 3.41885 18.6264 3.389 18.117L2.59 4.5H0.5V3.5C0.5 3.36739 0.552679 3.24021 0.646447 3.14645C0.740215 3.05268 0.867392 3 1 3H17C17.1326 3 17.2598 3.05268 17.3536 3.14645C17.4473 3.24021 17.5 3.36739 17.5 3.5V4.5H15.412ZM7 0.5H11C11.1326 0.5 11.2598 0.552679 11.3536 0.646447C11.4473 0.740215 11.5 0.867392 11.5 1V2H6.5V1C6.5 0.867392 6.55268 0.740215 6.64645 0.646447C6.74021 0.552679 6.86739 0.5 7 0.5ZM6 7L6.5 16H8L7.6 7H6ZM10.5 7L10 16H11.5L12 7H10.5Z"
+                                              fill="#db2323"
                                             />
-                                          </g>
-                                          <defs>
-                                            <clipPath id="clip0_968_6186">
-                                              <rect
-                                                width="14"
-                                                height="14"
-                                                fill="white"
+                                          </svg>
+                                        </span>
+                                      ) : (
+                                        <label
+                                          className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                          htmlFor="reupload"
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+
+                                            const fileFromIndexedDB =
+                                              await getFilesByIdFromIndexedDB(
+                                                attach.id
+                                              );
+                                            if (fileFromIndexedDB[0]) {
+                                              handleFileInputChangeOfResumeUpload(
+                                                fileFromIndexedDB[0]
+                                              );
+                                            } else {
+                                              handleLabelClick(
+                                                attach.id,
+                                                "attachements"
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none"
+                                          >
+                                            <g clipPath="url(#clip0_968_6186)">
+                                              <path
+                                                d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                fill="#C70000"
                                               />
-                                            </clipPath>
-                                          </defs>
-                                        </svg>
-                                      </label>
-                                    ):null}
+                                            </g>
+                                            <defs>
+                                              <clipPath id="clip0_968_6186">
+                                                <rect
+                                                  width="14"
+                                                  height="14"
+                                                  fill="white"
+                                                />
+                                              </clipPath>
+                                            </defs>
+                                          </svg>
+                                        </label>
+                                      )
+                                    ) : null}
                                   </div>
                                 );
                               })}
@@ -1698,7 +1681,15 @@ const MissionDetails = () => {
                                 // Ensure files is not null and handle each file
                                 if (files) {
                                   Array.from(files).forEach(async (file) => {
-                                    await handleFileChange(file);
+                                    await handleFileChange(
+                                      dispatch,
+                                      workorder.workorder.id,
+                                      "attachements",
+                                      file,
+                                      setIsLoadingAttach,
+                                      fetchOneWorkOrder,
+                                      fileInputRef
+                                    );
                                   });
                                 }
                               }}
@@ -1714,7 +1705,15 @@ const MissionDetails = () => {
                                     ? e.target.files[0]
                                     : null;
                                   if (file) {
-                                    await handleFileChange(file);
+                                    await handleFileChange(
+                                      dispatch,
+                                      workorder.workorder.id,
+                                      "attachements",
+                                      file,
+                                      setIsLoadingAttach,
+                                      fetchOneWorkOrder,
+                                      fileInputRef
+                                    );
                                   }
                                 }}
                                 className="hidden"
@@ -1824,7 +1823,7 @@ const MissionDetails = () => {
                             .map((report) => {
                               return (
                                 <div
-                                key={report.id}
+                                  key={report.id}
                                   className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
                                     "border-[2px] border-[#db2c2c]"
@@ -2030,33 +2029,9 @@ const MissionDetails = () => {
                           )}
                       </div>
                       <div className="flex justify-end w-full">
-                        {workorder.workorder.status !== 3 &&
-                        workorder.workorder.status !== 5 ? (
-                          <button
-                            className="px-[30px] py-[11px] rounded-[30px] border-[2px] border-primary text-primary text-[14px] font-semibold leading-[20px] w-fit"
-                            onClick={() => {
-                              handle_Validate_and_Acceptence(
-                                workorder.workorder.id,
-                                "validate-workorder",
-                                setisLoadingFinalize,
-                                fetchOneWorkOrder
-                              );
-                            }}
-                          >
-                            {isLoadingFinalize ? (
-                              <RotatingLines
-                                visible={true}
-                                width="20"
-                                strokeWidth="3"
-                                strokeColor="#4A3AFF"
-                              />
-                            ) : (
-                              "Finalize"
-                            )}
-                          </button>
-                        ) : (
-                          getRole() !== 2 && (
-                            <div className="flex items-center gap-[12px]">
+                        {workorder.workorder.status === 3 && (
+                          <div className="flex items-center gap-[12px]">
+                            {getRole() !== 2 && (
                               <button
                                 className="px-[26px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
                                 onClick={() => {
@@ -2079,30 +2054,31 @@ const MissionDetails = () => {
                                   "Edit reports"
                                 )}
                               </button>
-                              <button
-                                className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
-                                onClick={() => {
-                                  handle_edit_or_reqUpdate_report(
-                                    workorder.workorder.id,
-                                    true,
-                                    setisLoadingFinalize,
-                                    fetchOneWorkOrder
-                                  );
-                                }}
-                              >
-                                {isLoadingFinalize ? (
-                                  <RotatingLines
-                                    visible={true}
-                                    width="20"
-                                    strokeWidth="3"
-                                    strokeColor="#4A3AFF"
-                                  />
-                                ) : (
-                                  "Request Update"
-                                )}
-                              </button>
-                            </div>
-                          )
+                            )}
+
+                            <button
+                              className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
+                              onClick={() => {
+                                handle_edit_or_reqUpdate_report(
+                                  workorder.workorder.id,
+                                  true,
+                                  setisLoadingFinalize,
+                                  fetchOneWorkOrder
+                                );
+                              }}
+                            >
+                              {isLoadingFinalize ? (
+                                <RotatingLines
+                                  visible={true}
+                                  width="20"
+                                  strokeWidth="3"
+                                  strokeColor="#4A3AFF"
+                                />
+                              ) : (
+                                "Request Update"
+                              )}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -2288,7 +2264,7 @@ const MissionDetails = () => {
                                               <div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
                                                 <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
                                                   {certeficatTypes.map(
-                                                    (type,index) => {
+                                                    (type, index) => {
                                                       return (
                                                         <span
                                                           key={index}
@@ -2615,12 +2591,14 @@ const MissionDetails = () => {
                   }}
                 >
                   {isLoading ? (
-                    <RotatingLines
-                      visible={true}
-                      width="20"
-                      strokeWidth="3"
-                      strokeColor="white"
-                    />
+                    <div className="flex items-center justify-center w-full">
+                      <RotatingLines
+                        visible={true}
+                        width="20"
+                        strokeWidth="3"
+                        strokeColor="white"
+                      />
+                    </div>
                   ) : workorder.workorder.status === 1 ? (
                     "Execution Finished"
                   ) : workorder.workorder.status === 5 ? (

@@ -60,9 +60,7 @@ export async function storeFileInIndexedDB(
       reject(request.error);
     };
   });
-}
-
-  
+} 
   
  export interface IndexedDBFile {
     fileId: number;
@@ -74,8 +72,26 @@ export async function storeFileInIndexedDB(
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("fileStorageDB", 1);
   
+      // Handle the case when the database is newly created or upgraded
+      request.onupgradeneeded = function (event) {
+        const db = (event.target as IDBOpenDBRequest).result;
+  
+        // Check if the "files" object store exists; if not, create it
+        if (!db.objectStoreNames.contains("files")) {
+          db.createObjectStore("files", { keyPath: "fileId" }); // Define "fileId" as the keyPath
+        }
+      };
+  
       request.onsuccess = function (event) {
         const db = (event.target as IDBOpenDBRequest).result;
+  
+        // Make sure the "files" object store exists
+        if (!db.objectStoreNames.contains("files")) {
+          console.error("Object store 'files' does not exist");
+          reject(new Error("Object store 'files' does not exist"));
+          return;
+        }
+  
         const transaction = db.transaction("files", "readonly");
         const objectStore = transaction.objectStore("files");
   
