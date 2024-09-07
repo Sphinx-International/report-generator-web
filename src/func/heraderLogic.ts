@@ -36,7 +36,11 @@ export const fetchAlerts = async (
 };
 
 export const fetchNotifications = async (
-    setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>
+  offset: number,
+  limit: number,
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
+  setHasMore: React.Dispatch<React.SetStateAction<boolean>>, // New parameter to set if more notifications are available
+  append: boolean = false // A flag to indicate if we should append the new data
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -45,7 +49,7 @@ export const fetchNotifications = async (
     return;
   }
 
-  const url = `${baseUrl}/notification/get-notifications?offset=0&limit=20`;
+  const url = `${baseUrl}/notification/get-notifications?offset=${offset}&limit=${limit}`;
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -56,16 +60,22 @@ export const fetchNotifications = async (
     });
 
     if (!response.ok) {
-      const errorText = await response.text(); // Read the response body as text
+      const errorText = await response.text();
       console.error("Error response text: ", errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    setNotifications(data.data);
+
+    // If 'append' is true, append new notifications to the existing state
+    setNotifications((prev) => (append ? [...prev, ...data.data] : data.data));
+
+    // Check if there are more notifications to load
+    setHasMore(data.current_offset < data.total);
   } catch (err) {
     console.error("Error: ", err);
   }
 };
+
 
 export const getActionNotificationTitle = (actionNumber: number): string => {
     const actionTitles: { [key: number]: string } = {

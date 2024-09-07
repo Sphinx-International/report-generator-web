@@ -37,6 +37,10 @@ const Header: React.FC<headerProps> = (props) => {
   const [alerts, setAlerts] = useState<alertWorkorder[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 20;
 
   const user: User = JSON.parse(localStorage.getItem("user")!);
 
@@ -51,8 +55,29 @@ const Header: React.FC<headerProps> = (props) => {
 
   useEffect(() => {
     fetchAlerts(setAlerts);
-    fetchNotifications(setNotifications);
+    fetchNotifications(0, limit, setNotifications, setHasMore);
   }, []);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const bottom =
+      e.currentTarget.scrollHeight - e.currentTarget.scrollTop ===
+      e.currentTarget.clientHeight;
+
+    if (bottom && !loading && hasMore) {
+      // Fetch more notifications when reached the bottom and there are more to load
+      setLoading(true);
+      fetchNotifications(
+        offset + limit,
+        limit,
+        setNotifications,
+        setHasMore,
+        true
+      ).then(() => {
+        setOffset((prevOffset) => prevOffset + limit);
+        setLoading(false);
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -105,7 +130,10 @@ const Header: React.FC<headerProps> = (props) => {
                       <h5 className="text-[15px] text-n800 font-semibold">
                         Notifications
                       </h5>
-                      <div className="flex flex-col items-start pr-2 gap-[12px] w-full max-h-[68vh] overflow-auto">
+                      <div
+                        className="flex flex-col items-start pr-2 gap-[12px] w-full max-h-[68vh] overflow-auto"
+                        onScroll={handleScroll} // Attach scroll handler here
+                      >
                         {notifications.map((notif) => {
                           return (
                             <div
@@ -167,12 +195,18 @@ const Header: React.FC<headerProps> = (props) => {
                                 </span>
                               </div>
                               <p className="text-[13px] text-550 leading-5">
-                                {getActionNotificationDescription(notif.action)} on {""}
+                                {getActionNotificationDescription(notif.action)}{" "}
+                                on {""}
                                 {notif.on}
                               </p>
                             </div>
                           );
                         })}
+                        {loading && (
+                          <div className="w-full text-center text-primary my-2 font-medium">
+                            Loading more ...
+                          </div>
+                        )}
                       </div>
                     </>
                   ) : (
