@@ -56,7 +56,7 @@ const router = createBrowserRouter([
   {
     path: "/missions/:id",
     element: (
-      <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute element={<MissionDetails/>} allowedRoles={[0, 1, 2]} />
     ),
   },
   {

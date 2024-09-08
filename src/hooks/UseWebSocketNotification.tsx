@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useCallback } from "react";
-import { useSnackbar } from "notistack";
+import { useSnackbar,closeSnackbar  } from "notistack";
 import { Notification } from "../assets/types/Mails&Notifications";
 import { getActionNotificationDescription } from "../func/heraderLogic";
+import { useNavigate } from "react-router-dom";
 const baseUrl = import.meta.env.VITE_BASE_WS_URL;
 
 interface UseWebSocketNotificationProps {
@@ -17,15 +18,48 @@ const useWebSocketNotification = ({
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef<number>(0); 
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+
 
   const handleNewNotification = (notification: Notification) => {
-    // Display the snackbar
-    enqueueSnackbar(`${getActionNotificationDescription(notification.action)} on ${notification.on}`, {
-      variant: "info",
-      autoHideDuration: 3000,
-    });
-    setNotifications((prev: any) => [notification,...prev ]);
+    // Define the URL or path based on the notification
+    const path =
+      notification.action >= 100 && notification.action < 200
+        ? `edit-user/${notification.on}`
+        : notification.action >= 200 && notification.action < 300
+        ? "mails/groups"
+        : `missions/${notification.on}`;
+  
+    // Display the snackbar with a custom action button
+    enqueueSnackbar(
+      `${getActionNotificationDescription(notification.action)} on ${notification.on}`,
+      {
+        variant: "info",
+        autoHideDuration: 3000,
+        action: (key) => (
+          <button
+            style={{
+              color: "white",
+              backgroundColor: "blue",
+              border: "none",
+              padding: "6px 12px",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              navigate(`/${path}`); // Perform navigation on button click
+              closeSnackbar(key); // Close the snackbar
+            }}
+          >
+            View
+          </button>
+        ),
+      }
+    );
+  
+    // Update the notifications state
+    setNotifications((prev: Notification[]) => [notification, ...prev]);
   };
+  
 
   const connectWebSocket = useCallback(() => {
     const token =

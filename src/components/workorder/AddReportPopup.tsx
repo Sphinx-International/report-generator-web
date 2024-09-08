@@ -60,10 +60,13 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
           <h3 className="text-[19px] font-semibold text-primary leading-[20px]">
             Upload Report{" "}
           </h3>
-          <div className="w-full flex items-center gap-[11px]">
+          <div className="w-full flex items-center gap-[11px]"
+          >
             <svg
-              onClick={handlePreviousClick}
-              className="cursor-pointer hover:scale-105"
+              onClick={() => { if (!file) {
+                handlePreviousClick()
+              }  }}
+              className={`hover:scale-105 ${file ? "cursor-not-allowed": "cursor-pointer"}`}
               xmlns="http://www.w3.org/2000/svg"
               width="13"
               height="14"
@@ -103,8 +106,10 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
             </div>
 
             <svg
-              onClick={handleNextClick}
-              className="rotate-180 cursor-pointer hover:scale-105"
+              onClick={() => { if (!file) {
+                handleNextClick()
+              } }}
+              className={`rotate-180 hover:scale-105 ${file ? "cursor-not-allowed": "cursor-pointer"}`}
               xmlns="http://www.w3.org/2000/svg"
               width="13"
               height="14"
@@ -155,6 +160,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                     undefined,
                     currentReportTypeIndex
                   );
+                  setFile({file:file, progress:0})
                 });
               }
             }}
@@ -178,6 +184,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                     undefined,
                     currentReportTypeIndex
                   );
+                  setFile({file:file, progress:0})
                 }
               }}
             />

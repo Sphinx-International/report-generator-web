@@ -44,7 +44,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
               return (
                 <span
                   key={index}
-                  className={`cursor-pointer px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
+                  className={`px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold ${file ? "cursor-not-allowed":"cursor-pointer"}`}
                   style={{
                     backgroundColor:
                       type.type === certType ? `${type.color}` : "white",
@@ -52,7 +52,9 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                     border: `solid 1px ${type.color}`,
                   }}
                   onClick={() => {
-                    setCertType(type.type);
+                    if (!file) {
+                      setCertType(type.type);
+                    }
                   }}
                 >
                   {type.name}
@@ -100,6 +102,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                     undefined,
                     certType
                   );
+                  setFile({file:file, progress:0})
                 });
               }
             }}
@@ -123,6 +126,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                     undefined,
                     certType
                   );
+                  setFile({file:file, progress:0})
                 }
               }}
             />

@@ -18,10 +18,8 @@ import { downloadFile } from "../func/donwloadFile";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
 import handleChange from "../func/handleChangeFormsInput";
 import {
-  handle_chunck,
   upload_or_delete_workorder_files_for_attachements,
   handle_resuming_upload,
-  handle_files_with_one_chunk,
   handleCancelUpload,
 } from "../func/chunkUpload";
 import UploadingFile from "../components/uploadingFile";
@@ -176,7 +174,6 @@ const MissionDetails = () => {
           </button>
         );
 
-        // Call the handle_resuming_upload function without waiting for it to complete
         handle_resuming_upload(
           dispatch,
           file.fileId,
@@ -1289,7 +1286,7 @@ const MissionDetails = () => {
                       styles={{ fontSize: 13, px: 28, py: 9.5 }}
                     />
 
-                    <div className="">
+                    <div className="relative">
                       {" "}
                       <span
                         className={`cursor-pointer rounded-[100px] text-[13px] font-medium leading-[15px] bg-[#FEF6FF] py-[9.5px] px-[28px] ${
@@ -1316,7 +1313,7 @@ const MissionDetails = () => {
                           : "Urgent"}
                       </span>
                       {showPriority && (
-                        <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-lg z-30 absolute flex flex-col items-start gap-[27px] lg:left-32 left-3 top-12">
+                        <div className="p-[20px] md:rounded-tl-[17px] md:rounded-tr-[0px] rounded-tr-[17px] rounded-bl-[17px] rounded-br-[17px] bg-white shadow-lg z-30 absolute flex flex-col items-start gap-[27px] left-2 top-10">
                           <div className="flex flex-col items-start gap-[16px]">
                             <span className=" text-n700 font-medium md:text-[14px] text-[12px]">
                               Priority
@@ -1401,6 +1398,7 @@ const MissionDetails = () => {
                             handleeditReqAccStatus(workorder.workorder.id, 0);
                           }
                         }}
+                        title="require acceptance"
                       >
                         ✓
                       </span>
@@ -1412,6 +1410,7 @@ const MissionDetails = () => {
                             handleeditReqAccStatus(workorder.workorder.id, 1);
                           }
                         }}
+                        title="dosen't require acceptance"
                       >
                         🗙
                       </span>
