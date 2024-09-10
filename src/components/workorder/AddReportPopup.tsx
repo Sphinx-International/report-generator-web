@@ -16,7 +16,7 @@ interface AddReportProps {
   fetchOneWorkOrder: () => void;
 }
 
-type reportTypeIndex = 0 | 1;
+type reportTypeIndex = 1 | 2;
 
 const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
   (props, ref) => {
@@ -24,29 +24,23 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
     const [file, setFile] = useState<TheUploadingFile | undefined>();
     const dispatch = useDispatch<AppDispatch>();
 
-    const reportTypes = ["Partial", "Final"];
-    const [currentReportTypeIndex, setCurrentReportTypeIndex] = useState<0 | 1>(
-      1
-    );
+    const reportTypes = ["Final","Partial"];
+    const [currentReportTypeIndex, setCurrentReportTypeIndex] = useState<1 | 2>(1);
+
 
     const uploadingReportFiles = useSelector(
       (state: RootState) => state.uploadingFiles.reportFiles
     );
-
     const handleNextClick = () => {
       setCurrentReportTypeIndex((prevIndex) => {
-        const newIndex = (
-          prevIndex === reportTypes.length - 1 ? 0 : prevIndex + 1
-        ) as reportTypeIndex;
+        const newIndex = (prevIndex === 2 ? 1 : prevIndex + 1) as reportTypeIndex;
         return newIndex;
       });
     };
-
+    
     const handlePreviousClick = () => {
       setCurrentReportTypeIndex((prevIndex) => {
-        const newIndex = (
-          prevIndex === 0 ? reportTypes.length - 1 : prevIndex - 1
-        ) as reportTypeIndex;
+        const newIndex = (prevIndex === 1 ? 2 : prevIndex - 1) as reportTypeIndex;
         return newIndex;
       });
     };
@@ -99,7 +93,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                         : "text-[#DB2C9F]"
                     }`}
                   >
-                    {reportTypes[currentReportTypeIndex]}
+                    {reportTypes[currentReportTypeIndex-1]}
                   </span>
                 </CSSTransition>
               </TransitionGroup>

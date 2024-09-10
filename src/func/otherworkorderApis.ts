@@ -8,7 +8,8 @@ export const handle_edit_or_reqUpdate_report = async (
   workorder_id: string,
   notify_engineer: boolean,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  fetchOneWorkOrder: () => void
+  fetchOneWorkOrder: () => void,
+  message?:string,
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -16,8 +17,9 @@ export const handle_edit_or_reqUpdate_report = async (
     console.error("No token found");
     return;
   }
+  console.log(`Token ${token}`)
   setIsLoading(true);
-  console.log(JSON.stringify({ workorder_id, notify_engineer }));
+  console.log(JSON.stringify({ workorder_id, notify_engineer,message }));
   try {
     const response = await fetch(`${baseUrl}/workorder/request-update`, {
       method: "PUT",
@@ -25,7 +27,7 @@ export const handle_edit_or_reqUpdate_report = async (
         "Content-Type": "application/json",
         Authorization: `Token ${token}`,
       },
-      body: JSON.stringify({ workorder_id, notify_engineer }),
+      body: JSON.stringify({ workorder_id, notify_engineer,message }),
     });
     if (response) {
       console.log(response.status);

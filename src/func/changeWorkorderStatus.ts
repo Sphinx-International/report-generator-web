@@ -56,7 +56,7 @@ export const handle_Assignment_and_execute = async (
   }
 };
 
-export const handle_Validate_and_Acceptence = async (
+/*export const handle_Validate_and_Acceptence = async (
   workorder_id: string,
   endPointPah: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
@@ -99,7 +99,7 @@ export const handle_Validate_and_Acceptence = async (
   } finally {
     setIsLoading(false);
   }
-};
+};  */
 
 export const handle_add_or_delete_mailedPerson = async (
   workorder_id: string,

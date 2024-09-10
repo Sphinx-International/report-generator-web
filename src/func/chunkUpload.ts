@@ -66,8 +66,8 @@ export const upload_or_delete_workorder_files_for_attachements = async (
 };
 
 export const upload_workorder_files = async (
-  workorder_id: string,
-  file_id: number,
+  workorder: string,
+  file: number,
   fileType: "report" | "certificate",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
@@ -85,11 +85,11 @@ export const upload_workorder_files = async (
     const body =
       fileType === "certificate"
         ? JSON.stringify({
-            workorder_id,
-            file_id,
-            certificate_type: fileStatus,
+          workorder,
+          file,
+          type: fileStatus,
           })
-        : JSON.stringify({ workorder_id, file_id, auto_validate: fileStatus });
+        : JSON.stringify({ workorder, file, type: fileStatus });
 
     console.log(body);
     const response = await fetch(

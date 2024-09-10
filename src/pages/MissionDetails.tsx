@@ -10,7 +10,6 @@ import { getRole } from "../func/getUserRole";
 import Page404 from "./Page404";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 import {
-  handle_Validate_and_Acceptence,
   handle_Assignment_and_execute,
   handle_add_or_delete_mailedPerson,
 } from "../func/changeWorkorderStatus";
@@ -288,6 +287,7 @@ const MissionDetails = () => {
           {
             const data = await response.json();
             setWorkorder(data);
+            console.log(data)
             setBasicDataWorkorder({
               title: data.workorder.title,
               id: data.workorder.id,
@@ -2068,13 +2068,6 @@ const MissionDetails = () => {
                             <button
                               className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
                               onClick={() => {
-                                /*
-                                handle_edit_or_reqUpdate_report(
-                                  workorder.workorder.id,
-                                  true,
-                                  setisLoadingFinalize,
-                                  fetchOneWorkOrder
-                                ); */
                                 handleOpenDialog(requestUpdateDialogRef);
                               }}
                             >
@@ -2444,55 +2437,6 @@ const MissionDetails = () => {
                                 </span>
                               </div>
                             )}
-                        </div>
-                        <div className="flex justify-end w-full">
-                          {workorder.workorder.status < 4 && (
-                            <button
-                              className={`px-[30px] py-[11px] rounded-[30px] border-[2px] text-[14px] font-semibold leading-[20px] w-fit ${
-                                workorder.acceptance_certificates &&
-                                workorder.acceptance_certificates[
-                                  workorder.acceptance_certificates.length - 1
-                                ].type === 1
-                                  ? "cursor-pointer border-primary text-primary"
-                                  : "cursor-not-allowed border-n500 text-n500"
-                              }`}
-                              onClick={() => {
-                                handle_Validate_and_Acceptence(
-                                  workorder.workorder.id,
-                                  "accept-workorder",
-                                  setIsLoading,
-                                  fetchOneWorkOrder
-                                );
-                              }}
-                              disabled={
-                                workorder.acceptance_certificates &&
-                                workorder.acceptance_certificates[
-                                  workorder.acceptance_certificates.length - 1
-                                ].type === 1
-                                  ? false
-                                  : true
-                              }
-                              title={
-                                workorder.acceptance_certificates &&
-                                workorder.acceptance_certificates[
-                                  workorder.acceptance_certificates.length - 1
-                                ].type === 1
-                                  ? ""
-                                  : "upload accepted certificate first"
-                              }
-                            >
-                              {isLoading ? (
-                                <RotatingLines
-                                  visible={true}
-                                  width="20"
-                                  strokeWidth="3"
-                                  strokeColor="#4A3AFF"
-                                />
-                              ) : (
-                                "Accept"
-                              )}
-                            </button>
-                          )}
                         </div>
                       </div>
                     )}
