@@ -7,6 +7,7 @@ import { RotatingLines } from "react-loader-spinner";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface DeletePopUpProps {
+  page: "workorders" | "accounts";
   deleteItems: string[];
   deleteUrl: string
   jsonTitle:string
@@ -98,21 +99,40 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         }    
         // Determine if the current page is empty after deletion
         const newUserCount = initialUserCount - props.deleteItems.length;
-        if (localStorage.getItem("selectedFilter") === "all" || !localStorage.getItem("selectedFilter") ) {
-          if (newUserCount === 0 && props.currentPage > 1) {
-            await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit);
-            props.setCurrentPage(props.currentPage - 1);
-          } else {
-            await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit);
+        if (props.page === "workorders") {
+          if (localStorage.getItem("selectedFilterForWorkorders") === "all" || !localStorage.getItem("selectedFilterForWorkorders") ) {
+            if (newUserCount === 0 && props.currentPage > 1) {
+              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit);
+              props.setCurrentPage(props.currentPage - 1);
+            } else {
+              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit);
+            }
+          }else{
+            if (newUserCount === 0 && props.currentPage > 1) {
+              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit,localStorage.getItem("selectedFilterForWorkorders")!);
+              props.setCurrentPage(props.currentPage - 1);
+            } else {
+              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilterForWorkorders")!);
+            }
           }
-        }else{
-          if (newUserCount === 0 && props.currentPage > 1) {
-            await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit,localStorage.getItem("selectedFilter")!);
-            props.setCurrentPage(props.currentPage - 1);
-          } else {
-            await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilter")!);
+        } else {
+          if (localStorage.getItem("selectedFilterForUsers") === "all" || !localStorage.getItem("selectedFilterForUsers") ) {
+            if (newUserCount === 0 && props.currentPage > 1) {
+              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit);
+              props.setCurrentPage(props.currentPage - 1);
+            } else {
+              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit);
+            }
+          }else{
+            if (newUserCount === 0 && props.currentPage > 1) {
+              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit,localStorage.getItem("selectedFilterForUsers")!);
+              props.setCurrentPage(props.currentPage - 1);
+            } else {
+              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilterForUsers")!);
+            }
           }
         }
+
 
       } catch (error) {
         console.error("Error deleting users:", error);

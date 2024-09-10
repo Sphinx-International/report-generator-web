@@ -235,7 +235,7 @@ export const handle_chunck = async (
       const data = await response.json();
       const fileId = data.id;
       console.log(file, fileId, fileType);
-      storeFileInIndexedDB(file, fileId, fileType);
+      storeFileInIndexedDB(file, fileId, fileType,workorder_id);
 
       dispatch(
         addUploadingFile({
@@ -283,6 +283,7 @@ export const handle_resuming_upload = async (
   file: File,
   fileType: "attachements" | "report" | "certificate",
   file_token: string,
+  workorder_id:string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc: () => void,
   enqueueSnackbar: (message: string, options?: any) => void // Accept the enqueueSnackbar as is
@@ -328,7 +329,7 @@ export const handle_resuming_upload = async (
             file: { id: fileId, progress, file },
           })
         );
-        storeFileInIndexedDB(file, fileId, fileType);
+        storeFileInIndexedDB(file, fileId, fileType,workorder_id);
 
         await uploadRemainingChunks(
           dispatch,

@@ -1,3 +1,5 @@
+import { ResOfOneMission } from "../assets/types/Mission";
+
 export async function generateFileToken(file: File): Promise<string> {
     const crypto = window.crypto; // For compatibility with older browsers
 
@@ -17,15 +19,31 @@ export async function generateFileToken(file: File): Promise<string> {
 export async function storeFileInIndexedDB(
   file: File,
   fileId: number,
-  fileType: "attachements" | "report" | "certificate"
+  fileType: "attachements" | "report" | "certificate",
+  workorderId?: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("fileStorageDB", 1);
-       console.log("enterd")
+    const request = indexedDB.open("fileStorageDB", 3); // Increment version to trigger onupgradeneeded
+
     request.onupgradeneeded = function (event) {
       const db = (event.target as IDBOpenDBRequest).result;
+
+      // Create or upgrade the "files" object store
+      let objectStore;
       if (!db.objectStoreNames.contains("files")) {
-        db.createObjectStore("files", { keyPath: "fileId" }); // KeyPath is fileId
+        // Create the object store with "fileId" as the key path
+        objectStore = db.createObjectStore("files", { keyPath: "fileId" });
+
+        // Create an index on 'workorderId'
+        objectStore.createIndex("workorderId", "workorderId", { unique: false });
+      } else {
+        // If the object store already exists, get it from the transaction
+        objectStore = request.transaction?.objectStore("files");
+
+        // Create the index on 'workorderId' if it does not already exist
+        if (objectStore && !objectStore.indexNames.contains("workorderId")) {
+          objectStore.createIndex("workorderId", "workorderId", { unique: false });
+        }
       }
     };
 
@@ -35,9 +53,10 @@ export async function storeFileInIndexedDB(
       const objectStore = transaction.objectStore("files");
 
       const fileData = {
-        fileId, // Ensure this is defined and valid
+        fileId,
         fileType,
         fileContent: file, // Store the file as a Blob
+        workorderId,
       };
 
       console.log("Adding file data to IndexedDB:", fileData);
@@ -60,7 +79,10 @@ export async function storeFileInIndexedDB(
       reject(request.error);
     };
   });
-} 
+}
+
+
+
   
  export interface IndexedDBFile {
     fileId: number;
@@ -70,7 +92,7 @@ export async function storeFileInIndexedDB(
 
   export async function getFilesByIdFromIndexedDB(fileId: number): Promise<IndexedDBFile[]> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("fileStorageDB", 1);
+      const request = indexedDB.open("fileStorageDB", 3);
   
       // Handle the case when the database is newly created or upgraded
       request.onupgradeneeded = function (event) {
@@ -132,7 +154,7 @@ export async function storeFileInIndexedDB(
   
   export async function deleteFileFromIndexedDB(fileId: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("fileStorageDB", 1);
+      const request = indexedDB.open("fileStorageDB", 3);
   
       request.onsuccess = function (event) {
         const db = (event.target as IDBOpenDBRequest).result;
@@ -158,5 +180,114 @@ export async function storeFileInIndexedDB(
       };
     });
   }
+
+  function openDatabase(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open("fileStorageDB", 3);
+      request.onupgradeneeded = function (event) {
+        const db = (event.target as IDBOpenDBRequest).result;
+  
+        // Create the object store if it doesn't exist
+        if (!db.objectStoreNames.contains("files")) {
+          const objectStore = db.createObjectStore("files", { keyPath: "fileId" });
+  
+          // Create an index for workorderId
+          objectStore.createIndex("workorderId", "workorderId");
+        }
+      };
+  
+      request.onsuccess = function (event) {
+        resolve((event.target as IDBOpenDBRequest).result);
+      };
+  
+      request.onerror = function () {
+        reject(request.error);
+      };
+    });
+  }
+  
+  
   
 
+  export async function getFilesByWorkorderIdFromIndexedDB(workorderId: string): Promise<any[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const db = await openDatabase();
+        const transaction = db.transaction("files", "readonly");
+        const objectStore = transaction.objectStore("files");
+
+        // Ensure the index name matches what was created in onupgradeneeded
+        const index = objectStore.index("workorderId");
+        const range = IDBKeyRange.only(workorderId);
+        const cursorRequest = index.openCursor(range);
+        const results: any[] = [];
+
+        cursorRequest.onsuccess = function (event) {
+          const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
+  
+          if (cursor) {
+            results.push(cursor.value);
+            cursor.continue();
+            console.log("if")
+          } else {
+            resolve(results);
+            
+          }
+        };
+  
+        cursorRequest.onerror = function () {
+          reject(cursorRequest.error);
+        };
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  
+  
+  
+  
+  export async function syncIndexedDBWithFetchedFiles(
+    workorderId: string,
+    fetchedData: ResOfOneMission
+  ): Promise<void> {
+    try {
+      // Retrieve files from IndexedDB for the given workorderId
+      const indexedDBFiles = await getFilesByWorkorderIdFromIndexedDB(workorderId);
+  
+      // Collect all file IDs from fetched data
+      const fetchedFileIds = new Set<number>();
+  
+      // Collect file IDs from attachments, reports, and certificates
+      fetchedData.attachments.forEach((file) => fetchedFileIds.add(file.id));
+      fetchedData.reports?.forEach((file) => fetchedFileIds.add(file.id));
+      fetchedData.acceptance_certificates?.forEach((file) => fetchedFileIds.add(file.id));
+  
+      // Filter out files that are present in IndexedDB but not in the fetched data
+      const filesToDelete = indexedDBFiles.filter((file) => {
+        // Check if the file is not in the fetched data
+        const isFileMissingFromFetchedData = !fetchedFileIds.has(file.fileId);
+  
+        // Check if the file is in the fetched data and marked as completed
+        const isFileCompleted = fetchedData.attachments.some(
+          (f) => f.id === file.fileId && f.is_completed
+        ) ||
+        fetchedData.reports?.some((f) => f.id === file.fileId && f.is_completed) ||
+        fetchedData.acceptance_certificates?.some((f) => f.id === file.fileId && f.is_completed);
+  
+        // Return files to delete if they are either missing from fetched data or completed
+        return isFileMissingFromFetchedData || isFileCompleted;
+      });
+  
+      console.log("Files to delete:", filesToDelete);
+  
+      // Delete files that are no longer present in the fetched data or are completed
+      for (const file of filesToDelete) {
+        await deleteFileFromIndexedDB(file.fileId);
+        console.log(`Deleted file with fileId ${file.fileId} from IndexedDB.`);
+      }  
+    } catch (error) {
+      console.error("Error syncing files between IndexedDB and fetched data:", error);
+    }
+  }
+  

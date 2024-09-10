@@ -274,6 +274,7 @@ const Missions = () => {
         fetchWorkOrders={fetchWorkOrders}
       />
       <DeletePopup
+        page="workorders"
         ref={deleteDialogRef}
         deleteItems={selectedWorkorders}
         deleteUrl={`${baseUrl}/workorder/delete-workorders`}

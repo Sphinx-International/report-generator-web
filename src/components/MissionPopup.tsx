@@ -265,7 +265,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       } finally {
         setIsLoading(false);
         props.fetchWorkOrders!();
-        localStorage.setItem("selectedFilter", "all");
+        localStorage.setItem("selectedFilterForWorkorders", "all");
       }
     };
 
@@ -419,7 +419,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         if (response.ok) {
           const data = await response.json();
           const fileId = data.id;
-          storeFileInIndexedDB(file, fileId, "attachements");
+          storeFileInIndexedDB(file, fileId, "attachements", formValues.id);
           setformValues((prevFormValues) => ({
             ...prevFormValues,
             attachments: [

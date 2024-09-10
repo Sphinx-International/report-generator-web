@@ -26,6 +26,7 @@ import UploadingFile from "../components/uploadingFile";
 import { formatDate } from "../func/formatDatr&Time";
 import AddCertificatPopup from "../components/workorder/AddCertificatPopup";
 import AddReportPopup from "../components/workorder/AddReportPopup";
+import RequestUpdatePopup from "../components/workorder/RequestUpdatePopup";
 import { handleOpenDialog } from "../func/openDialog";
 import CircularProgress from "../components/CircleProgress";
 import { certeficatTypes } from "../assets/CertificatTypes";
@@ -42,6 +43,7 @@ import {
   generateFileToken,
   getFilesByIdFromIndexedDB,
   IndexedDBFile,
+  syncIndexedDBWithFetchedFiles
 } from "../func/generateFileToken";
 import { useSnackbar } from "notistack";
 import { fetchGroupMembersThenAddThemToWorkorder } from "../func/groupsApi";
@@ -102,6 +104,7 @@ const MissionDetails = () => {
     useState(false);
   const addCertificatDialogRef = useRef<HTMLDialogElement>(null);
   const addReportDialogRef = useRef<HTMLDialogElement>(null);
+  const requestUpdateDialogRef = useRef<HTMLDialogElement>(null);
   const undoTimeoutRef = useRef<number | null>(null);
   const undoActionTriggeredRef = useRef(false);
   const undo_req_acc_ActionTriggeredRef = useRef(false);
@@ -148,6 +151,7 @@ const MissionDetails = () => {
     fileInputOnReuploadRef.current?.click();
   };
 
+
   const handleFileInputChangeOfResumeUpload = async (file: IndexedDBFile) => {
     if (file) {
       try {
@@ -180,10 +184,12 @@ const MissionDetails = () => {
           file.fileContent,
           file.fileType,
           file_token,
+          workorder!.workorder.id ,
           setIsLoading,
           fetchOneWorkOrder,
           (message, options) =>
             enqueueSnackbar(message, { ...options, action: snackbarAction }) // Pass the action with the JSX button
+          
         );
 
         setSelectedIdFileForResumeUpload(undefined);
@@ -265,9 +271,9 @@ const MissionDetails = () => {
       console.error("No token found");
       return;
     }
-
+  
     const url = `${baseUrl}/workorder/get-workorder/${id}`;
-
+  
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -276,7 +282,7 @@ const MissionDetails = () => {
           Authorization: `Token ${token}`,
         },
       });
-
+  
       switch (response.status) {
         case 200:
           {
@@ -297,19 +303,22 @@ const MissionDetails = () => {
               );
               return [newEmails];
             });
+  
+            // Sync files with IndexedDB
+            await syncIndexedDBWithFetchedFiles(data.workorder.id, data);
           }
           break;
-
+  
         case 403:
           setHaveAccess(false);
           setIsPageLoading(false);
           break;
-
-          case 404:
-            setHaveAccess(false);
-            setIsPageLoading(false);
-            break;
-
+  
+        case 404:
+          setHaveAccess(false);
+          setIsPageLoading(false);
+          break;
+  
         default:
           {
             const errorText = await response.text(); // Read the response body as text
@@ -324,6 +333,7 @@ const MissionDetails = () => {
       setIsPageLoading(false);
     }
   }, [id]);
+  
 
   const handleEditWorkorder = async (properties: WorkorderProperties = {}) => {
     const token =
@@ -2058,12 +2068,14 @@ const MissionDetails = () => {
                             <button
                               className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
                               onClick={() => {
+                                /*
                                 handle_edit_or_reqUpdate_report(
                                   workorder.workorder.id,
                                   true,
                                   setisLoadingFinalize,
                                   fetchOneWorkOrder
-                                );
+                                ); */
+                                handleOpenDialog(requestUpdateDialogRef);
                               }}
                             >
                               {isLoadingFinalize ? (
@@ -2633,6 +2645,11 @@ const MissionDetails = () => {
       />
       <AddReportPopup
         ref={addReportDialogRef}
+        workorderId={workorder!.workorder.id}
+        fetchOneWorkOrder={fetchOneWorkOrder}
+      />
+      <RequestUpdatePopup
+        ref={requestUpdateDialogRef}
         workorderId={workorder!.workorder.id}
         fetchOneWorkOrder={fetchOneWorkOrder}
       />

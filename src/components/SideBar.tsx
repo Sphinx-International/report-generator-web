@@ -68,90 +68,15 @@ const SideBar = () => {
           <img src="/logo.png" alt="logo" className="w-[110px]" />
           <div className="flex flex-col items-start gap-[28px] pt-[32%] pb-[80%] border-r-[1px] border-r-[#E6EDFF]">
             {sideBarTab.map((item, index) => {
-
-
               switch (localStorage.getItem("role")) {
                 case "0":
-                 return(
-                  <NavLink
-                  to={item.link}
-                  key={index}
-                  onClick={() => {
-                    localStorage.removeItem("selectedFilterForWorkorders");
-                    localStorage.removeItem("selectedFilterForUsers");
-                    dispatch(closeSidebar());
-                  }}
-                  className={({ isActive, isPending }) =>
-                    `${
-                      isPending ? "pending" : isActive ? "active" : ""
-                    } flex flex-col items-start gap-[15px]`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <div className="flex items-center justify-between cursor-pointer">
-                        <div
-                          className={`flex items-center gap-[15px] ${
-                            isActive ? "text-primary" : "text-[#6F6C90]"
-                          }  font-medium w-[150px] xl:w-[190px] text-[14px]`}
-                        >
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: isActive ? item.activeSvg : item.svg,
-                            }}
-                          />
-                          {item.title}
-                        </div>
-                        {isActive && (
-                          <span className="w-[4px] h-[24px] bg-primary rounded-tl-[3px] rounded-bl-[3px]"></span>
-                        )}
-                      </div>
-                      {item.subItem && (
-                        <div className="ml-3 flex flex-col gap-[13px]">
-                          {item.subItem.map((subItem, subIndex) => (
-                            <NavLink
-                              to={subItem.link}
-                              key={subIndex}
-                              className={({ isActive, isPending }) =>
-                                `${
-                                  isPending
-                                    ? "pending"
-                                    : isActive
-                                    ? "active"
-                                    : ""
-                                } flex items-center gap-[15px] ${
-                                  isActive ? "text-primary" : "text-[#6F6C90]"
-                                } font-medium w-[150px] xl:w-[190px] text-[14px]`
-                              }
-                            >
-                              {({ isActive }) => (
-                                <>
-                                  <div
-                                    dangerouslySetInnerHTML={{
-                                      __html: isActive
-                                        ? subItem.activeSvg
-                                        : subItem.svg,
-                                    }}
-                                  />
-                                  {subItem.title}
-                                </>
-                              )}
-                            </NavLink>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </NavLink>
-                 )
-                case "1":
-                  if (item.access !== "admin") {
-                     return(
-                      <NavLink
+                  return (
+                    <NavLink
                       to={item.link}
                       key={index}
                       onClick={() => {
-                        localStorage.removeItem("selectedFilter");
+                        localStorage.removeItem("selectedFilterForWorkorders");
+                        localStorage.removeItem("selectedFilterForUsers");
                         dispatch(closeSidebar());
                       }}
                       className={({ isActive, isPending }) =>
@@ -218,7 +143,87 @@ const SideBar = () => {
                         </>
                       )}
                     </NavLink>
-                     );
+                  );
+                case "1":
+                  if (item.access !== "admin") {
+                    return (
+                      <NavLink
+                        to={item.link}
+                        key={index}
+                        onClick={() => {
+                          localStorage.removeItem(
+                            "selectedFilterForWorkorders"
+                          );
+                          localStorage.removeItem("selectedFilterForUsers");
+                          dispatch(closeSidebar());
+                        }}
+                        className={({ isActive, isPending }) =>
+                          `${
+                            isPending ? "pending" : isActive ? "active" : ""
+                          } flex flex-col items-start gap-[15px]`
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            <div className="flex items-center justify-between cursor-pointer">
+                              <div
+                                className={`flex items-center gap-[15px] ${
+                                  isActive ? "text-primary" : "text-[#6F6C90]"
+                                }  font-medium w-[150px] xl:w-[190px] text-[14px]`}
+                              >
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: isActive
+                                      ? item.activeSvg
+                                      : item.svg,
+                                  }}
+                                />
+                                {item.title}
+                              </div>
+                              {isActive && (
+                                <span className="w-[4px] h-[24px] bg-primary rounded-tl-[3px] rounded-bl-[3px]"></span>
+                              )}
+                            </div>
+                            {item.subItem && (
+                              <div className="ml-3 flex flex-col gap-[13px]">
+                                {item.subItem.map((subItem, subIndex) => (
+                                  <NavLink
+                                    to={subItem.link}
+                                    key={subIndex}
+                                    className={({ isActive, isPending }) =>
+                                      `${
+                                        isPending
+                                          ? "pending"
+                                          : isActive
+                                          ? "active"
+                                          : ""
+                                      } flex items-center gap-[15px] ${
+                                        isActive
+                                          ? "text-primary"
+                                          : "text-[#6F6C90]"
+                                      } font-medium w-[150px] xl:w-[190px] text-[14px]`
+                                    }
+                                  >
+                                    {({ isActive }) => (
+                                      <>
+                                        <div
+                                          dangerouslySetInnerHTML={{
+                                            __html: isActive
+                                              ? subItem.activeSvg
+                                              : subItem.svg,
+                                          }}
+                                        />
+                                        {subItem.title}
+                                      </>
+                                    )}
+                                  </NavLink>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </NavLink>
+                    );
                   }
                   break;
 

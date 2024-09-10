@@ -433,6 +433,7 @@ const UserManagment = () => {
         fetchUsers={() => fetchUsers((currentPage - 1) * limit, limit)}
       />
       <DeletePopup
+        page="accounts"
         ref={deleteDialogRef}
         deleteItems={selectedUsers}
         deleteUrl={`${baseUrl}/account/delete-accounts`}
