@@ -329,7 +329,7 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
                     stroke="#A0A3BD"
                     stroke-width="1.25"
                     stroke-miterlimit="10"
-                    stroke-linecap="round"
+                    strokeLinecap="round"
                   />
                 </svg>
                 {typeOfSearchPopupVisible && (

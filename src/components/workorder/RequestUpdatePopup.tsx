@@ -4,7 +4,7 @@ import { RotatingLines } from "react-loader-spinner";
 import { handleCloseDialog } from "../../func/openDialog";
 
 interface RequestUpdateProps {
-  workorderId: string;
+  workorderId: string | undefined;
   fetchOneWorkOrder: () => void;
 }
 
@@ -43,7 +43,7 @@ const RequestUpdatePopup = forwardRef<HTMLDialogElement, RequestUpdateProps>(
           onClick={async () => {
             if (message !== "") {
               await handle_edit_or_reqUpdate_report(
-                props.workorderId,
+                props.workorderId!,
                 true,
                 setIsLoading,
                 props.fetchOneWorkOrder,
@@ -51,7 +51,7 @@ const RequestUpdatePopup = forwardRef<HTMLDialogElement, RequestUpdateProps>(
               );
               handleCloseDialog(ref);
               setVisibleErr(false);
-              setMessage("")
+              setMessage("");
             } else {
               setVisibleErr(true);
             }
@@ -63,6 +63,15 @@ const RequestUpdatePopup = forwardRef<HTMLDialogElement, RequestUpdateProps>(
             "Add Message"
           )}
         </button>
+
+        <span
+          className="absolute top-6 right-6 text-[#111111] cursor-pointer"
+          onClick={() => {
+            handleCloseDialog(ref);
+          }}
+        >
+          🗙
+        </span>
       </dialog>
     );
   }

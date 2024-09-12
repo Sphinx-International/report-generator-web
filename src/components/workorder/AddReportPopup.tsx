@@ -12,7 +12,7 @@ import { RootState } from "../../Redux/store";
 import { handleFileChange } from "../../func/otherworkorderApis";
 
 interface AddReportProps {
-  workorderId: string;
+  workorderId: string | undefined;
   fetchOneWorkOrder: () => void;
 }
 
@@ -71,7 +71,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                 d="M11 2L3 7L11 12"
                 stroke={currentReportTypeIndex === 1 ? "#4A3AFF" : "#DB2C9F"}
                 strokeWidth="2.5"
-                strokeLinecap="round"
+                fillOpacity="round"
               />
             </svg>
 
@@ -114,7 +114,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                 d="M11 2L3 7L11 12"
                 stroke={currentReportTypeIndex === 1 ? "#4A3AFF" : "#DB2C9F"}
                 strokeWidth="2.5"
-                strokeLinecap="round"
+                fillOpacity="round"
               />
             </svg>
           </div>
@@ -146,7 +146,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                 Array.from(files).forEach(async (file) => {
                   await handleFileChange(
                     dispatch,
-                    props.workorderId,
+                    props.workorderId!,
                     "report",
                     file,
                     setIsLoading,
@@ -170,7 +170,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                 if (file) {
                   await handleFileChange(
                     dispatch,
-                    props.workorderId,
+                    props.workorderId!,
                     "report",
                     file,
                     setIsLoading,

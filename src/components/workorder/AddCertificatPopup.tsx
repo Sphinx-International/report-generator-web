@@ -12,7 +12,7 @@ import { RootState } from "../../Redux/store";
 import { handleFileChange } from "../../func/otherworkorderApis";
 
 interface AddCertificatProps {
-  workorderId: string;
+  workorderId: string | undefined;
   fetchOneWorkOrder: () => void;
 }
 
@@ -94,7 +94,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                 Array.from(files).forEach(async (file) => {
                   await handleFileChange(
                     dispatch,
-                    props.workorderId,
+                    props.workorderId!,
                     "certificate",
                     file,
                     setIsLoading,
@@ -118,7 +118,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                 if (file) {
                   await handleFileChange(
                     dispatch,
-                    props.workorderId,
+                    props.workorderId!,
                     "certificate",
                     file,
                     setIsLoading,

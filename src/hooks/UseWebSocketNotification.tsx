@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useCallback } from "react";
-import { useSnackbar,closeSnackbar  } from "notistack";
+import { useSnackbar, closeSnackbar } from "notistack";
 import { Notification } from "../assets/types/Mails&Notifications";
 import { getActionNotificationDescription } from "../func/heraderLogic";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Redux/store";
+import { addOneToCount } from "../Redux/slices/notificationCountSlice";
 const baseUrl = import.meta.env.VITE_BASE_WS_URL;
 
 interface UseWebSocketNotificationProps {
@@ -16,10 +19,11 @@ const useWebSocketNotification = ({
   setNotifications,
 }: UseWebSocketNotificationProps) => {
   const socketRef = useRef<WebSocket | null>(null);
-  const reconnectRef = useRef<number>(0); 
+  const reconnectRef = useRef<number>(0);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleNewNotification = (notification: Notification) => {
     // Define the URL or path based on the notification
@@ -29,10 +33,12 @@ const useWebSocketNotification = ({
         : notification.action >= 200 && notification.action < 300
         ? "mails/groups"
         : `missions/${notification.on}`;
-  
+
     // Display the snackbar with a custom action button
     enqueueSnackbar(
-      `${getActionNotificationDescription(notification.action)} on ${notification.on}`,
+      `${getActionNotificationDescription(notification.action)} on ${
+        notification.on
+      }`,
       {
         variant: "info",
         autoHideDuration: 3000,
@@ -55,11 +61,11 @@ const useWebSocketNotification = ({
         ),
       }
     );
-  
+
     // Update the notifications state
     setNotifications((prev: Notification[]) => [notification, ...prev]);
+    dispatch(addOneToCount());
   };
-  
 
   const connectWebSocket = useCallback(() => {
     const token =

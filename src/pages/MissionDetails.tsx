@@ -42,7 +42,7 @@ import {
   generateFileToken,
   getFilesByIdFromIndexedDB,
   IndexedDBFile,
-  syncIndexedDBWithFetchedFiles
+  syncIndexedDBWithFetchedFiles,
 } from "../func/generateFileToken";
 import { useSnackbar } from "notistack";
 import { fetchGroupMembersThenAddThemToWorkorder } from "../func/groupsApi";
@@ -150,7 +150,6 @@ const MissionDetails = () => {
     fileInputOnReuploadRef.current?.click();
   };
 
-
   const handleFileInputChangeOfResumeUpload = async (file: IndexedDBFile) => {
     if (file) {
       try {
@@ -183,12 +182,11 @@ const MissionDetails = () => {
           file.fileContent,
           file.fileType,
           file_token,
-          workorder!.workorder.id ,
+          workorder!.workorder.id,
           setIsLoading,
           fetchOneWorkOrder,
           (message, options) =>
             enqueueSnackbar(message, { ...options, action: snackbarAction }) // Pass the action with the JSX button
-          
         );
 
         setSelectedIdFileForResumeUpload(undefined);
@@ -270,9 +268,9 @@ const MissionDetails = () => {
       console.error("No token found");
       return;
     }
-  
+
     const url = `${baseUrl}/workorder/get-workorder/${id}`;
-  
+
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -281,13 +279,13 @@ const MissionDetails = () => {
           Authorization: `Token ${token}`,
         },
       });
-  
+
       switch (response.status) {
         case 200:
           {
             const data = await response.json();
             setWorkorder(data);
-            console.log(data)
+            console.log(data);
             setBasicDataWorkorder({
               title: data.workorder.title,
               id: data.workorder.id,
@@ -303,22 +301,22 @@ const MissionDetails = () => {
               );
               return [newEmails];
             });
-  
+
             // Sync files with IndexedDB
             await syncIndexedDBWithFetchedFiles(data.workorder.id, data);
           }
           break;
-  
+
         case 403:
           setHaveAccess(false);
           setIsPageLoading(false);
           break;
-  
+
         case 404:
           setHaveAccess(false);
           setIsPageLoading(false);
           break;
-  
+
         default:
           {
             const errorText = await response.text(); // Read the response body as text
@@ -333,7 +331,6 @@ const MissionDetails = () => {
       setIsPageLoading(false);
     }
   }, [id]);
-  
 
   const handleEditWorkorder = async (properties: WorkorderProperties = {}) => {
     const token =
@@ -513,7 +510,6 @@ const MissionDetails = () => {
     );
   }
 
-
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
@@ -591,14 +587,14 @@ const MissionDetails = () => {
                             d="M12 8V12L14 14"
                             stroke="#6F6C8F"
                             strokeWidth="1.66667"
-                            strokeLinecap="round"
+                            fillOpacity="round"
                             strokeLinejoin="round"
                           />
                           <path
                             d="M3.0498 10.9999C3.2739 8.8 4.30007 6.75956 5.93254 5.26791C7.56501 3.77627 9.6895 2.93783 11.9007 2.91257C14.1119 2.88732 16.255 3.67701 17.9211 5.13098C19.5872 6.58495 20.6597 8.60142 20.934 10.7957C21.2083 12.9899 20.6651 15.2084 19.4082 17.0277C18.1512 18.8471 16.2684 20.14 14.1191 20.6598C11.9697 21.1796 9.70421 20.8899 7.7548 19.846C5.80539 18.8021 4.30853 17.077 3.5498 14.9999M3.0498 19.9999V14.9999H8.0498"
                             stroke="#6F6C8F"
                             strokeWidth="1.66667"
-                            strokeLinecap="round"
+                            fillOpacity="round"
                             strokeLinejoin="round"
                           />
                         </svg>
@@ -697,14 +693,14 @@ const MissionDetails = () => {
                                 d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                               <path
                                 d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                             </svg>
@@ -816,14 +812,14 @@ const MissionDetails = () => {
                                 d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                               <path
                                 d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                             </svg>
@@ -932,14 +928,14 @@ const MissionDetails = () => {
                                 d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                               <path
                                 d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                             </svg>
@@ -1084,14 +1080,14 @@ const MissionDetails = () => {
                                 d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                               <path
                                 d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                                 stroke="#6F6C8F"
                                 strokeWidth="1.5"
-                                strokeLinecap="round"
+                                fillOpacity="round"
                                 strokeLinejoin="round"
                               />
                             </svg>
@@ -1114,7 +1110,7 @@ const MissionDetails = () => {
                                   stroke="#A0A3BD"
                                   stroke-width="1.25"
                                   stroke-miterlimit="10"
-                                  stroke-linecap="round"
+                                  strokeLinecap="round"
                                 />
                               </svg>
                               {typeOfSearchPopupVisible && (
@@ -1466,7 +1462,10 @@ const MissionDetails = () => {
                                     className={`cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px]  rounded-[15px] group ${
                                       attach.is_completed
                                         ? "border-[1px] border-n400"
-                                        : attach.uploaded_by === localStorage.getItem("user_id")! ? "border-[2px] border-[#DB2C2C]" : "border-[2px] border-[#FFB84D]"
+                                        : attach.uploaded_by ===
+                                          localStorage.getItem("user_id")!
+                                        ? "border-[2px] border-[#DB2C2C]"
+                                        : "border-[2px] border-[#FFB84D]"
                                     }`}
                                     onClick={() => {
                                       if (attach.is_completed) {
@@ -1543,7 +1542,10 @@ const MissionDetails = () => {
                                           fill={
                                             attach.is_completed
                                               ? "#6F6C8F"
-                                              : attach.uploaded_by === localStorage.getItem("user_id")! ?"#DB2C2C" :" #FFB84D"
+                                              : attach.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "#DB2C2C"
+                                              : " #FFB84D"
                                           }
                                         />
                                       </svg>
@@ -1552,7 +1554,10 @@ const MissionDetails = () => {
                                           className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${
                                             attach.is_completed
                                               ? "text-n600"
-                                              : attach.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
+                                              : attach.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "text-[#DB2C2C]"
+                                              : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {attach.file_name}
@@ -1561,7 +1566,10 @@ const MissionDetails = () => {
                                           className={`text-[12px] leading-[20px] ${
                                             attach.is_completed
                                               ? "text-n600"
-                                              : attach.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
+                                              : attach.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "text-[#DB2C2C]"
+                                              : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {"22.5 mb"}
@@ -1600,53 +1608,55 @@ const MissionDetails = () => {
                                           </svg>
                                         </span>
                                       ) : (
-                                        attach.uploaded_by === localStorage.getItem("user_id")! &&
-                                        <label
-                                          className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                          htmlFor="reupload"
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
+                                        attach.uploaded_by ===
+                                          localStorage.getItem("user_id")! && (
+                                          <label
+                                            className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                            htmlFor="reupload"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
 
-                                            const fileFromIndexedDB =
-                                              await getFilesByIdFromIndexedDB(
-                                                attach.id
-                                              );
-                                            if (fileFromIndexedDB[0]) {
-                                              handleFileInputChangeOfResumeUpload(
-                                                fileFromIndexedDB[0]
-                                              );
-                                            } else {
-                                              handleLabelClick(
-                                                attach.id,
-                                                "attachements"
-                                              );
-                                            }
-                                          }}
-                                        >
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="14"
-                                            height="14"
-                                            viewBox="0 0 14 14"
-                                            fill="none"
+                                              const fileFromIndexedDB =
+                                                await getFilesByIdFromIndexedDB(
+                                                  attach.id
+                                                );
+                                              if (fileFromIndexedDB[0]) {
+                                                handleFileInputChangeOfResumeUpload(
+                                                  fileFromIndexedDB[0]
+                                                );
+                                              } else {
+                                                handleLabelClick(
+                                                  attach.id,
+                                                  "attachements"
+                                                );
+                                              }
+                                            }}
                                           >
-                                            <g clipPath="url(#clip0_968_6186)">
-                                              <path
-                                                d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                                fill="#C70000"
-                                              />
-                                            </g>
-                                            <defs>
-                                              <clipPath id="clip0_968_6186">
-                                                <rect
-                                                  width="14"
-                                                  height="14"
-                                                  fill="white"
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="14"
+                                              height="14"
+                                              viewBox="0 0 14 14"
+                                              fill="none"
+                                            >
+                                              <g clipPath="url(#clip0_968_6186)">
+                                                <path
+                                                  d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                  fill="#C70000"
                                                 />
-                                              </clipPath>
-                                            </defs>
-                                          </svg>
-                                        </label>
+                                              </g>
+                                              <defs>
+                                                <clipPath id="clip0_968_6186">
+                                                  <rect
+                                                    width="14"
+                                                    height="14"
+                                                    fill="white"
+                                                  />
+                                                </clipPath>
+                                              </defs>
+                                            </svg>
+                                          </label>
+                                        )
                                       )
                                     ) : null}
                                   </div>
@@ -1837,7 +1847,10 @@ const MissionDetails = () => {
                                   key={report.id}
                                   className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
-                                   ( report.uploaded_by === localStorage.getItem("user_id")! ?"border-[2px] border-[#db2c2c]" :"border-[2px] border-[#FFB84D]")
+                                    (report.uploaded_by ===
+                                    localStorage.getItem("user_id")!
+                                      ? "border-[2px] border-[#db2c2c]"
+                                      : "border-[2px] border-[#FFB84D]")
                                   } `}
                                   onClick={() => {
                                     if (report.is_completed) {
@@ -1921,7 +1934,10 @@ const MissionDetails = () => {
                                           fill={
                                             report.is_completed
                                               ? "#6F6C8F"
-                                              :  report.uploaded_by === localStorage.getItem("user_id")! ?"#DB2C2C" :" #FFB84D"
+                                              : report.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "#DB2C2C"
+                                              : " #FFB84D"
                                           }
                                         />
                                       </svg>
@@ -1930,79 +1946,116 @@ const MissionDetails = () => {
                                           className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${
                                             report.is_completed
                                               ? "text-n600"
-                                              : report.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
+                                              : report.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "text-[#DB2C2C]"
+                                              : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {report.file_name}
                                         </span>
-                                        <span
-                                          className={`text-[12px] leading-[20px] font-medium ${
-                                            report.is_completed
-                                              ? report.type === 1 ? "text-primary":"text-[#DB2C9F]"
-                                              : report.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
-                                          }`}
-                                        >
-                                          {report.type === 1 ? "Final" :"Partial"}
-                                        </span>
+                                        <div className="flex items-center justify-between w-full">
+                                          <span
+                                            className={`text-[12px] leading-[20px] font-medium ${
+                                              report.is_completed
+                                                ? report.type === 1
+                                                  ? "text-primary"
+                                                  : "text-[#DB2C9F]"
+                                                : report.uploaded_by ===
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                ? "text-[#DB2C2C]"
+                                                : "text-[#FFB84D]"
+                                            }`}
+                                          >
+                                            {report.type === 1
+                                              ? "Final"
+                                              : "Partial"}
+                                          </span>
+                                          {report.refuse_message && (
+                                            <span title={report.refuse_message}>
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="#4A3AFF"
+                                                version="1.1"
+                                                id="Capa_1"
+                                                width="14px"
+                                                height="14px"
+                                                viewBox="0 0 32 32"
+                                              >
+                                                <g>
+                                                  <path d="M17.962,24.725l1.806,0.096v2.531h-7.534v-2.406l1.045-0.094c0.568-0.063,0.916-0.254,0.916-1.014v-8.801   c0-0.699-0.188-0.92-0.791-0.92l-1.106-0.062v-2.626h5.666L17.962,24.725L17.962,24.725z M15.747,4.648   c1.394,0,2.405,1.047,2.405,2.374c0,1.331-1.014,2.313-2.438,2.313c-1.454,0-2.404-0.982-2.404-2.313   C13.31,5.695,14.26,4.648,15.747,4.648z M16,32C7.178,32,0,24.822,0,16S7.178,0,16,0c8.82,0,16,7.178,16,16S24.82,32,16,32z M16,3   C8.832,3,3,8.832,3,16s5.832,13,13,13s13-5.832,13-13S23.168,3,16,3z" />
+                                                </g>
+                                              </svg>
+                                            </span>
+                                          )}
+                                        </div>
+
                                         <span
                                           className={`text-[12px] leading-[20px] ${
                                             report.is_completed
                                               ? "text-n600"
-                                              : report.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
+                                              : report.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "text-[#DB2C2C]"
+                                              : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {formatDate(`${report.uploaded_at}`)}
                                         </span>
                                       </div>
                                     </div>
-                                    {!report.is_completed && report.uploaded_by === localStorage.getItem("user_id")  &&(
-                                      <label
-                                        className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                        htmlFor="reupload"
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
+                                    {!report.is_completed &&
+                                      report.uploaded_by ===
+                                        localStorage.getItem("user_id") && (
+                                        <label
+                                          className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                          htmlFor="reupload"
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
 
-                                          const fileFromIndexedDB =
-                                            await getFilesByIdFromIndexedDB(
-                                              report.id
-                                            );
-                                          if (fileFromIndexedDB[0]) {
-                                            handleFileInputChangeOfResumeUpload(
-                                              fileFromIndexedDB[0]
-                                            );
-                                          } else {
-                                            handleLabelClick(
-                                              report.id,
-                                              "report"
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 14 14"
-                                          fill="none"
+                                            const fileFromIndexedDB =
+                                              await getFilesByIdFromIndexedDB(
+                                                report.id
+                                              );
+                                            if (fileFromIndexedDB[0]) {
+                                              handleFileInputChangeOfResumeUpload(
+                                                fileFromIndexedDB[0]
+                                              );
+                                            } else {
+                                              handleLabelClick(
+                                                report.id,
+                                                "report"
+                                              );
+                                            }
+                                          }}
                                         >
-                                          <g clipPath="url(#clip0_968_6186)">
-                                            <path
-                                              d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                              fill="#C70000"
-                                            />
-                                          </g>
-                                          <defs>
-                                            <clipPath id="clip0_968_6186">
-                                              <rect
-                                                width="14"
-                                                height="14"
-                                                fill="white"
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none"
+                                          >
+                                            <g clipPath="url(#clip0_968_6186)">
+                                              <path
+                                                d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                fill="#C70000"
                                               />
-                                            </clipPath>
-                                          </defs>
-                                        </svg>
-                                      </label>
-                                    )}
+                                            </g>
+                                            <defs>
+                                              <clipPath id="clip0_968_6186">
+                                                <rect
+                                                  width="14"
+                                                  height="14"
+                                                  fill="white"
+                                                />
+                                              </clipPath>
+                                            </defs>
+                                          </svg>
+                                        </label>
+                                      )}
                                   </div>
                                 </div>
                               );
@@ -2040,9 +2093,9 @@ const MissionDetails = () => {
                           )}
                       </div>
                       <div className="flex justify-end w-full">
-                        {workorder.workorder.status === 3 && (
-                          <div className="flex items-center gap-[12px]">
-                            {getRole() !== 2 && (
+                        {workorder.workorder.status === 3 &&
+                          getRole() !== 2 && (
+                            <div className="flex items-center gap-[12px]">
                               <button
                                 className="px-[26px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
                                 onClick={() => {
@@ -2065,27 +2118,26 @@ const MissionDetails = () => {
                                   "Edit reports"
                                 )}
                               </button>
-                            )}
 
-                            <button
-                              className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
-                              onClick={() => {
-                                handleOpenDialog(requestUpdateDialogRef);
-                              }}
-                            >
-                              {isLoadingFinalize ? (
-                                <RotatingLines
-                                  visible={true}
-                                  width="20"
-                                  strokeWidth="3"
-                                  strokeColor="#4A3AFF"
-                                />
-                              ) : (
-                                "Request Update"
-                              )}
-                            </button>
-                          </div>
-                        )}
+                              <button
+                                className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
+                                onClick={() => {
+                                  handleOpenDialog(requestUpdateDialogRef);
+                                }}
+                              >
+                                {isLoadingFinalize ? (
+                                  <RotatingLines
+                                    visible={true}
+                                    width="20"
+                                    strokeWidth="3"
+                                    strokeColor="#4A3AFF"
+                                  />
+                                ) : (
+                                  "Request Update"
+                                )}
+                              </button>
+                            </div>
+                          )}
                       </div>
                     </div>
 
@@ -2112,7 +2164,10 @@ const MissionDetails = () => {
                                     key={index}
                                     className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                       !certificate.is_completed &&
-                                      ( certificate.uploaded_by === localStorage.getItem("user_id")! ?"border-[2px] border-[#db2c2c]" :"border-[2px] border-[#FFB84D]")
+                                      (certificate.uploaded_by ===
+                                      localStorage.getItem("user_id")!
+                                        ? "border-[2px] border-[#db2c2c]"
+                                        : "border-[2px] border-[#FFB84D]")
                                     }`}
                                     onClick={() => {
                                       if (certificate.is_completed) {
@@ -2197,7 +2252,10 @@ const MissionDetails = () => {
                                           fill={
                                             certificate.is_completed
                                               ? "#6F6C8F"
-                                              : certificate.uploaded_by === localStorage.getItem("user_id")! ?"#DB2C2C" :" #FFB84D"
+                                              : certificate.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "#DB2C2C"
+                                              : " #FFB84D"
                                           }
                                         />
                                       </svg>
@@ -2206,19 +2264,26 @@ const MissionDetails = () => {
                                           className={`text-[13px] font-medium leading-[20px] mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap ${
                                             certificate.is_completed
                                               ? "text-n600"
-                                              : certificate.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
+                                              : certificate.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "text-[#DB2C2C]"
+                                              : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {certificate.file_name}
                                         </span>
                                         <span
                                           className={`text-[13px] font-medium leading-[20px]  ${
-                                            certificate.is_completed ?
-                                            certificate.type === 1
-                                              ? "text-[#48C1B5]"
-                                              : certificate.type === 2
-                                              ? "text-[#FFAA29]"
-                                              : "text-[#DB2C2C]"  : certificate.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
+                                            certificate.is_completed
+                                              ? certificate.type === 1
+                                                ? "text-[#48C1B5]"
+                                                : certificate.type === 2
+                                                ? "text-[#FFAA29]"
+                                                : "text-[#DB2C2C]"
+                                              : certificate.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "text-[#DB2C2C]"
+                                              : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {certificate.type === 1
@@ -2231,7 +2296,10 @@ const MissionDetails = () => {
                                           className={`text-[12px] leading-[20px] ${
                                             certificate.is_completed
                                               ? "text-n600"
-                                              : certificate.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
+                                              : certificate.uploaded_by ===
+                                                localStorage.getItem("user_id")!
+                                              ? "text-[#DB2C2C]"
+                                              : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {formatDate(
@@ -2263,7 +2331,7 @@ const MissionDetails = () => {
                                                 d="M8.87471 2.55459L11.0224 4.70224M7.44294 12.5769H13.17M1.71588 9.71341L1 12.5769L3.86353 11.8611L12.1577 3.56685C12.4262 3.29835 12.5769 2.93424 12.5769 2.55459C12.5769 2.17494 12.4262 1.81083 12.1577 1.54233L12.0346 1.4192C11.7661 1.15079 11.402 1 11.0224 1C10.6427 1 10.2786 1.15079 10.0101 1.4192L1.71588 9.71341Z"
                                                 stroke="#797C93"
                                                 strokeWidth="1.2"
-                                                strokeLinecap="round"
+                                                fillOpacity="round"
                                                 strokeLinejoin="round"
                                               />
                                             </svg>
@@ -2348,54 +2416,58 @@ const MissionDetails = () => {
                                           </div>
                                         )}
 
-                                        {!certificate.is_completed && certificate.uploaded_by === localStorage.getItem("user_id")! && (
-                                          <label
-                                            className=" absolute right-2 top-[20%] translate-y-[-50%]  px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                            htmlFor="reupload"
-                                            onClick={async (e) => {
-                                              e.stopPropagation();
+                                        {!certificate.is_completed &&
+                                          certificate.uploaded_by ===
+                                            localStorage.getItem(
+                                              "user_id"
+                                            )! && (
+                                            <label
+                                              className=" absolute right-2 top-[20%] translate-y-[-50%]  px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                              htmlFor="reupload"
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
 
-                                              const fileFromIndexedDB =
-                                                await getFilesByIdFromIndexedDB(
-                                                  certificate.id
-                                                );
-                                              if (fileFromIndexedDB[0]) {
-                                                handleFileInputChangeOfResumeUpload(
-                                                  fileFromIndexedDB[0]
-                                                );
-                                              } else {
-                                                handleLabelClick(
-                                                  certificate.id,
-                                                  "certificate"
-                                                );
-                                              }
-                                            }}
-                                          >
-                                            <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              width="14"
-                                              height="14"
-                                              viewBox="0 0 14 14"
-                                              fill="none"
+                                                const fileFromIndexedDB =
+                                                  await getFilesByIdFromIndexedDB(
+                                                    certificate.id
+                                                  );
+                                                if (fileFromIndexedDB[0]) {
+                                                  handleFileInputChangeOfResumeUpload(
+                                                    fileFromIndexedDB[0]
+                                                  );
+                                                } else {
+                                                  handleLabelClick(
+                                                    certificate.id,
+                                                    "certificate"
+                                                  );
+                                                }
+                                              }}
                                             >
-                                              <g clipPath="url(#clip0_968_6186)">
-                                                <path
-                                                  d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                                  fill="#C70000"
-                                                />
-                                              </g>
-                                              <defs>
-                                                <clipPath id="clip0_968_6186">
-                                                  <rect
-                                                    width="14"
-                                                    height="14"
-                                                    fill="white"
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 14 14"
+                                                fill="none"
+                                              >
+                                                <g clipPath="url(#clip0_968_6186)">
+                                                  <path
+                                                    d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                    fill="#C70000"
                                                   />
-                                                </clipPath>
-                                              </defs>
-                                            </svg>
-                                          </label>
-                                        )}
+                                                </g>
+                                                <defs>
+                                                  <clipPath id="clip0_968_6186">
+                                                    <rect
+                                                      width="14"
+                                                      height="14"
+                                                      fill="white"
+                                                    />
+                                                  </clipPath>
+                                                </defs>
+                                              </svg>
+                                            </label>
+                                          )}
                                       </div>
                                     </div>
                                   </div>
@@ -2587,17 +2659,17 @@ const MissionDetails = () => {
 
       <AddCertificatPopup
         ref={addCertificatDialogRef}
-        workorderId={workorder!.workorder.id}
+        workorderId={workorder?.workorder.id}
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
       <AddReportPopup
         ref={addReportDialogRef}
-        workorderId={workorder!.workorder.id}
+        workorderId={workorder?.workorder.id}
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
       <RequestUpdatePopup
         ref={requestUpdateDialogRef}
-        workorderId={workorder!.workorder.id}
+        workorderId={workorder?.workorder.id}
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
     </div>

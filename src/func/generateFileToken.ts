@@ -279,7 +279,7 @@ export async function storeFileInIndexedDB(
         return isFileMissingFromFetchedData || isFileCompleted;
       });
   
-      console.log("Files to delete:", filesToDelete);
+     // console.log("Files to delete:", filesToDelete);
   
       // Delete files that are no longer present in the fetched data or are completed
       for (const file of filesToDelete) {

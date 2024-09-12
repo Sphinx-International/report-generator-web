@@ -642,14 +642,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                           d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                           stroke="#6F6C8F"
                           strokeWidth="1.5"
-                          strokeLinecap="round"
+                          fillOpacity="round"
                           strokeLinejoin="round"
                         />
                         <path
                           d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                           stroke="#6F6C8F"
                           strokeWidth="1.5"
-                          strokeLinecap="round"
+                          fillOpacity="round"
                           strokeLinejoin="round"
                         />
                       </svg>
@@ -731,7 +731,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             : "#DB2C2C"
                         }
                         strokeWidth="2.5"
-                        strokeLinecap="round"
+                        fillOpacity="round"
                       />
                     </svg>
 
@@ -790,7 +790,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             : "#DB2C2C"
                         }
                         strokeWidth="2.5"
-                        strokeLinecap="round"
+                        fillOpacity="round"
                       />
                     </svg>
                   </div>
@@ -896,14 +896,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                       stroke="#6F6C8F"
                       strokeWidth="1.5"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                     <path
                       d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                       stroke="#6F6C8F"
                       strokeWidth="1.5"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                   </svg>
@@ -924,7 +924,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                         stroke="#A0A3BD"
                         stroke-width="1.25"
                         stroke-miterlimit="10"
-                        stroke-linecap="round"
+                        strokeLinecap="round"
                       />
                     </svg>
                     {typeOfSearchPopupVisible && (

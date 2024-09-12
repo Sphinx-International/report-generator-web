@@ -167,7 +167,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                 d="M4.16669 17.7084V19.7917C4.16669 20.3443 4.38618 20.8742 4.77688 21.2649C5.16758 21.6556 5.69749 21.8751 6.25002 21.8751H18.75C19.3026 21.8751 19.8325 21.6556 20.2232 21.2649C20.6139 20.8742 20.8334 20.3443 20.8334 19.7917V17.7084M7.29169 9.37508L12.5 4.16675M12.5 4.16675L17.7084 9.37508M12.5 4.16675V16.6667"
                 stroke="#6F6C8F"
                 strokeWidth="2.8"
-                strokeLinecap="round"
+                fillOpacity="round"
                 strokeLinejoin="round"
               />
             </svg>
@@ -296,14 +296,14 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                       d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
                       stroke="#A0A3BD"
                       strokeWidth="2"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                     <path
                       d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
                       stroke="#A0A3BD"
                       strokeWidth="2"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                     <circle
@@ -312,7 +312,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                       r="3"
                       stroke="#A0A3BD"
                       strokeWidth="2"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                   </svg>
@@ -332,7 +332,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                       d="M8.82089 8.82243C8.50837 9.13505 8.33285 9.55902 8.33293 10.0011C8.333 10.4431 8.50868 10.867 8.8213 11.1795C9.13393 11.492 9.55789 11.6675 9.99993 11.6675C10.442 11.6674 10.8659 11.4917 11.1784 11.1791M13.9008 13.8942C12.7319 14.6256 11.3789 15.0091 10 15C7 15 4.5 13.3334 2.5 10C3.56 8.23336 4.76 6.93503 6.1 6.10503M8.48333 5.15002C8.98253 5.04897 9.49068 4.99871 10 5.00002C13 5.00002 15.5 6.66669 17.5 10C16.945 10.925 16.3508 11.7225 15.7183 12.3917M2.5 2.5L17.5 17.5"
                       stroke="#A0A3BD"
                       strokeWidth="1.3"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                   </svg>
@@ -365,7 +365,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
                       d="M19 9l-7 7-7-7"

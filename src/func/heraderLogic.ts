@@ -1,6 +1,8 @@
 const baseUrl = import.meta.env.VITE_BASE_URL;
 import { alertWorkorder } from "../assets/types/Mission";
 import { Notification } from "../assets/types/Mails&Notifications";
+import { AppDispatch } from "../Redux/store";
+import { setCount,clearCount } from "../Redux/slices/notificationCountSlice";
 
 export const fetchAlerts = async (
   setAlerts: React.Dispatch<React.SetStateAction<alertWorkorder[]>>
@@ -23,21 +25,30 @@ export const fetchAlerts = async (
     });
 
     if (!response.ok) {
-      const errorText = await response.text(); // Read the response body as text
+      const errorText = await response.text(); 
       console.error("Error response text: ", errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    setAlerts(data);
+    const text = await response.text();
+
+    // Check if the response is empty
+    if (text) {
+      const data = JSON.parse(text);
+      setAlerts(data);
+    } else {
+      setAlerts([]);
+    }
   } catch (err) {
     console.error("Error: ", err);
   }
 };
 
+
 export const fetchNotifications = async (
   offset: number,
   limit: number,
+  dispatch: AppDispatch,
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
   setHasMore: React.Dispatch<React.SetStateAction<boolean>>, // New parameter to set if more notifications are available
   append: boolean = false // A flag to indicate if we should append the new data
@@ -66,6 +77,7 @@ export const fetchNotifications = async (
     }
     const data = await response.json();
 
+    dispatch(setCount(data.count))
     // If 'append' is true, append new notifications to the existing state
     setNotifications((prev) => (append ? [...prev, ...data.data] : data.data));
 
@@ -121,7 +133,7 @@ export const getActionNotificationTitle = (actionNumber: number): string => {
   };
   export const clearOneNotification = async (
     notification_id: number,
-    refetchFunc: () => void // Accepting any function that returns void
+    refetchFunc: () => void
   ) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -152,3 +164,33 @@ export const getActionNotificationTitle = (actionNumber: number): string => {
     }
   };
   
+  export const clearNotificationCount = async (
+    dispatch: AppDispatch,
+  ) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }  
+    const url = `${baseUrl}/notification/clear-notification-count`;
+    try {
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response text: ", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      } else {
+        dispatch(clearCount())
+      }
+    } catch (err) {
+      console.error("Error: ", err);
+    }
+  };

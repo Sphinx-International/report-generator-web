@@ -122,14 +122,14 @@ const Groups = () => {
                 d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
                 stroke="#6F6C8F"
                 strokeWidth="1.5"
-                strokeLinecap="round"
+                fillOpacity="round"
                 strokeLinejoin="round"
               />
               <path
                 d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
                 stroke="#6F6C8F"
                 strokeWidth="1.5"
-                strokeLinecap="round"
+                fillOpacity="round"
                 strokeLinejoin="round"
               />
             </svg>
@@ -207,21 +207,21 @@ const Groups = () => {
                           d="M17.5 16.457C17.5 14.7154 16.1083 12.2337 14.1667 11.6845M12.5 16.457C12.5 14.2479 10.2617 11.457 7.5 11.457C4.73833 11.457 2.5 14.2479 2.5 16.457"
                           stroke="#514F6E"
                           strokeWidth="1.25"
-                          strokeLinecap="round"
+                          fillOpacity="round"
                           strokeLinejoin="round"
                         />
                         <path
                           d="M7.5 8.54102C8.88071 8.54102 10 7.42173 10 6.04102C10 4.6603 8.88071 3.54102 7.5 3.54102C6.11929 3.54102 5 4.6603 5 6.04102C5 7.42173 6.11929 8.54102 7.5 8.54102Z"
                           stroke="#514F6E"
                           strokeWidth="1.25"
-                          strokeLinecap="round"
+                          fillOpacity="round"
                           strokeLinejoin="round"
                         />
                         <path
                           d="M12.5 8.54102C13.163 8.54102 13.7989 8.27762 14.2678 7.80878C14.7366 7.33994 15 6.70406 15 6.04102C15 5.37797 14.7366 4.74209 14.2678 4.27325C13.7989 3.80441 13.163 3.54102 12.5 3.54102"
                           stroke="#514F6E"
                           strokeWidth="1.25"
-                          strokeLinecap="round"
+                          fillOpacity="round"
                           strokeLinejoin="round"
                         />
                       </svg>
@@ -249,14 +249,14 @@ const Groups = () => {
                       d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
                       stroke="#A0A3BD"
                       strokeWidth="2"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                     <path
                       d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
                       stroke="#A0A3BD"
                       strokeWidth="2"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                     <circle
@@ -265,7 +265,7 @@ const Groups = () => {
                       r="3"
                       stroke="#A0A3BD"
                       strokeWidth="2"
-                      strokeLinecap="round"
+                      fillOpacity="round"
                       strokeLinejoin="round"
                     />
                   </svg>

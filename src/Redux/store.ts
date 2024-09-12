@@ -5,6 +5,8 @@ import selectedUsersReducer from "./slices/selectedUsersSlice";
 import selectedWorkorderssReducer from "./slices/selectedWorkordersSlice";
 import uploadingFilesReducer from "./slices/uploadingFilesSlice";
 import selectedIndividualsReducer from "./slices/selectedIndividuals";
+import notificationCountReducer from "./slices/notificationCountSlice";
+
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +15,7 @@ export const store = configureStore({
     selectedWorkorders: selectedWorkorderssReducer,
     uploadingFiles: uploadingFilesReducer,
     selectedIndividuals: selectedIndividualsReducer,
+    notificationCount: notificationCountReducer,
   },
 });
 

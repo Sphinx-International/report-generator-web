@@ -40,8 +40,13 @@ export type ResFile = {
   is_completed: boolean;
 };
 
-export type FilesWithtype = ResFile & {
+export type CertificateFile = ResFile & {
   type: 1 | 2 | 3;
+};
+
+export type ReportFile = ResFile & {
+  type: 1 | 2 ;
+  refuse_message: string | null,
 };
 
 export type History = {
@@ -66,8 +71,8 @@ export interface ResOfOneMission {
   history: History[];
   mail_to: MailTo[];
   attachments: ResFile[];
-  reports?: FilesWithtype[];
-  acceptance_certificates?: FilesWithtype[];
+  reports?: ReportFile[];
+  acceptance_certificates?: CertificateFile[];
 }
 
 export interface alertWorkorder {

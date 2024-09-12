@@ -19,6 +19,7 @@ import {
   getActionNotificationTitle,
   getActionNotificationDescription,
   clearOneNotification,
+  clearNotificationCount,
 } from "../func/heraderLogic";
 
 interface headerProps {
@@ -48,6 +49,9 @@ const Header: React.FC<headerProps> = (props) => {
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
   );
+  const count = useSelector(
+    (state: RootState) => state.notificationCount.count
+  );
 
   useWebSocketNotification({
     endpointPath: "notifications",
@@ -56,7 +60,7 @@ const Header: React.FC<headerProps> = (props) => {
 
   useEffect(() => {
     fetchAlerts(setAlerts);
-    fetchNotifications(0, limit, setNotifications, setHasMore);
+    fetchNotifications(0, limit, dispatch, setNotifications, setHasMore);
   }, []);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -70,6 +74,7 @@ const Header: React.FC<headerProps> = (props) => {
       fetchNotifications(
         offset + limit,
         limit,
+        dispatch,
         setNotifications,
         setHasMore,
         true
@@ -97,13 +102,57 @@ const Header: React.FC<headerProps> = (props) => {
           </span>
         </div>
         <div className="flex items-center md:gap-[32px] md:justify-end justify-between md:w-fit w-full">
-          <div className=" items-center gap-[10px] hidden md:flex flex-row-reverse">
+        <svg
+            onClick={() => {
+              dispatch(openSidebar());
+            }}
+            className="md:hidden inline-block relative"
+            xmlns="http://www.w3.org/2000/svg"
+            width="39"
+            height="39"
+            viewBox="0 0 39 39"
+            fill="none"
+          >
+            <rect
+              opacity="0.8"
+              x="0.5"
+              y="0.5"
+              width="38"
+              height="38"
+              rx="19"
+              fill="white"
+              stroke="#8E92BC"
+            />
+            <path
+              d="M11.5226 15.0684H27.4772"
+              stroke="#8E92BC"
+              strokeWidth="1.5"
+              fillOpacity="round"
+            />
+            <path
+              d="M11.5226 19.5H27.4772"
+              stroke="#8E92BC"
+              strokeWidth="1.5"
+              fillOpacity="round"
+            />
+            <path
+              d="M11.5226 23.9321H27.4772"
+              stroke="#8E92BC"
+              strokeWidth="1.5"
+              fillOpacity="round"
+            />
+          </svg>
+          <div className="flex items-center gap-[15px]">
+                    <div className=" items-center gap-[10px] flex flex-row-reverse">
             <div className="relative">
               <svg
                 onClick={() => {
                   setShowNotificationDropDown(!showNotificationDropDown);
                   setShowAlertDropDown(false);
                   setShowUploadDropDown(false);
+                  if (count !== 0) {
+                    clearNotificationCount(dispatch);
+                  }
                 }}
                 className=" p-[6px] rounded-[50%] border-[1px] border-n300 cursor-pointer"
                 xmlns="http://www.w3.org/2000/svg"
@@ -123,6 +172,15 @@ const Header: React.FC<headerProps> = (props) => {
                   fill="#FF3B30"
                 />
               </svg>
+              <span
+                className={`px-[4px] bg-red-500 rounded-[50%] items-center justify-center text-white absolute text-[10px] top-1 right-1 transition-all duration-1000 ${
+                  count === 0
+                    ? "opacity-0 transform translate-y-[-10px]"
+                    : "opacity-100 transform translate-y-0"
+                }`}
+              >
+                {count}
+              </span>
 
               {showNotificationDropDown && (
                 <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[310px] sm:w-[450px]">
@@ -138,6 +196,7 @@ const Header: React.FC<headerProps> = (props) => {
                         {notifications.map((notif) => {
                           return (
                             <div
+                              key={notif.id}
                               className={`relative cursor-pointer p-[13px] rounded-[15px] border-[1px] border-primary flex flex-col items-start gap-[10px] w-full ${
                                 !notif.seen && "bg-slate-100"
                               }`}
@@ -152,12 +211,13 @@ const Header: React.FC<headerProps> = (props) => {
                                       : `missions/${notif.on}`
                                   }`
                                 );
-                                setOffset(0)
-                                setNotifications([])
+                                setOffset(0);
+                                setNotifications([]);
                                 clearOneNotification(notif.id, () => {
                                   fetchNotifications(
                                     0,
                                     limit,
+                                    dispatch,
                                     setNotifications,
                                     setHasMore
                                   );
@@ -179,14 +239,14 @@ const Header: React.FC<headerProps> = (props) => {
                                       height="22"
                                       rx="6"
                                       fill="#4A3AFF"
-                                      fill-opacity="0.74"
+                                      fillOpacity="0.74"
                                     />
-                                    <g clip-path="url(#clip0_1390_692)">
+                                    <g clipPath="url(#clip0_1390_692)">
                                       <path
                                         d="M10.5834 15.5231C10.1846 15.4323 9.80149 15.2826 9.44672 15.079M12.4167 7.47754C13.328 7.68566 14.1415 8.19698 14.7243 8.9278C15.307 9.65862 15.6243 10.5656 15.6243 11.5003C15.6243 12.435 15.307 13.342 14.7243 14.0729C14.1415 14.8037 13.328 15.315 12.4167 15.5231M8.09876 13.8346C7.84901 13.4712 7.65914 13.0701 7.53638 12.6466M7.43188 10.8128C7.50522 10.3774 7.64638 9.96491 7.84438 9.58679L7.92184 9.447M9.16576 8.09904C9.59485 7.80428 10.0759 7.5934 10.5834 7.47754"
                                         stroke="white"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                       />
                                     </g>
                                     <defs>
@@ -365,14 +425,14 @@ const Header: React.FC<headerProps> = (props) => {
                   <path
                     d="m4.9522 16.3536 5.263-10.49702c.7379-1.47177 2.8387-1.47138 3.5761.00065l5.2582 10.49707c.6661 1.3298-.3008 2.8957-1.7882 2.8957h-10.52123c-1.48773 0-2.45467-1.5665-1.78787-2.8964z"
                     stroke="#141414"
-                    strokeLinecap="round"
+                    fillOpacity="round"
                     strokeLinejoin="round"
                     strokeWidth="1.5"
                   />
                   <path
                     d="m12 10v2"
                     stroke="#141414"
-                    strokeLinecap="round"
+                    fillOpacity="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
                   />
@@ -406,14 +466,14 @@ const Header: React.FC<headerProps> = (props) => {
                               d="M9.19628 18.1907C14.7261 8.40295 17.4921 3.51024 21.2871 2.24982C23.3731 1.55735 25.627 1.55735 27.713 2.24982C31.508 3.51024 34.274 8.40295 39.8038 18.1907C45.3359 27.9761 48.0996 32.8711 47.2723 36.8586C46.814 39.054 45.6911 41.0432 44.0594 42.5419C41.094 45.2713 35.5619 45.2713 24.5 45.2713C13.4382 45.2713 7.90607 45.2713 4.94065 42.5442C3.30266 41.0316 2.17917 39.0443 1.72774 36.8609C0.898153 32.8734 3.6642 27.9784 9.19628 18.1907Z"
                               stroke="#FF3B30"
                               strokeWidth="2.8"
-                              strokeLinecap="round"
+                              fillOpacity="round"
                               strokeLinejoin="round"
                             />
                             <path
                               d="M25.0546 34.9583V25.7917C25.0546 24.7123 25.0546 24.1715 24.72 23.8346C24.3831 23.5 23.8446 23.5 22.7629 23.5M24.4817 16.625H24.5023"
                               stroke="#FF3B30"
                               strokeWidth="2.8"
-                              strokeLinecap="round"
+                              fillOpacity="round"
                               strokeLinejoin="round"
                             />
                           </svg>
@@ -436,48 +496,6 @@ const Header: React.FC<headerProps> = (props) => {
               </div>
             )}
           </div>
-
-          <svg
-            onClick={() => {
-              dispatch(openSidebar());
-            }}
-            className="md:hidden inline-block relative"
-            xmlns="http://www.w3.org/2000/svg"
-            width="39"
-            height="39"
-            viewBox="0 0 39 39"
-            fill="none"
-          >
-            <rect
-              opacity="0.8"
-              x="0.5"
-              y="0.5"
-              width="38"
-              height="38"
-              rx="19"
-              fill="white"
-              stroke="#8E92BC"
-            />
-            <path
-              d="M11.5226 15.0684H27.4772"
-              stroke="#8E92BC"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M11.5226 19.5H27.4772"
-              stroke="#8E92BC"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M11.5226 23.9321H27.4772"
-              stroke="#8E92BC"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-
           <div className="flex items-center gap-[12px]">
             <img
               src="/avatar.png"
@@ -522,13 +540,13 @@ const Header: React.FC<headerProps> = (props) => {
                           d="M1.33301 16.0001V15.1667C1.33301 12.4053 3.57158 10.1667 6.33301 10.1667H9.66634C12.4278 10.1667 14.6663 12.4053 14.6663 15.1667V16.0001"
                           stroke="#4A3AFF"
                           strokeWidth="1.66667"
-                          strokeLinecap="round"
+                          fillOpacity="round"
                         />
                         <path
                           d="M7.99935 7.66667C6.1584 7.66667 4.66602 6.17428 4.66602 4.33333C4.66602 2.49238 6.1584 1 7.99935 1C9.84027 1 11.3327 2.49238 11.3327 4.33333C11.3327 6.17428 9.84027 7.66667 7.99935 7.66667Z"
                           stroke="#4A3AFF"
                           strokeWidth="1.66667"
-                          strokeLinecap="round"
+                          fillOpacity="round"
                         />
                       </svg>{" "}
                       My account
@@ -538,6 +556,10 @@ const Header: React.FC<headerProps> = (props) => {
               )}
             </div>
           </div>
+          </div>
+
+
+          
         </div>
       </div>
 
@@ -562,14 +584,14 @@ const Header: React.FC<headerProps> = (props) => {
               d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
               stroke="#6F6C8F"
               strokeWidth="1.5"
-              strokeLinecap="round"
+              fillOpacity="round"
               strokeLinejoin="round"
             />
             <path
               d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
               stroke="#6F6C8F"
               strokeWidth="1.5"
-              strokeLinecap="round"
+              fillOpacity="round"
               strokeLinejoin="round"
             />
           </svg>
