@@ -513,6 +513,7 @@ const MissionDetails = () => {
     );
   }
 
+
   return (
     <div className="w-full flex h-[100vh]">
       <SideBar />
@@ -1465,7 +1466,7 @@ const MissionDetails = () => {
                                     className={`cursor-pointer sm:w-[46%] w-full flex items-center justify-between px-[12px] py-[8px]  rounded-[15px] group ${
                                       attach.is_completed
                                         ? "border-[1px] border-n400"
-                                        : "border-[2px] border-[#DB2C2C]"
+                                        : attach.uploaded_by === localStorage.getItem("user_id")! ? "border-[2px] border-[#DB2C2C]" : "border-[2px] border-[#FFB84D]"
                                     }`}
                                     onClick={() => {
                                       if (attach.is_completed) {
@@ -1542,7 +1543,7 @@ const MissionDetails = () => {
                                           fill={
                                             attach.is_completed
                                               ? "#6F6C8F"
-                                              : "#DB2C2C"
+                                              : attach.uploaded_by === localStorage.getItem("user_id")! ?"#DB2C2C" :" #FFB84D"
                                           }
                                         />
                                       </svg>
@@ -1551,7 +1552,7 @@ const MissionDetails = () => {
                                           className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${
                                             attach.is_completed
                                               ? "text-n600"
-                                              : "text-[#DB2C2C]"
+                                              : attach.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {attach.file_name}
@@ -1560,7 +1561,7 @@ const MissionDetails = () => {
                                           className={`text-[12px] leading-[20px] ${
                                             attach.is_completed
                                               ? "text-n600"
-                                              : "text-[#DB2C2C]"
+                                              : attach.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {"22.5 mb"}
@@ -1599,6 +1600,7 @@ const MissionDetails = () => {
                                           </svg>
                                         </span>
                                       ) : (
+                                        attach.uploaded_by === localStorage.getItem("user_id")! &&
                                         <label
                                           className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
                                           htmlFor="reupload"
@@ -1835,7 +1837,7 @@ const MissionDetails = () => {
                                   key={report.id}
                                   className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
-                                    "border-[2px] border-[#db2c2c]"
+                                   ( report.uploaded_by === localStorage.getItem("user_id")! ?"border-[2px] border-[#db2c2c]" :"border-[2px] border-[#FFB84D]")
                                   } `}
                                   onClick={() => {
                                     if (report.is_completed) {
@@ -1919,7 +1921,7 @@ const MissionDetails = () => {
                                           fill={
                                             report.is_completed
                                               ? "#6F6C8F"
-                                              : "#db2c2c"
+                                              :  report.uploaded_by === localStorage.getItem("user_id")! ?"#DB2C2C" :" #FFB84D"
                                           }
                                         />
                                       </svg>
@@ -1928,32 +1930,32 @@ const MissionDetails = () => {
                                           className={`text-[13px] font-medium leading-[20px] overflow-hidden w-[90%] text-ellipsis text-nowrap ${
                                             report.is_completed
                                               ? "text-n600"
-                                              : "text-[#db2c2c]"
+                                              : report.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {report.file_name}
                                         </span>
                                         <span
-                                          className={`text-[12px] leading-[20px] ${
+                                          className={`text-[12px] leading-[20px] font-medium ${
                                             report.is_completed
-                                              ? "text-n600"
-                                              : "text-[#db2c2c]"
+                                              ? report.type === 1 ? "text-primary":"text-[#DB2C9F]"
+                                              : report.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
-                                          partial
+                                          {report.type === 1 ? "Final" :"Partial"}
                                         </span>
                                         <span
                                           className={`text-[12px] leading-[20px] ${
                                             report.is_completed
                                               ? "text-n600"
-                                              : "text-[#db2c2c]"
+                                              : report.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {formatDate(`${report.uploaded_at}`)}
                                         </span>
                                       </div>
                                     </div>
-                                    {!report.is_completed && (
+                                    {!report.is_completed && report.uploaded_by === localStorage.getItem("user_id")  &&(
                                       <label
                                         className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
                                         htmlFor="reupload"
@@ -2110,7 +2112,7 @@ const MissionDetails = () => {
                                     key={index}
                                     className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                       !certificate.is_completed &&
-                                      "border-[2px] border-[#db2c2c]"
+                                      ( certificate.uploaded_by === localStorage.getItem("user_id")! ?"border-[2px] border-[#db2c2c]" :"border-[2px] border-[#FFB84D]")
                                     }`}
                                     onClick={() => {
                                       if (certificate.is_completed) {
@@ -2195,7 +2197,7 @@ const MissionDetails = () => {
                                           fill={
                                             certificate.is_completed
                                               ? "#6F6C8F"
-                                              : "#db2c2c"
+                                              : certificate.uploaded_by === localStorage.getItem("user_id")! ?"#DB2C2C" :" #FFB84D"
                                           }
                                         />
                                       </svg>
@@ -2204,18 +2206,19 @@ const MissionDetails = () => {
                                           className={`text-[13px] font-medium leading-[20px] mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap ${
                                             certificate.is_completed
                                               ? "text-n600"
-                                              : "text-[#db2c2c]"
+                                              : certificate.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {certificate.file_name}
                                         </span>
                                         <span
                                           className={`text-[13px] font-medium leading-[20px]  ${
+                                            certificate.is_completed ?
                                             certificate.type === 1
                                               ? "text-[#48C1B5]"
                                               : certificate.type === 2
                                               ? "text-[#FFAA29]"
-                                              : "text-[#DB2C2C]"
+                                              : "text-[#DB2C2C]"  : certificate.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {certificate.type === 1
@@ -2228,7 +2231,7 @@ const MissionDetails = () => {
                                           className={`text-[12px] leading-[20px] ${
                                             certificate.is_completed
                                               ? "text-n600"
-                                              : "text-[#db2c2c]"
+                                              : certificate.uploaded_by === localStorage.getItem("user_id")! ?"text-[#DB2C2C]" : "text-[#FFB84D]"
                                           }`}
                                         >
                                           {formatDate(
@@ -2345,7 +2348,7 @@ const MissionDetails = () => {
                                           </div>
                                         )}
 
-                                        {!certificate.is_completed && (
+                                        {!certificate.is_completed && certificate.uploaded_by === localStorage.getItem("user_id")! && (
                                           <label
                                             className=" absolute right-2 top-[20%] translate-y-[-50%]  px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
                                             htmlFor="reupload"

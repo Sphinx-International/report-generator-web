@@ -119,3 +119,36 @@ export const getActionNotificationTitle = (actionNumber: number): string => {
       "No description available for this action."
     );
   };
+  export const clearOneNotification = async (
+    notification_id: number,
+    refetchFunc: () => void // Accepting any function that returns void
+  ) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+  
+    const url = `${baseUrl}/notification/clear-notification/${notification_id}`;
+    try {
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response text: ", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      } else {
+        refetchFunc();
+      }
+    } catch (err) {
+      console.error("Error: ", err);
+    }
+  };
+  

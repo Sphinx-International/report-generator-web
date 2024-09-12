@@ -89,7 +89,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                   <span
                     className={`absolute top-[50%] translate-y-[-50%] inset-0 flex items-center justify-center font-medium leading-[15px] text-[10px] text-center ${
                       currentReportTypeIndex === 1
-                        ? "text-primary "
+                        ? "text-primary"
                         : "text-[#DB2C9F]"
                     }`}
                   >

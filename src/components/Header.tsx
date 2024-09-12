@@ -18,6 +18,7 @@ import {
   fetchNotifications,
   getActionNotificationTitle,
   getActionNotificationDescription,
+  clearOneNotification,
 } from "../func/heraderLogic";
 
 interface headerProps {
@@ -137,7 +138,9 @@ const Header: React.FC<headerProps> = (props) => {
                         {notifications.map((notif) => {
                           return (
                             <div
-                              className="cursor-pointer p-[13px] rounded-[15px] border-[1px] border-primary flex flex-col items-start gap-[10px] w-full"
+                              className={`relative cursor-pointer p-[13px] rounded-[15px] border-[1px] border-primary flex flex-col items-start gap-[10px] w-full ${
+                                !notif.seen && "bg-slate-100"
+                              }`}
                               onClick={() => {
                                 navigate(
                                   `/${
@@ -149,6 +152,17 @@ const Header: React.FC<headerProps> = (props) => {
                                       : `missions/${notif.on}`
                                   }`
                                 );
+                                setOffset(0)
+                                setNotifications([])
+                                clearOneNotification(notif.id, () => {
+                                  fetchNotifications(
+                                    0,
+                                    limit,
+                                    setNotifications,
+                                    setHasMore
+                                  );
+                                });
+                                setShowNotificationDropDown(false);
                               }}
                             >
                               <div className="flex items-center justify-between w-full">
@@ -199,6 +213,11 @@ const Header: React.FC<headerProps> = (props) => {
                                 on {""}
                                 {notif.on}
                               </p>
+                              {!notif.seen && (
+                                <span className="absolute text-red-600 font-bold top-0 right-2">
+                                  ●
+                                </span>
+                              )}
                             </div>
                           );
                         })}

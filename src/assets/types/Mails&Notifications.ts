@@ -14,4 +14,5 @@ export interface Notification {
   on: string;
   by: string;
   at: Date;
+  seen:boolean;
 }

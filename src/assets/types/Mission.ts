@@ -34,12 +34,13 @@ export type ResFile = {
   id: number;
   file_name: string;
   uploaded_at: Date;
+  uploaded_by: string,
   workorder: number;
   downloadProgress?: string;
   is_completed: boolean;
 };
 
-export type ReqAccFile = ResFile & {
+export type FilesWithtype = ResFile & {
   type: 1 | 2 | 3;
 };
 
@@ -65,8 +66,8 @@ export interface ResOfOneMission {
   history: History[];
   mail_to: MailTo[];
   attachments: ResFile[];
-  reports?: ResFile[];
-  acceptance_certificates?: ReqAccFile[];
+  reports?: FilesWithtype[];
+  acceptance_certificates?: FilesWithtype[];
 }
 
 export interface alertWorkorder {
