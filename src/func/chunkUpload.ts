@@ -85,9 +85,9 @@ export const upload_workorder_files = async (
     const body =
       fileType === "certificate"
         ? JSON.stringify({
-          workorder,
-          file,
-          type: fileStatus,
+            workorder,
+            file,
+            type: fileStatus,
           })
         : JSON.stringify({ workorder, file, type: fileStatus });
 
@@ -165,7 +165,7 @@ const uploadRemainingChunks = async (
           body: formData,
         }
       );
-      console.log(await response.json())
+      console.log(await response.json());
       if (response.status === 200) {
         const progress = ((index + 1) / totalChunks) * 100;
         dispatch(updateFileProgress({ type: fileType, fileId, progress }));
@@ -235,7 +235,7 @@ export const handle_chunck = async (
       const data = await response.json();
       const fileId = data.id;
       console.log(file, fileId, fileType);
-      storeFileInIndexedDB(file, fileId, fileType,workorder_id);
+      storeFileInIndexedDB(file, fileId, fileType, workorder_id);
 
       dispatch(
         addUploadingFile({
@@ -283,7 +283,7 @@ export const handle_resuming_upload = async (
   file: File,
   fileType: "attachements" | "report" | "certificate",
   file_token: string,
-  workorder_id:string,
+  workorder_id: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc: () => void,
   enqueueSnackbar: (message: string, options?: any) => void // Accept the enqueueSnackbar as is
@@ -329,7 +329,7 @@ export const handle_resuming_upload = async (
             file: { id: fileId, progress, file },
           })
         );
-        storeFileInIndexedDB(file, fileId, fileType,workorder_id);
+        storeFileInIndexedDB(file, fileId, fileType, workorder_id);
 
         await uploadRemainingChunks(
           dispatch,
@@ -344,17 +344,12 @@ export const handle_resuming_upload = async (
         break;
       }
 
-
       case 404:
-        enqueueSnackbar(
-          "there is no token for this file to compare",
-          {
-            variant: "error",
-            autoHideDuration: 3000, // 3 seconds
-          }
-        );
+        enqueueSnackbar("there is no token for this file to compare", {
+          variant: "error",
+          autoHideDuration: 3000, // 3 seconds
+        });
         break;
-
 
       case 406:
         enqueueSnackbar(
@@ -457,7 +452,9 @@ export const handle_files_with_one_chunk = async (
 };
 
 export const handleCancelUpload = async (
-  fileId: number,  dispatch: AppDispatch,   fileType: "attachements" | "report" | "certificate",
+  fileId: number,
+  dispatch?: AppDispatch,
+  fileType?: "attachements" | "report" | "certificate",
   setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc?: () => void,
   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>
@@ -488,7 +485,9 @@ export const handleCancelUpload = async (
       if (setFile) {
         setFile(undefined);
       }
-      dispatch(removeUploadingFile({ type: fileType, fileId }));
+      if (fileType && dispatch) {
+        dispatch(removeUploadingFile({ type: fileType, fileId }));
+      }
       await deleteFileFromIndexedDB(fileId);
     }
   } catch (error) {

@@ -183,7 +183,7 @@ const Header: React.FC<headerProps> = (props) => {
               </span>
 
               {showNotificationDropDown && (
-                <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[310px] sm:w-[450px]">
+                <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 sm:right-4 -right-[200%] shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[300px] sm:w-[450px]">
                   {notifications.length > 0 ? (
                     <>
                       <h5 className="text-[15px] text-n800 font-semibold">
@@ -260,7 +260,7 @@ const Header: React.FC<headerProps> = (props) => {
                                       </clipPath>
                                     </defs>
                                   </svg>
-                                  <h6 className="text-n800 text-[15px] font-medium leading-7">
+                                  <h6 className="text-n800 sm:text-[15px] text-[13px] font-medium sm:leading-7 leading-5">
                                     {getActionNotificationTitle(notif.action)}
                                   </h6>
                                 </div>
@@ -268,7 +268,7 @@ const Header: React.FC<headerProps> = (props) => {
                                   {formatDate(notif.at, true)}
                                 </span>
                               </div>
-                              <p className="text-[13px] text-550 leading-5">
+                              <p className="sm:text-[13px] text-[12px] text-550 leading-5">
                                 {getActionNotificationDescription(notif.action)}{" "}
                                 on {""}
                                 {notif.on}
@@ -327,7 +327,7 @@ const Header: React.FC<headerProps> = (props) => {
                   />
                 </svg>
                 {showUploadDropDown && (
-                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
+                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 sm:right-4 -right-[400%] shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[300px] sm:w-[400px]">
                     <div className="flex w-full items-center justify-between">
                       <h5 className="text-[15px] text-n800 font-semibold">
                         Uploads
@@ -440,7 +440,7 @@ const Header: React.FC<headerProps> = (props) => {
                 </svg>
 
                 {showAlertDropDown && (
-                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[310px] sm:w-[400px]">
+                  <div className="p-[22px] rounded-tl-[25px] rounded-br-[25px] rounded-bl-[25px] bg-white absolute z-30 right-4 shadow-xl shadow-slate-300 flex flex-col items-start gap-[18px] w-[300px] sm:w-[400px]">
                     <div className="flex w-full items-center justify-between">
                       <h5 className="text-[15px] text-n800 font-semibold">
                         Alerts

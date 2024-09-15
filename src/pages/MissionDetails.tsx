@@ -68,6 +68,7 @@ const MissionDetails = () => {
   const [isLoadingAttach, setIsLoadingAttach] = useState(false);
   const [isLoadingFinalize, setisLoadingFinalize] = useState(false);
   const [isLoadingMaildPersons, setIsLoadingMaildPersons] = useState(false);
+  const [isLoadingCancelUpload, setIsLoadingCancelUpload] = useState(false);
 
   const [searchQueryEng, setSearchQueryEng] = useState<string>("");
   const [searchQueryCoord, setSearchQueryCoord] = useState<string>("");
@@ -122,6 +123,9 @@ const MissionDetails = () => {
     description: "",
   });
   const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
+
+  const [inputWidth, setInputWidth] = useState(0);
+  const spanRef = useRef<HTMLSpanElement>(null);
 
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
   const [isEditing_desc, setIsEditing_desc] = useState(false);
@@ -198,14 +202,17 @@ const MissionDetails = () => {
   };
 
   useEffect(() => {
-    // Cleanup function
-    return () => {
+    if (spanRef.current) {
+      setInputWidth(spanRef.current.offsetWidth + 45); // Adjust padding as needed
+    }
+        return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, []);
-  const handleExecute = (workorder_id: string) => {
+   
+  }, [workorder?.workorder]);
+    const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
     setTimeLeft(5); // Set countdown to 5 seconds
@@ -519,28 +526,38 @@ const MissionDetails = () => {
           <div className="flex flex-col items-end gap-[40px] w-full sm:px-[25px] px-[14px]">
             <div className="flex flex-col w-full gap-[31px] ">
               <div className="flex flex-col gap-[31px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
-                <div className="w-full flex flex-row items-center gap-[14px] md:pl-[6px]">
-                  <div className="flex items-center gap-[12px] w-fit text-primary font-semibold md:text-[24px] text-[17px]">
-                    <input
-                      className={`text-primary font-semibold md:text-[24px] text-[17px] lg:w-[55%] w-[70%] rounded-[20px] py-[7px] sm:px-[20px] px-[16px] bg-white ${
-                        isEditing_Title_tic
-                          ? "border-n300 border-[1px] shadow-md"
-                          : ""
-                      }`}
-                      type="text"
-                      name="title"
-                      disabled={isEditing_Title_tic ? false : true}
-                      value={basicDataWorkorder.title}
-                      onChange={(e) => {
-                        handleChange(e, setBasicDataWorkorder);
-                      }}
-                    />
-                    |
+                <div className="w-full flex items-center justify-between gap-[14px] ">
+                  <div className="flex items-center sm:gap-[12px] w-[90%] text-primary font-semibold md:text-[24px] text-[17px]">
+                  <>
+      {/* Hidden span to measure text width */}
+      <span
+        ref={spanRef}
+        style={{ visibility: 'hidden', whiteSpace: 'nowrap', position: 'absolute' }}
+        className={`text-primary font-semibold md:text-[24px] text-[16px]`}
+      >
+        {`${basicDataWorkorder.title} | ${basicDataWorkorder.id}`}
+      </span>
+
+      <input
+        className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px] bg-white ${
+          isEditing_Title_tic ? "border-n300 border-[1px] shadow-md" : ""
+        }`}
+        style={{ width: `${inputWidth}px` }} 
+        type="text"
+        name="title"
+        disabled={!isEditing_Title_tic}
+        value={   isEditing_Title_tic ? `${basicDataWorkorder.title}` :`${basicDataWorkorder.title}    ${basicDataWorkorder.id}`} 
+               onChange={(e) => {
+          handleChange(e, setBasicDataWorkorder);
+        }}
+      />
+    </>
+                  { isEditing_Title_tic &&
                     <span
-                      className={`text-primary font-semibold md:text-[24px] text-[17px] w-[23%] rounded-[20px] py-[7px] sm:px-[20px] px-[8px]`}
+                      className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px]`}
                     >
                       {basicDataWorkorder.id}
-                    </span>
+                    </span> }
                     {!isEditing_Title_tic && getRole() !== 2 && (
                       <svg
                         onClick={() => {
@@ -568,7 +585,6 @@ const MissionDetails = () => {
                       </svg>
                     )}
                   </div>
-                  <div className="flex-grow" />
                   {workorder.history !== null &&
                     workorder.history.length !== 0 && (
                       <div className="relative">
@@ -599,7 +615,7 @@ const MissionDetails = () => {
                           />
                         </svg>
                         {visibleHistory && (
-                          <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start">
+                          <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start z-50 h-[60vh] overflow-auto">
                             {workorder.history.map((action, index) => {
                               return (
                                 <div
@@ -610,15 +626,27 @@ const MissionDetails = () => {
                                   }`}
                                 >
                                   <h6 className="text-[13px] leading-5 font-medium text-n800 text-nowrap">
-                                    {action.status === 2
+                                    {action.action === 0
+                                      ? "workorder has been created"
+                                      : action.action === 1
+                                      ? "workorder has been updated"
+                                      : action.action === 2
+                                      ? "workorder has been assigned"
+                                      : action.action === 3
+                                      ? "workorder has been reassigned"
+                                      : action.action === 4
                                       ? "workorder has been executed"
-                                      : action.status === 3
-                                      ? "workorder has been validated"
-                                      : action.status === 4
-                                      ? "workorder has been Accepted"
-                                      : action.status === 5
-                                      ? "workorder is Closed"
-                                      : null}
+                                      : action.action === 5
+                                      ? "workorder report uploaded"
+                                      : action.action === 6
+                                      ? "workorder has been reported"
+                                      : action.action === 7
+                                      ? "workorder update requested"
+                                      : action.action === 8
+                                      ? "workorder certificate uploaded"
+                                      : action.action === 9
+                                      ? "workorder has been accepted"
+                                      : "workorder closed"}
                                   </h6>
                                   <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
                                     {formatDate(action.at)}
@@ -636,7 +664,7 @@ const MissionDetails = () => {
                   {workorder.workorder.assigned_to !== null ? (
                     <div className="flex items-center gap-[12px] relative">
                       <div
-                        className="relative w-[41px] h-[41px] rounded-[50%]"
+                        className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
                           if (getRole() !== 2) {
                             setVisibleEngPopup(!visibleEngPopup);
@@ -664,7 +692,7 @@ const MissionDetails = () => {
                           </span>
                         )}
                       </div>
-                      <span className="text-[18px] text-n600 font-medium leading-[27px]">
+                      <span className="sm:text-[18px] text-[15px] text-n600 font-medium leading-[27px]">
                         {workorder.workorder.assigned_to}
                       </span>
                       {visibleEngPopup && (
@@ -1576,8 +1604,8 @@ const MissionDetails = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 ? (
-                                      attach.is_completed ? (
+                                    {getRole() !== 2 &&
+                                      (attach.is_completed ? (
                                         <span
                                           className="w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
                                           onClick={(e) => {
@@ -1609,56 +1637,72 @@ const MissionDetails = () => {
                                         </span>
                                       ) : (
                                         attach.uploaded_by ===
-                                          localStorage.getItem("user_id")! && (
-                                          <label
-                                            className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                            htmlFor="reupload"
-                                            onClick={async (e) => {
-                                              e.stopPropagation();
+                                          localStorage.getItem("user_id")! &&
+                                        !isLoadingCancelUpload && (
+                                          <div className="flex flex-col gap-2 items-center">
+                                            <label
+                                              className="px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                              htmlFor="reupload"
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
 
-                                              const fileFromIndexedDB =
-                                                await getFilesByIdFromIndexedDB(
-                                                  attach.id
-                                                );
-                                              if (fileFromIndexedDB[0]) {
-                                                handleFileInputChangeOfResumeUpload(
-                                                  fileFromIndexedDB[0]
-                                                );
-                                              } else {
-                                                handleLabelClick(
-                                                  attach.id,
-                                                  "attachements"
-                                                );
-                                              }
-                                            }}
-                                          >
-                                            <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              width="14"
-                                              height="14"
-                                              viewBox="0 0 14 14"
-                                              fill="none"
+                                                const fileFromIndexedDB =
+                                                  await getFilesByIdFromIndexedDB(
+                                                    attach.id
+                                                  );
+                                                if (fileFromIndexedDB[0]) {
+                                                  handleFileInputChangeOfResumeUpload(
+                                                    fileFromIndexedDB[0]
+                                                  );
+                                                } else {
+                                                  handleLabelClick(
+                                                    attach.id,
+                                                    "attachements"
+                                                  );
+                                                }
+                                              }}
                                             >
-                                              <g clipPath="url(#clip0_968_6186)">
-                                                <path
-                                                  d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                                  fill="#C70000"
-                                                />
-                                              </g>
-                                              <defs>
-                                                <clipPath id="clip0_968_6186">
-                                                  <rect
-                                                    width="14"
-                                                    height="14"
-                                                    fill="white"
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 14 14"
+                                                fill="none"
+                                              >
+                                                <g clipPath="url(#clip0_968_6186)">
+                                                  <path
+                                                    d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                    fill="#C70000"
                                                   />
-                                                </clipPath>
-                                              </defs>
-                                            </svg>
-                                          </label>
+                                                </g>
+                                                <defs>
+                                                  <clipPath id="clip0_968_6186">
+                                                    <rect
+                                                      width="14"
+                                                      height="14"
+                                                      fill="white"
+                                                    />
+                                                  </clipPath>
+                                                </defs>
+                                              </svg>
+                                            </label>
+                                            <span
+                                              className="px-[3px] rounded-[50%] text-white bg-[#f33e3e] text-[12px] cursor-pointer hover:scale-105"
+                                              onClick={() => {
+                                                handleCancelUpload(
+                                                  attach.id,
+                                                  undefined,
+                                                  undefined,
+                                                  setIsLoadingCancelUpload,
+                                                  fetchOneWorkOrder
+                                                );
+                                              }}
+                                            >
+                                              🗙
+                                            </span>
+                                          </div>
                                         )
-                                      )
-                                    ) : null}
+                                      ))}
                                   </div>
                                 );
                               })}
@@ -1845,7 +1889,7 @@ const MissionDetails = () => {
                               return (
                                 <div
                                   key={report.id}
-                                  className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[9px] bg-white shadow-lg rounded-[15px] ${
+                                  className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
                                     (report.uploaded_by ===
                                     localStorage.getItem("user_id")!
@@ -1907,8 +1951,8 @@ const MissionDetails = () => {
                                     }
                                   }}
                                 >
-                                  <div className="flex items-center justify-between w-full">
-                                    <div className="flex items-center gap-[9px] w-full">
+                                  <div className="flex items-center justify-between w-full px-[20px]">
+                                    <div className="flex items-center gap-[9px] w-[95%]">
                                       {report.downloadProgress &&
                                         report.downloadProgress !== "0" && (
                                           <CircularProgress
@@ -2008,53 +2052,70 @@ const MissionDetails = () => {
                                     </div>
                                     {!report.is_completed &&
                                       report.uploaded_by ===
-                                        localStorage.getItem("user_id") && (
-                                        <label
-                                          className="w-[8%] px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                          htmlFor="reupload"
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
+                                        localStorage.getItem("user_id") &&
+                                      !isLoadingCancelUpload && (
+                                        <div className="flex flex-col items-center gap-3">
+                                          <label
+                                            className="text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                            htmlFor="reupload"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
 
-                                            const fileFromIndexedDB =
-                                              await getFilesByIdFromIndexedDB(
-                                                report.id
-                                              );
-                                            if (fileFromIndexedDB[0]) {
-                                              handleFileInputChangeOfResumeUpload(
-                                                fileFromIndexedDB[0]
-                                              );
-                                            } else {
-                                              handleLabelClick(
-                                                report.id,
-                                                "report"
-                                              );
-                                            }
-                                          }}
-                                        >
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="14"
-                                            height="14"
-                                            viewBox="0 0 14 14"
-                                            fill="none"
+                                              const fileFromIndexedDB =
+                                                await getFilesByIdFromIndexedDB(
+                                                  report.id
+                                                );
+                                              if (fileFromIndexedDB[0]) {
+                                                handleFileInputChangeOfResumeUpload(
+                                                  fileFromIndexedDB[0]
+                                                );
+                                              } else {
+                                                handleLabelClick(
+                                                  report.id,
+                                                  "report"
+                                                );
+                                              }
+                                            }}
                                           >
-                                            <g clipPath="url(#clip0_968_6186)">
-                                              <path
-                                                d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                                fill="#C70000"
-                                              />
-                                            </g>
-                                            <defs>
-                                              <clipPath id="clip0_968_6186">
-                                                <rect
-                                                  width="14"
-                                                  height="14"
-                                                  fill="white"
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="14"
+                                              height="14"
+                                              viewBox="0 0 14 14"
+                                              fill="none"
+                                            >
+                                              <g clipPath="url(#clip0_968_6186)">
+                                                <path
+                                                  d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                  fill="#C70000"
                                                 />
-                                              </clipPath>
-                                            </defs>
-                                          </svg>
-                                        </label>
+                                              </g>
+                                              <defs>
+                                                <clipPath id="clip0_968_6186">
+                                                  <rect
+                                                    width="14"
+                                                    height="14"
+                                                    fill="white"
+                                                  />
+                                                </clipPath>
+                                              </defs>
+                                            </svg>
+                                          </label>
+                                          <span
+                                            className="px-[3px] rounded-[50%] text-white bg-[#f33e3e] text-[12px] cursor-pointer hover:scale-105"
+                                            onClick={() => {
+                                              handleCancelUpload(
+                                                report.id,
+                                                undefined,
+                                                undefined,
+                                                setIsLoadingCancelUpload,
+                                                fetchOneWorkOrder
+                                              );
+                                            }}
+                                          >
+                                            🗙
+                                          </span>
+                                        </div>
                                       )}
                                   </div>
                                 </div>
@@ -2081,23 +2142,24 @@ const MissionDetails = () => {
                         {workorder.workorder.status !== 3 &&
                           workorder.workorder.status !== 5 && (
                             <div
-                              className="cursor-pointer w-full sm:w-fit py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
+                              className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
                               onClick={() => {
                                 handleOpenDialog(addReportDialogRef);
                               }}
                             >
-                              <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
+                              <span className="text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
                                 Upload new files
                               </span>
                             </div>
                           )}
                       </div>
                       <div className="flex justify-end w-full">
-                        {workorder.workorder.status === 3 &&
+                        {(workorder.workorder.status === 3 ||
+                          workorder.workorder.status === 5) &&
                           getRole() !== 2 && (
                             <div className="flex items-center gap-[12px]">
                               <button
-                                className="px-[26px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
+                                className="sm:px-[26px] px-[16px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
                                 onClick={() => {
                                   handle_edit_or_reqUpdate_report(
                                     workorder.workorder.id,
@@ -2120,7 +2182,7 @@ const MissionDetails = () => {
                               </button>
 
                               <button
-                                className="px-[26px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
+                                className=" sm:px-[26px] px-[16px] py-[10px] rounded-[30px] border-[2px] bg-primary border-primary text-white text-[13px] font-semibold leading-[20px] w-fit"
                                 onClick={() => {
                                   handleOpenDialog(requestUpdateDialogRef);
                                 }}
@@ -2162,7 +2224,7 @@ const MissionDetails = () => {
                                 return (
                                   <div
                                     key={index}
-                                    className={`cursor-pointer sm:w-[48%] lg:w-[23%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
+                                    className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                       !certificate.is_completed &&
                                       (certificate.uploaded_by ===
                                       localStorage.getItem("user_id")!
@@ -2307,166 +2369,185 @@ const MissionDetails = () => {
                                           )}
                                         </span>
                                         {workorder.acceptance_certificates
-                                          ?.length === ++index && (
-                                          <div
-                                            className="absolute right-2 top-[80%] translate-y-[-50%]"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                            }}
-                                          >
-                                            <svg
-                                              className="hover:scale-115 transition-all duration-100"
-                                              onClick={() => {
-                                                setShowEditCertificatType(
-                                                  !showEditCertificatType
-                                                );
-                                              }}
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              width="14"
-                                              height="14"
-                                              viewBox="0 0 14 14"
-                                              fill="none"
-                                            >
-                                              <path
-                                                d="M8.87471 2.55459L11.0224 4.70224M7.44294 12.5769H13.17M1.71588 9.71341L1 12.5769L3.86353 11.8611L12.1577 3.56685C12.4262 3.29835 12.5769 2.93424 12.5769 2.55459C12.5769 2.17494 12.4262 1.81083 12.1577 1.54233L12.0346 1.4192C11.7661 1.15079 11.402 1 11.0224 1C10.6427 1 10.2786 1.15079 10.0101 1.4192L1.71588 9.71341Z"
-                                                stroke="#797C93"
-                                                strokeWidth="1.2"
-                                                fillOpacity="round"
-                                                strokeLinejoin="round"
-                                              />
-                                            </svg>
-                                            {showEditCertificatType && (
-                                              <div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
-                                                <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
-                                                  {certeficatTypes.map(
-                                                    (type, index) => {
-                                                      return (
-                                                        <span
-                                                          key={index}
-                                                          className={`cursor-pointer text-nowrap px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
-                                                          style={{
-                                                            backgroundColor:
-                                                              type.type ===
-                                                              certType
-                                                                ? `${type.color}`
-                                                                : "white",
-                                                            color:
-                                                              type.type ===
-                                                              certType
-                                                                ? "white"
-                                                                : `${type.color}`,
-                                                            border: `solid 1px ${type.color}`,
-                                                          }}
-                                                          onClick={() => {
-                                                            setCertType(
-                                                              type.type
-                                                            );
-                                                          }}
-                                                        >
-                                                          {type.name}
-                                                        </span>
-                                                      );
-                                                    }
-                                                  )}
-                                                </div>
-
-                                                {workorder
-                                                  .acceptance_certificates[
-                                                  workorder
-                                                    .acceptance_certificates
-                                                    .length - 1
-                                                ].type !== certType && (
-                                                  <div className="flex items-center gap-[6px] w-full">
-                                                    <button
-                                                      className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
-                                                      onClick={() => {
-                                                        setCertType(
-                                                          workorder.acceptance_certificates![
-                                                            workorder.acceptance_certificates!
-                                                              .length - 1
-                                                          ].type
-                                                        );
-                                                        setShowEditCertificatType(
-                                                          false
-                                                        );
-                                                      }}
-                                                    >
-                                                      Cancel
-                                                    </button>
-                                                    <button
-                                                      className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
-                                                      onClick={async () => {
-                                                        await handle_update_cert_type(
-                                                          workorder.workorder
-                                                            .id,
-                                                          certType,
-                                                          fetchOneWorkOrder
-                                                        );
-                                                        setShowEditCertificatType(
-                                                          false
-                                                        );
-                                                      }}
-                                                    >
-                                                      Save
-                                                    </button>
-                                                  </div>
-                                                )}
-                                              </div>
-                                            )}
-                                          </div>
-                                        )}
-
-                                        {!certificate.is_completed &&
-                                          certificate.uploaded_by ===
-                                            localStorage.getItem(
-                                              "user_id"
-                                            )! && (
-                                            <label
-                                              className=" absolute right-2 top-[20%] translate-y-[-50%]  px-[3px] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                              htmlFor="reupload"
-                                              onClick={async (e) => {
+                                          ?.length === ++index &&
+                                          workorder.acceptance_certificates[
+                                            workorder.acceptance_certificates
+                                              .length - 1
+                                          ].is_completed && (
+                                            <div
+                                              className="absolute right-2 top-[80%] translate-y-[-50%]"
+                                              onClick={(e) => {
                                                 e.stopPropagation();
-
-                                                const fileFromIndexedDB =
-                                                  await getFilesByIdFromIndexedDB(
-                                                    certificate.id
-                                                  );
-                                                if (fileFromIndexedDB[0]) {
-                                                  handleFileInputChangeOfResumeUpload(
-                                                    fileFromIndexedDB[0]
-                                                  );
-                                                } else {
-                                                  handleLabelClick(
-                                                    certificate.id,
-                                                    "certificate"
-                                                  );
-                                                }
                                               }}
                                             >
                                               <svg
+                                                className="hover:scale-115 transition-all duration-100"
+                                                onClick={() => {
+                                                  setShowEditCertificatType(
+                                                    !showEditCertificatType
+                                                  );
+                                                }}
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="14"
                                                 height="14"
                                                 viewBox="0 0 14 14"
                                                 fill="none"
                                               >
-                                                <g clipPath="url(#clip0_968_6186)">
-                                                  <path
-                                                    d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                                    fill="#C70000"
-                                                  />
-                                                </g>
-                                                <defs>
-                                                  <clipPath id="clip0_968_6186">
-                                                    <rect
-                                                      width="14"
-                                                      height="14"
-                                                      fill="white"
-                                                    />
-                                                  </clipPath>
-                                                </defs>
+                                                <path
+                                                  d="M8.87471 2.55459L11.0224 4.70224M7.44294 12.5769H13.17M1.71588 9.71341L1 12.5769L3.86353 11.8611L12.1577 3.56685C12.4262 3.29835 12.5769 2.93424 12.5769 2.55459C12.5769 2.17494 12.4262 1.81083 12.1577 1.54233L12.0346 1.4192C11.7661 1.15079 11.402 1 11.0224 1C10.6427 1 10.2786 1.15079 10.0101 1.4192L1.71588 9.71341Z"
+                                                  stroke="#797C93"
+                                                  strokeWidth="1.2"
+                                                  fillOpacity="round"
+                                                  strokeLinejoin="round"
+                                                />
                                               </svg>
-                                            </label>
+                                              {showEditCertificatType && (
+                                                <div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
+                                                  <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
+                                                    {certeficatTypes.map(
+                                                      (type, index) => {
+                                                        return (
+                                                          <span
+                                                            key={index}
+                                                            className={`cursor-pointer text-nowrap px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
+                                                            style={{
+                                                              backgroundColor:
+                                                                type.type ===
+                                                                certType
+                                                                  ? `${type.color}`
+                                                                  : "white",
+                                                              color:
+                                                                type.type ===
+                                                                certType
+                                                                  ? "white"
+                                                                  : `${type.color}`,
+                                                              border: `solid 1px ${type.color}`,
+                                                            }}
+                                                            onClick={() => {
+                                                              setCertType(
+                                                                type.type
+                                                              );
+                                                            }}
+                                                          >
+                                                            {type.name}
+                                                          </span>
+                                                        );
+                                                      }
+                                                    )}
+                                                  </div>
+
+                                                  {workorder
+                                                    .acceptance_certificates[
+                                                    workorder
+                                                      .acceptance_certificates
+                                                      .length - 1
+                                                  ].type !== certType && (
+                                                    <div className="flex items-center gap-[6px] w-full">
+                                                      <button
+                                                        className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
+                                                        onClick={() => {
+                                                          setCertType(
+                                                            workorder.acceptance_certificates![
+                                                              workorder.acceptance_certificates!
+                                                                .length - 1
+                                                            ].type
+                                                          );
+                                                          setShowEditCertificatType(
+                                                            false
+                                                          );
+                                                        }}
+                                                      >
+                                                        Cancel
+                                                      </button>
+                                                      <button
+                                                        className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                                                        onClick={async () => {
+                                                          await handle_update_cert_type(
+                                                            workorder.workorder
+                                                              .id,
+                                                            certType,
+                                                            fetchOneWorkOrder
+                                                          );
+                                                          setShowEditCertificatType(
+                                                            false
+                                                          );
+                                                        }}
+                                                      >
+                                                        Save
+                                                      </button>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+
+                                        {!certificate.is_completed &&
+                                          certificate.uploaded_by ===
+                                            localStorage.getItem("user_id")! &&
+                                          !isLoadingCancelUpload && (
+                                            <>
+                                              <label
+                                                className=" absolute right-0 top-[20%] translate-y-[-50%] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                                htmlFor="reupload"
+                                                onClick={async (e) => {
+                                                  e.stopPropagation();
+
+                                                  const fileFromIndexedDB =
+                                                    await getFilesByIdFromIndexedDB(
+                                                      certificate.id
+                                                    );
+                                                  if (fileFromIndexedDB[0]) {
+                                                    handleFileInputChangeOfResumeUpload(
+                                                      fileFromIndexedDB[0]
+                                                    );
+                                                  } else {
+                                                    handleLabelClick(
+                                                      certificate.id,
+                                                      "certificate"
+                                                    );
+                                                  }
+                                                }}
+                                              >
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  width="14"
+                                                  height="14"
+                                                  viewBox="0 0 14 14"
+                                                  fill="none"
+                                                >
+                                                  <g clipPath="url(#clip0_968_6186)">
+                                                    <path
+                                                      d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                      fill="#C70000"
+                                                    />
+                                                  </g>
+                                                  <defs>
+                                                    <clipPath id="clip0_968_6186">
+                                                      <rect
+                                                        width="14"
+                                                        height="14"
+                                                        fill="white"
+                                                      />
+                                                    </clipPath>
+                                                  </defs>
+                                                </svg>
+                                              </label>
+                                              <span
+                                                className=" absolute right-0 bottom-[6%] px-[3px] rounded-[50%] text-white bg-[#f33e3e] text-[12px] cursor-pointer hover:scale-105"
+                                                onClick={() => {
+                                                  handleCancelUpload(
+                                                    certificate.id,
+                                                    undefined,
+                                                    undefined,
+                                                    setIsLoadingCancelUpload,
+                                                    fetchOneWorkOrder
+                                                  );
+                                                }}
+                                              >
+                                                🗙
+                                              </span>
+                                            </>
                                           )}
                                       </div>
                                     </div>
@@ -2502,12 +2583,12 @@ const MissionDetails = () => {
                                   workorder.acceptance_certificates.length - 1
                                 ].type !== 1)) && (
                               <div
-                                className="cursor-pointer w-full sm:w-fit py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
+                                className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
                                 onClick={() => {
                                   handleOpenDialog(addCertificatDialogRef);
                                 }}
                               >
-                                <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[38px] px-[5px] text-center flex flex-col items-center">
+                                <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
                                   Add new certificat
                                 </span>
                               </div>

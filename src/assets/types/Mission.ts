@@ -52,7 +52,7 @@ export type ReportFile = ResFile & {
 export type History = {
   id: number;
   at: Date;
-  status: number;
+  action: number;
   workorder: string;
 };
 

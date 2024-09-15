@@ -33,6 +33,7 @@ const useWebSocketSearch = ({
     }
 
     const url = `${baseUrl}/ws/${endpointPath}?token=${token}`;
+    console.log(url)
     const socket = new WebSocket(url);
 
     socket.onopen = () => {

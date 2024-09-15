@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 
 interface UploadingFilePopup extends TheUploadingFile {
-  fileType:"attachements" | "report" | "certificate",
+  fileType: "attachements" | "report" | "certificate";
   fetchFunc?: () => void;
   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>;
 }
@@ -18,7 +18,7 @@ const UploadingFile: React.FC<UploadingFilePopup> = (props) => {
   return (
     <div className="w-full flex flex-col items-start px-[12px] py-[1px] bg-white shadow-lg rounded-[15px]">
       <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-[7px] w-full">
+        <div className="flex items-center gap-[7px] w-[90%]">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="22"
@@ -46,13 +46,15 @@ const UploadingFile: React.FC<UploadingFilePopup> = (props) => {
           </div>
         </div>
 
-        {!loadingCancel && props.progress !== 100 &&(
+        {!loadingCancel && props.progress !== 100 && (
           <span
             className="px-[3px] rounded-[50%] text-white bg-550 text-[12px] cursor-pointer hover:scale-105"
             onClick={() => {
               handleCancelUpload(
                 props.id!,
-                dispatch,props.fileType,setLoadingCancel,
+                dispatch,
+                props.fileType,
+                setLoadingCancel,
                 props.fetchFunc,
                 props.setFile
               );
