@@ -123,7 +123,7 @@ const MissionDetails = () => {
   });
   const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
 
-  const [inputWidth, setInputWidth] = useState(200);
+  const [inputWidth, setInputWidth] = useState(350);
   const spanRef = useRef<HTMLSpanElement>(null);
 
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
@@ -545,7 +545,7 @@ const MissionDetails = () => {
                       </span>
 
                       <input
-                        className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px] bg-white ${
+                        className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px] bg-white w-[${inputWidth}] ${
                           isEditing_Title_tic
                             ? "border-n300 border-[1px] shadow-md"
                             : ""
