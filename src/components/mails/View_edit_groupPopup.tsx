@@ -200,10 +200,10 @@ const view_edit_groupPopup = forwardRef<HTMLDialogElement, ViewEditGroupPopup>(
               props.fetchFunc();
               break;
             case 400:
-              setErr("Verify your email.");
+              setErr("Verify your data.");
               break;
-            case 409:
-              setErr("Group name already exists.");
+            case 422:
+              setErr("One of the added email does not exists at all.");
               setVisibleErr(true);
               break;
             default:

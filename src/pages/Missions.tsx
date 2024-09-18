@@ -88,7 +88,6 @@ const Missions = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error response text: ", errorText);
-        localStorage.clear();
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -103,7 +102,6 @@ const Missions = () => {
           break;
 
         case 204:
-          console.log("here");
           setWorkorders(null);
           break;
 

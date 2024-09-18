@@ -6,10 +6,12 @@ import { useRef, useState, useEffect } from "react";
 import { Resmail } from "../assets/types/Mails&Notifications";
 import { RotatingLines } from "react-loader-spinner";
 import EmptyData from "../components/EmptyData";
+import { useNavigate } from "react-router-dom";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const Individuals = () => {
+  const navigate = useNavigate()
   const addEmailDialogRef = useRef<HTMLDialogElement>(null);
   const editEmailDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -20,7 +22,6 @@ const Individuals = () => {
   const [editMail, setEditMail] = useState<Resmail>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  console.log(mails)
 
   const fetchMails = async () => {
     const token =
@@ -47,10 +48,22 @@ const Individuals = () => {
         console.error("Error response text: ", errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+       switch (response.status) {
+        case 200:
+         { const data = await response.json();
+          setMails(data);}
+          break;
 
-      const data = await response.json();
-      // console.log("Response data: ", data); // Log the data for debugging
-      setMails(data);
+          case 401:
+            localStorage.clear();
+            sessionStorage.clear();
+            navigate("/")
+             break;
+       
+        default:
+          break;
+       }
+
     } catch (err) {
       console.error("Error: ", err);
     } finally {
@@ -137,7 +150,7 @@ const Individuals = () => {
             </svg>
           </div>
           <button
-            className="rounded-[30px] py-[12px] px-[25px] bg-primary text-white text-[14px] font-medium"
+            className="rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[12px] font-medium"
             onClick={() => {
               handleOpenDialog(addEmailDialogRef);
             }}
@@ -146,7 +159,7 @@ const Individuals = () => {
           </button>
         </div>
 
-        <main className="w-full flex flex-col gap-[20px] rounded-[20px] border-n300 border-[1px] p-[25px]">
+        <main className="w-full flex flex-col gap-[20px] rounded-[20px] border-n300 border-[1px] sm:p-[25px] p-[16px]">
           <div className="w-full flex items-center justify-between py-[6px]">
             <h4 className="text-[20px] font-semibold text-n800 leading-[30px]">
               Mails
@@ -191,7 +204,7 @@ const Individuals = () => {
                 return (
                   <div
                     key={index}
-                    className={`cursor-pointer flex items-center gap-[12px] rounded-[22px] py-[7px] px-[11px]  ${
+                    className={`cursor-pointer flex items-center gap-[12px] rounded-[22px] py-[7px] px-[11px] ${
                       selectedIndividual === mail.id
                         ? "border-primary border-[2px]"
                         : "border-n300 border-[1px]"
@@ -220,7 +233,7 @@ const Individuals = () => {
                         />
                       </svg>
                     </span>
-                    <span className="text-[15px] text-n700 font-medium leading-[20px]">
+                    <span className="sm:text-[15px] text-[13px] text-n700 font-medium leading-[20px]">
                       {mail.email}
                     </span>
 

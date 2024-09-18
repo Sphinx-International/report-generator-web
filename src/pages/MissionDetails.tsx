@@ -56,7 +56,6 @@ type WorkorderProperties = {
 
 const MissionDetails = () => {
   const { id } = useParams();
-
   const dispatch = useDispatch<AppDispatch>();
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
@@ -205,14 +204,13 @@ const MissionDetails = () => {
     if (spanRef.current) {
       setInputWidth(spanRef.current.offsetWidth + 45); // Adjust padding as needed
     }
-        return () => {
+    return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-   
   }, [workorder?.workorder]);
-    const handleExecute = (workorder_id: string) => {
+  const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
     setTimeLeft(5); // Set countdown to 5 seconds
@@ -330,7 +328,7 @@ const MissionDetails = () => {
             console.error("Error response text: ", errorText);
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-          break;
+          
       }
     } catch (err) {
       console.error("Error: ", err);
@@ -528,36 +526,47 @@ const MissionDetails = () => {
               <div className="flex flex-col gap-[31px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
                 <div className="w-full flex items-center justify-between gap-[14px] ">
                   <div className="flex items-center sm:gap-[12px] w-[90%] text-primary font-semibold md:text-[24px] text-[17px]">
-                  <>
-      {/* Hidden span to measure text width */}
-      <span
-        ref={spanRef}
-        style={{ visibility: 'hidden', whiteSpace: 'nowrap', position: 'absolute' }}
-        className={`text-primary font-semibold md:text-[24px] text-[16px]`}
-      >
-        {`${basicDataWorkorder.title} | ${basicDataWorkorder.id}`}
-      </span>
+                    <>
+                      {/* Hidden span to measure text width */}
+                      <span
+                        ref={spanRef}
+                        style={{
+                          visibility: "hidden",
+                          whiteSpace: "nowrap",
+                          position: "absolute",
+                        }}
+                        className={`text-primary font-semibold md:text-[24px] text-[16px]`}
+                      >
+                        {`${basicDataWorkorder.title} | ${basicDataWorkorder.id}`}
+                      </span>
 
-      <input
-        className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px] bg-white ${
-          isEditing_Title_tic ? "border-n300 border-[1px] shadow-md" : ""
-        }`}
-        style={{ width: `${inputWidth}px` }} 
-        type="text"
-        name="title"
-        disabled={!isEditing_Title_tic}
-        value={   isEditing_Title_tic ? `${basicDataWorkorder.title}` :`${basicDataWorkorder.title}    ${basicDataWorkorder.id}`} 
-               onChange={(e) => {
-          handleChange(e, setBasicDataWorkorder);
-        }}
-      />
-    </>
-                  { isEditing_Title_tic &&
-                    <span
-                      className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px]`}
-                    >
-                      {basicDataWorkorder.id}
-                    </span> }
+                      <input
+                        className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px] bg-white ${
+                          isEditing_Title_tic
+                            ? "border-n300 border-[1px] shadow-md"
+                            : ""
+                        }`}
+                        style={{ width: `${inputWidth}px` }}
+                        type="text"
+                        name="title"
+                        disabled={!isEditing_Title_tic}
+                        value={
+                          isEditing_Title_tic
+                            ? `${basicDataWorkorder.title}`
+                            : `${basicDataWorkorder.title}    ${basicDataWorkorder.id}`
+                        }
+                        onChange={(e) => {
+                          handleChange(e, setBasicDataWorkorder);
+                        }}
+                      />
+                    </>
+                    {isEditing_Title_tic && (
+                      <span
+                        className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px]`}
+                      >
+                        {basicDataWorkorder.id}
+                      </span>
+                    )}
                     {!isEditing_Title_tic && getRole() !== 2 && (
                       <svg
                         onClick={() => {
@@ -2018,8 +2027,14 @@ const MissionDetails = () => {
                                               : "Partial"}
                                           </span>
                                           {report.refuse_message && (
-                                            <span title={report.refuse_message}>
+                                            <div
+                                              className="relative"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                              }}
+                                            >
                                               <svg
+                                                className="peer"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="#4A3AFF"
                                                 version="1.1"
@@ -2029,10 +2044,31 @@ const MissionDetails = () => {
                                                 viewBox="0 0 32 32"
                                               >
                                                 <g>
-                                                  <path d="M17.962,24.725l1.806,0.096v2.531h-7.534v-2.406l1.045-0.094c0.568-0.063,0.916-0.254,0.916-1.014v-8.801   c0-0.699-0.188-0.92-0.791-0.92l-1.106-0.062v-2.626h5.666L17.962,24.725L17.962,24.725z M15.747,4.648   c1.394,0,2.405,1.047,2.405,2.374c0,1.331-1.014,2.313-2.438,2.313c-1.454,0-2.404-0.982-2.404-2.313   C13.31,5.695,14.26,4.648,15.747,4.648z M16,32C7.178,32,0,24.822,0,16S7.178,0,16,0c8.82,0,16,7.178,16,16S24.82,32,16,32z M16,3   C8.832,3,3,8.832,3,16s5.832,13,13,13s13-5.832,13-13S23.168,3,16,3z" />
+                                                  <path d="M17.962,24.725l1.806,0.096v2.531h-7.534v-2.406l1.045-0.094c0.568-0.063,0.916-0.254,0.916-1.014v-8.801c0-0.699-0.188-0.92-0.791-0.92l-1.106-0.062v-2.626h5.666L17.962,24.725L17.962,24.725z M15.747,4.648c1.394,0,2.405,1.047,2.405,2.374c0,1.331-1.014,2.313-2.438,2.313c-1.454,0-2.404-0.982-2.404-2.313C13.31,5.695,14.26,4.648,15.747,4.648z M16,32C7.178,32,0,24.822,0,16S7.178,0,16,0c8.82,0,16,7.178,16,16S24.82,32,16,32z M16,3C8.832,3,3,8.832,3,16s5.832,13,13,13s13-5.832,13-13S23.168,3,16,3z" />
                                                 </g>
                                               </svg>
-                                            </span>
+                                              <div className="absolute lg:right-0 sm:-right-24 right-0 bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-lg shadow-2xl p-4 sm:text-[14px] text-[12px] text-neutral-700 sm:w-[330px] w-[260px] z-40 hidden peer-hover:flex hover:flex transition-all duration-300 ease-in-out transform hover:scale-105">
+                                                <div className="flex items-start">
+                                                  <div className="flex-shrink-0">
+                                                    <svg
+                                                      xmlns="http://www.w3.org/2000/svg"
+                                                      fill="#FF6B6B"
+                                                      width="16px"
+                                                      height="16px"
+                                                      viewBox="0 0 24 24"
+                                                      className="mr-2"
+                                                    >
+                                                      <path d="M12 2C6.485 2 2 6.485 2 12s4.485 10 10 10 10-4.485 10-10S17.515 2 12 2zm-1 14h2v2h-2v-2zm1-12c-.552 0-1 .448-1 1v9c0 .552.448 1 1 1s1-.448 1-1V5c0-.552-.448-1-1-1z" />
+                                                    </svg>
+                                                  </div>
+                                                  <div className="flex-grow">
+                                                    <span>
+                                                      {report.refuse_message}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
                                           )}
                                         </div>
 

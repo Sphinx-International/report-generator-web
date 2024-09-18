@@ -80,7 +80,7 @@ const CreateGroupPopup = forwardRef<HTMLDialogElement, CreateGroupPopup>(
               setErr("Verify your email.");
               break;
             case 409:
-              setErr("Group name already exists.");
+              setErr("Group name already exists, or its too long.");
               setVisibleErr(true);
               break;
             default:

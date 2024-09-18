@@ -16,7 +16,6 @@ import { Link } from "react-router-dom";
 import EmptyData from "../components/EmptyData";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-
 const titlesRow = [
   {
     title: "Picture",
@@ -104,7 +103,6 @@ const UserManagment = () => {
       ? `${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
       : `${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
 
-
     setIsloading(true);
     try {
       const response = await fetch(url, {
@@ -118,7 +116,7 @@ const UserManagment = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error response text: ", errorText);
-        localStorage.clear();
+
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       switch (response.status) {
@@ -134,7 +132,6 @@ const UserManagment = () => {
         case 204:
           setUsers(null);
           break;
-
         default:
           break;
       }
@@ -331,7 +328,7 @@ const UserManagment = () => {
                     />
                   </div>
                 ) : (
-                  <EmptyData data="mails"/>
+                  <EmptyData data="mails" />
                 )}
               </div>
 
@@ -440,7 +437,6 @@ const UserManagment = () => {
         jsonTitle="accounts"
         fetchFunc={fetchUsers}
         fetchUrl={`${baseUrl}/account/get-accounts`}
-
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}
