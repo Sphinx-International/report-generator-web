@@ -201,15 +201,12 @@ const MissionDetails = () => {
   };
 
   useEffect(() => {
-    if (spanRef.current) {
-      setInputWidth(spanRef.current.offsetWidth + 45); // Adjust padding as needed
-    }
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [workorder]);
+  }, []);
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
@@ -305,7 +302,9 @@ const MissionDetails = () => {
               );
               return [newEmails];
             });
-
+            if (spanRef.current) {
+              setInputWidth(spanRef.current.offsetWidth + 45); 
+            }
             // Sync files with IndexedDB
             await syncIndexedDBWithFetchedFiles(data.workorder.id, data);
           }
