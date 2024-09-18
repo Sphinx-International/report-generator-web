@@ -209,7 +209,7 @@ const MissionDetails = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [workorder?.workorder]);
+  }, [workorder]);
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
@@ -266,7 +266,7 @@ const MissionDetails = () => {
     setLoader: setLoaderCoordSearch,
   });
 
-  const fetchOneWorkOrder = useCallback(async () => {
+   const fetchOneWorkOrder = useCallback(async () => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
@@ -290,7 +290,6 @@ const MissionDetails = () => {
           {
             const data = await response.json();
             setWorkorder(data);
-            console.log(data);
             setBasicDataWorkorder({
               title: data.workorder.title,
               id: data.workorder.id,

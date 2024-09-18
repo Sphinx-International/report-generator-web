@@ -355,7 +355,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 }),
                 deleteFileFromIndexedDB(fileId)
               );
-
               updateAttachmentProgress(fileId, 100.0);
               break;
 
