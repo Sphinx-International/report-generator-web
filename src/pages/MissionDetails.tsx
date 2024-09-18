@@ -123,7 +123,7 @@ const MissionDetails = () => {
   });
   const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
 
-  const [inputWidth, setInputWidth] = useState(0);
+  const [inputWidth, setInputWidth] = useState(200);
   const spanRef = useRef<HTMLSpanElement>(null);
 
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
@@ -207,6 +207,12 @@ const MissionDetails = () => {
       }
     };
   }, []);
+  
+  useEffect(() => {
+      if (spanRef.current) {
+        setInputWidth(spanRef.current.offsetWidth + 45);  
+    }
+  }, [workorder]);
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
