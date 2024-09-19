@@ -124,7 +124,7 @@ const MissionDetails = () => {
   const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
 
 
-  const [inputWidth, setInputWidth] = useState(0);
+  const [inputWidth, setInputWidth] = useState(380);
   const spanRef = useRef<HTMLSpanElement>(null);
 
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
