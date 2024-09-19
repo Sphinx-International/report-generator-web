@@ -237,7 +237,7 @@ const Missions = () => {
                   ))}
 
                   <Pagination
-                    buttonTitle="Add Mission"
+                    buttonTitle="Add workorder"
                     buttonFunc={handladdMissionButtonClick}
                     currentPage={currentPage}
                     totalPages={totalPages}

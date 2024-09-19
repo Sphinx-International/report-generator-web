@@ -219,17 +219,28 @@ const MissionDetails = () => {
     // Calculate width initially
     calculateWidth();
   
-    // Listen for window resize to recalculate width
-   // window.addEventListener("resize", calculateWidth);
+    // MutationObserver to watch for changes in the DOM
+    const observer = new MutationObserver(() => {
+      calculateWidth();
+    });
   
-    // Optionally, listen for when fonts are loaded (if custom fonts affect the width)
-   // document.fonts?.ready.then(calculateWidth);
+    if (spanRef.current) {
+      observer.observe(spanRef.current, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
   
-    // Clean up event listener on component unmount
-   /* return () => {
-      window.removeEventListener("resize", calculateWidth);
-    };  */
-  }, [spanRef]);
+    // Optionally, check if fonts are loaded and recalculate width
+    document.fonts?.ready.then(calculateWidth);
+  
+    // Clean up observer on unmount
+    return () => {
+      observer.disconnect();
+    };
+  }, [spanRef, basicDataWorkorder.title]);
+  
 
   
   const handleExecute = (workorder_id: string) => {
