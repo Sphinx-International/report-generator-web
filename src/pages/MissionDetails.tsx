@@ -123,7 +123,7 @@ const MissionDetails = () => {
   });
   const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
 
-  const [inputWidth, setInputWidth] = useState(0);
+  const [inputWidth, setInputWidth] = useState(400);
   const spanRef = useRef<HTMLSpanElement>(null);
 
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
@@ -219,16 +219,16 @@ const MissionDetails = () => {
     calculateWidth();
   
     // Listen for window resize to recalculate width
-    window.addEventListener("resize", calculateWidth);
+   // window.addEventListener("resize", calculateWidth);
   
     // Optionally, listen for when fonts are loaded (if custom fonts affect the width)
-    document.fonts?.ready.then(calculateWidth);
+   // document.fonts?.ready.then(calculateWidth);
   
     // Clean up event listener on component unmount
-    return () => {
+   /* return () => {
       window.removeEventListener("resize", calculateWidth);
-    };
-  }, [spanRef, basicDataWorkorder.title]);
+    };  */
+  }, [spanRef]);
   
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
