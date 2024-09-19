@@ -213,35 +213,18 @@ const MissionDetails = () => {
     const calculateWidth = () => {
       if (spanRef.current) {
         setInputWidth(spanRef.current.offsetWidth + 45);
-        console.log('SPAN');
       }
-      console.log('OUT');
     };
   
-    // Calculate width initially
-    calculateWidth();
+    // Calculate width after a small delay to ensure DOM is ready
+    setTimeout(() => {
+      requestAnimationFrame(calculateWidth);
+    }, 1400); // Adjust the delay as necessary
   
-    // MutationObserver to watch for changes in the DOM
-    const observer = new MutationObserver(() => {
-      calculateWidth();
-    });
-  
-    if (spanRef.current) {
-      observer.observe(spanRef.current, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-      });
-    }
-  
-    // Optionally, check if fonts are loaded and recalculate width
+    // Optionally check for fonts and recalculate
     document.fonts?.ready.then(calculateWidth);
-  
-    // Clean up observer on unmount
-    return () => {
-      observer.disconnect();
-    };
   }, [spanRef, basicDataWorkorder.title]);
+  
   
 
   
@@ -660,7 +643,7 @@ const MissionDetails = () => {
                           />
                         </svg>
                         {visibleHistory && (
-                          <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start z-50 h-[60vh] overflow-auto">
+                          <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start z-50 max-h-[60vh] overflow-auto">
                             {workorder.history.map((action, index) => {
                               return (
                                 <div
