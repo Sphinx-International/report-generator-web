@@ -213,7 +213,9 @@ const MissionDetails = () => {
     const calculateWidth = () => {
       if (spanRef.current) {
         setInputWidth(spanRef.current.offsetWidth + 45);
+        console.log('SPAN');
       }
+      console.log('OUT');
     };
   
     // Calculate width initially
