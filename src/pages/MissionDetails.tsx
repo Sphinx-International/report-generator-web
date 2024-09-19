@@ -123,7 +123,7 @@ const MissionDetails = () => {
   });
   const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
 
-  const [inputWidth, setInputWidth] = useState(350);
+  const [inputWidth, setInputWidth] = useState(0);
   const spanRef = useRef<HTMLSpanElement>(null);
 
   const [isEditing_Title_tic, setIsEditing_Title_tic] = useState(false);
@@ -209,10 +209,27 @@ const MissionDetails = () => {
   }, []);
   
   useEffect(() => {
+    const calculateWidth = () => {
       if (spanRef.current) {
-        setInputWidth(spanRef.current.offsetWidth + 45);  
-    }
-  }, [workorder]);
+        setInputWidth(spanRef.current.offsetWidth + 45);
+      }
+    };
+  
+    // Calculate width initially
+    calculateWidth();
+  
+    // Listen for window resize to recalculate width
+    window.addEventListener("resize", calculateWidth);
+  
+    // Optionally, listen for when fonts are loaded (if custom fonts affect the width)
+    document.fonts?.ready.then(calculateWidth);
+  
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", calculateWidth);
+    };
+  }, [spanRef, basicDataWorkorder.title]);
+  
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
     setUndo_req_acc_MessageVisible(false);
