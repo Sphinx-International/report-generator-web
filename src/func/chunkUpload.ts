@@ -17,7 +17,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   file_id: number,
   method: "add" | "delete",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  fetchOneWorkOrder: () => void
+  fetchOneWorkOrder?: () => void
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -33,6 +33,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   /*  for (const [key, value] of formData.entries()) {
         console.log(`${key}: ${value}`);
       }  */
+        setIsLoading(true)
   try {
     const response = await fetch(
       `${baseUrl}/workorder/update-workorder-attachments`,
@@ -48,7 +49,9 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     if (response) {
       switch (response.status) {
         case 200:
-          fetchOneWorkOrder();
+          if (fetchOneWorkOrder) {
+            fetchOneWorkOrder();
+          }
           break;
         case 400:
           console.log("verify your data");
@@ -62,6 +65,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     console.error("Error submitting form", err);
   } finally {
     setIsLoading(false);
+    console.log("finaly")
   }
 };
 

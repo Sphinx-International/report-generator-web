@@ -35,7 +35,7 @@ export type ResFile = {
   file_name: string;
   uploaded_at: Date;
   uploaded_by: string,
-  workorder: number;
+  workorder: string;
   downloadProgress?: string;
   is_completed: boolean;
 };

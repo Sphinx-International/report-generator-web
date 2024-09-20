@@ -24,6 +24,7 @@ import {
   updateFileProgress,
   removeUploadingFile,
 } from "../Redux/slices/uploadingFilesSlice";
+import { addUploadedAttachOnCreation } from "../Redux/slices/uploadAttachOnCreation";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 import {
@@ -434,8 +435,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           );
           setIsLoading(false);
           await uploadRemainingChunks(file, fileId, chunks);
-
           dispatch(removeUploadingFile({ type: "attachements", fileId }));
+          dispatch(addUploadedAttachOnCreation({id:fileId,file_name:file.name,workorder:formValues.id!}))
         } else {
           console.error("Failed to upload first chunk");
         }
