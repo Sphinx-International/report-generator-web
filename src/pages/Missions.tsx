@@ -182,7 +182,7 @@ const Missions = () => {
                           {workorder.title}
                         </h2>
                         <p
-                          className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis"
+                          className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
                           style={{
                             display: "-webkit-box",
                             WebkitLineClamp: "2",

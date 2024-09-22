@@ -1761,7 +1761,6 @@ const MissionDetails = () => {
                                         "download-workorder-attachment",
                                         attach.file_name,
                                         (progress) => {
-                                          // Dispatch the action to update progress in Redux
                                           dispatch(setDownloadProgress({ id: attach.id, progress: `${progress.toFixed(0)}` }));
                                         },
                                         () => {
