@@ -7,6 +7,7 @@ import { Resmail } from "../assets/types/Mails&Notifications";
 import { RotatingLines } from "react-loader-spinner";
 import EmptyData from "../components/EmptyData";
 import { useNavigate } from "react-router-dom";
+import SearchBar from "../components/searchBar";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -16,6 +17,7 @@ const Individuals = () => {
   const editEmailDialogRef = useRef<HTMLDialogElement>(null);
 
   const [mails, setMails] = useState<Resmail[]>([]);
+  const [wsMails, setWsMails] = useState<Resmail[] | null>(null);
   const [selectedIndividual, setSelectedIndividual] = useState<number | null>(
     null
   );
@@ -115,49 +117,9 @@ const Individuals = () => {
         <Header
           pageSentence="Here are information about mails groupes"
           searchBar={false}
+          wsUrl="search-mail"
         />
-        <div className="w-full flex items-center gap-[8px]">
-          <div className="relative flex-grow">
-            <input
-              type="search"
-              name=""
-              id=""
-              className="w-full h-[44px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[14px] text-[12px]"
-              placeholder="Search"
-            />
-            <svg
-              className="absolute left-[20px] top-[50%] translate-y-[-50%]"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
-                stroke="#6F6C8F"
-                strokeWidth="1.5"
-                fillOpacity="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
-                stroke="#6F6C8F"
-                strokeWidth="1.5"
-                fillOpacity="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <button
-            className="rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[12px] font-medium"
-            onClick={() => {
-              handleOpenDialog(addEmailDialogRef);
-            }}
-          >
-            Add email{" "}
-          </button>
-        </div>
+        <SearchBar openDialogRef={addEmailDialogRef} page="mails" wsUrl="search-mail" setSearchResult={setWsMails} setLoaderSearch={setIsLoading}/>
 
         <main className="w-full flex flex-col gap-[20px] rounded-[20px] border-n300 border-[1px] sm:p-[25px] p-[16px]">
           <div className="w-full flex items-center justify-between py-[6px]">
@@ -196,7 +158,73 @@ const Individuals = () => {
             <div className="flex w-full items-center justify-center">
               <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60" />
             </div>
-          ) : mails.length > 0 ? (
+          ) : wsMails !== null ?       
+           (            <div
+              className={`flex items-center gap-x-[13px] gap-y-[18px] w-full flex-wrap py-[16px] }`}
+            > 
+                     { wsMails.map((mail, index) => {
+            return (
+              <div
+                key={index}
+                className={`cursor-pointer flex items-center gap-[12px] rounded-[22px] py-[7px] px-[11px] ${
+                  selectedIndividual === mail.id
+                    ? "border-primary border-[2px]"
+                    : "border-n300 border-[1px]"
+                } `}
+                onClick={() => {
+                  if (selectedIndividual === mail.id) {
+                    setSelectedIndividual(null);
+                  } else {
+                    setSelectedIndividual(mail.id);
+                  }
+                }}
+              >
+                <span className="p-[4px] rounded-[50%] bg-[#EDEBFF]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M9.99972 0.990234C8.9499 0.990234 7.94309 1.38714 7.20076 2.09363C6.45842 2.80013 6.04139 3.75834 6.04139 4.75748C6.04139 5.75661 6.45842 6.71482 7.20076 7.42132C7.94309 8.12781 8.9499 8.52472 9.99972 8.52472C11.0495 8.52472 12.0564 8.12781 12.7987 7.42132C13.541 6.71482 13.9581 5.75661 13.9581 4.75748C13.9581 3.75834 13.541 2.80013 12.7987 2.09363C12.0564 1.38714 11.0495 0.990234 9.99972 0.990234ZM7.29139 4.75748C7.29139 4.07386 7.57673 3.41824 8.08464 2.93485C8.59255 2.45146 9.28142 2.17989 9.99972 2.17989C10.718 2.17989 11.4069 2.45146 11.9148 2.93485C12.4227 3.41824 12.7081 4.07386 12.7081 4.75748C12.7081 5.44109 12.4227 6.09671 11.9148 6.5801C11.4069 7.0635 10.718 7.33506 9.99972 7.33506C9.28142 7.33506 8.59255 7.0635 8.08464 6.5801C7.57673 6.09671 7.29139 5.44109 7.29139 4.75748ZM9.99972 9.71437C8.07222 9.71437 6.29555 10.1315 4.97972 10.8358C3.68305 11.5306 2.70805 12.5822 2.70805 13.8782V13.9591C2.70722 14.8806 2.70639 16.037 3.77222 16.8634C4.29639 17.2695 5.03055 17.559 6.02222 17.7493C7.01555 17.9412 8.31139 18.042 9.99972 18.042C11.6881 18.042 12.9831 17.9412 13.9781 17.7493C14.9697 17.559 15.703 17.2695 16.228 16.8634C17.2939 16.037 17.2922 14.8806 17.2914 13.9591V13.8782C17.2914 12.5822 16.3164 11.5306 15.0205 10.8358C13.7039 10.1315 11.9281 9.71437 9.99972 9.71437ZM3.95805 13.8782C3.95805 13.2032 4.47639 12.4704 5.59222 11.8732C6.68889 11.2863 8.24555 10.904 10.0006 10.904C11.7539 10.904 13.3106 11.2863 14.4072 11.8732C15.5239 12.4704 16.0414 13.2032 16.0414 13.8782C16.0414 14.9155 16.008 15.4993 15.438 15.9402C15.1297 16.1798 14.613 16.4137 13.7297 16.5834C12.8489 16.7532 11.6447 16.8523 9.99972 16.8523C8.35472 16.8523 7.14972 16.7532 6.26972 16.5834C5.38639 16.4137 4.86972 16.1798 4.56139 15.941C3.99139 15.4993 3.95805 14.9155 3.95805 13.8782Z"
+                      fill="#4A3AFF"
+                    />
+                  </svg>
+                </span>
+                <span className="sm:text-[15px] text-[13px] text-n700 font-medium leading-[20px]">
+                  {mail.email}
+                </span>
+
+                <svg
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditMail(mail);
+                    handleOpenDialog(editEmailDialogRef);
+                  }}
+                  className="cursor-pointer ml-[2px] hover:scale-110"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                >
+                  <path
+                    d="M13.1238 2.45673C13.4363 2.14428 13.8602 1.96875 14.3021 1.96875C14.744 1.96875 15.1679 2.14428 15.4804 2.45673L17.5429 4.51923C17.6978 4.674 17.8206 4.85776 17.9044 5.06002C17.9882 5.26227 18.0313 5.47905 18.0313 5.69798C18.0313 5.9169 17.9882 6.13369 17.9044 6.33594C17.8206 6.53819 17.6978 6.72195 17.5429 6.87673L7.6321 16.7876L2.31543 17.6842L3.21293 12.3676L13.1238 2.45673ZM12.9329 5.00423L14.9954 7.06673L16.3646 5.69756L14.3021 3.63589L12.9329 5.00423ZM13.8163 8.24589L11.7546 6.18339L4.76793 13.1701L4.34876 15.6509L6.8296 15.2326L13.8163 8.24589Z"
+                    fill="#514F6E"
+                  />
+                </svg>
+              </div>
+            );
+          }) }
+            
+            </div>)
+
+          
+          :   mails.length > 0 ? (
             <div
               className={`flex items-center gap-x-[13px] gap-y-[18px] w-full flex-wrap py-[16px] }`}
             >

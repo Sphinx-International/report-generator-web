@@ -16,8 +16,10 @@ const useWebSocketSearch = ({
   setLoader
 }: UseWebSocketSearchProps) => {
   useEffect(() => {
+    // Handle empty query case
     if (!searchQuery) {
-      null
+      // Clear the results and stop the loader
+      setResults(null);
       setLoader(false);
       return;
     }
@@ -33,7 +35,6 @@ const useWebSocketSearch = ({
     }
 
     const url = `${baseUrl}/ws/${endpointPath}?token=${token}`;
-    console.log(url)
     const socket = new WebSocket(url);
 
     socket.onopen = () => {
@@ -62,6 +63,7 @@ const useWebSocketSearch = ({
       console.log("WebSocket connection closed");
     };
 
+    // Cleanup: Close WebSocket when component unmounts or query changes
     return () => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.close();

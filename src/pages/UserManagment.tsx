@@ -185,6 +185,7 @@ const UserManagment = () => {
         <Header
           pageSentence="Here are information about all users"
           searchBar={true}
+          wsUrl="search-account"
         />
         <Main
           page="accounts"

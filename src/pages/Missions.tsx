@@ -140,6 +140,7 @@ const Missions = () => {
         <Header
           pageSentence="Here are information about all missions"
           searchBar={true}
+          wsUrl=""
         />
         <Main
           page="workorders"

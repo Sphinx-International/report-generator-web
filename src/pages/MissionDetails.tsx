@@ -782,7 +782,7 @@ const MissionDetails = () => {
                                 />
                               </div>
                             ) : searchQueryEng !== "" ? (
-                              searchEngs.length > 0 ? (
+                              searchEngs !== null && searchEngs.length > 0 ? (
                                 searchEngs.map((user, index) => {
                                   return (
                                     <div
@@ -901,7 +901,7 @@ const MissionDetails = () => {
                                 />
                               </div>
                             ) : searchQueryEng !== "" ? (
-                              searchEngs.length > 0 ? (
+                              searchEngs !== null && searchEngs.length > 0 ? (
                                 searchEngs.map((user, index) => {
                                   return (
                                     <div
@@ -1017,7 +1017,7 @@ const MissionDetails = () => {
                                 />
                               </div>
                             ) : searchQueryEng !== "" ? (
-                              searchEngs.length > 0 ? (
+                              searchEngs !== null &&  searchEngs.length > 0 ? (
                                 searchEngs.map((user, index) => {
                                   return (
                                     <div
@@ -1217,7 +1217,7 @@ const MissionDetails = () => {
                                 />
                               </div>
                             ) : searchQueryCoord !== "" ? (
-                              searchCoords.length > 0 ? (
+                              searchCoords !== null &&  searchCoords.length > 0 ? (
                                 typeOfSearchForCoord === "Emails" ? (
                                   searchCoords.map((user, index) => (
                                     <div

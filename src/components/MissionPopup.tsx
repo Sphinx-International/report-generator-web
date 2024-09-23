@@ -666,7 +666,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                 width="20"
                               />
                             </div>
-                          ) : searchEngs.length > 0 ? (
+                          ) : searchEngs !== null && searchEngs.length > 0 ? (
                             searchEngs.map((eng) => {
                               return (
                                 <div
@@ -907,12 +907,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <div className="absolute right-[14px] top-[50%] translate-y-[-50%] z-50">
+                  <div className="absolute right-1 top-[50%] translate-y-[-50%] z-50 flex items-center gap-2 cursor-pointer sm:border-[1px] sm:border-n500 rounded-[18px] p-[6px]"
+                                        onClick={() => {
+                                          setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
+                                        }}>
+                  <span className="text-n500 text-[14px] sm:flex hidden">
+             {typeOfSearchForCoord === "Groupes" ? "Search by Groups" : "Search by Emails"}
+           </span>
                     <svg
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
-                      }}
                       xmlns="http://www.w3.org/2000/svg"
                       width="18"
                       height="16"
@@ -928,7 +930,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       />
                     </svg>
                     {typeOfSearchPopupVisible && (
-                      <div className="bg-white shadow-xl shadow-slate-400 p-[17px] rounded-[10px] flex flex-col items-start gap-[14px] absolute right-1">
+                      <div className="bg-white shadow-xl shadow-slate-400 p-[17px] rounded-[10px] flex flex-col items-start gap-[14px] absolute right-1 top-8">
                         <span className="text-[13px] text-n700 font-medium">
                           Search by :{" "}
                         </span>
@@ -972,7 +974,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                             width="20"
                           />
                         </div>
-                      ) : searchCoords.length > 0 ? (
+                      ) : searchCoords !== null && searchCoords.length > 0 ? (
                         searchCoords.map((coord) =>
                           typeOfSearchForCoord === "Emails" ? (
                             <div

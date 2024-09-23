@@ -6,11 +6,14 @@ import { useRef, useState, useEffect } from "react";
 import { handleOpenDialog } from "../func/openDialog";
 import { Resgroup } from "../assets/types/Mails&Notifications";
 import { RotatingLines } from "react-loader-spinner";
+import SearchBar from "../components/searchBar";
 import EmptyData from "../components/EmptyData";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const Groups = () => {
   const [groups, setGroups] = useState<Resgroup[]>([]);
+  const [wsGroups, setWsGroups] = useState<Resgroup[] | null>(null);
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [openedGroup, setOpenedGroup] = useState<Resgroup>();
@@ -99,49 +102,9 @@ const Groups = () => {
         <Header
           pageSentence="Here are information about mails groupes"
           searchBar={false}
+          wsUrl="search-group"
         />
-        <div className="w-full flex items-center gap-[8px]">
-          <div className="relative flex-grow">
-            <input
-              type="search"
-              name=""
-              id=""
-              className="w-full h-[44px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[14px] text-[12px]"
-              placeholder="Search"
-            />
-            <svg
-              className="absolute left-[20px] top-[50%] translate-y-[-50%]"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
-                stroke="#6F6C8F"
-                strokeWidth="1.5"
-                fillOpacity="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
-                stroke="#6F6C8F"
-                strokeWidth="1.5"
-                fillOpacity="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <button
-            className="rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[12px] font-medium"
-            onClick={() => {
-              handleOpenDialog(createGroupDialogRef);
-            }}
-          >
-            Create group
-          </button>
-        </div>
+        <SearchBar openDialogRef={createGroupDialogRef} page="groups" wsUrl="search-group" setSearchResult={setWsGroups} setLoaderSearch={setIsLoading}/>
 
         <main className="w-full flex flex-col gap-[20px] rounded-[20px] border-n300 border-[1px] p-[25px]">
           <div className="w-full flex items-center justify-between py-[6px]">
@@ -177,7 +140,110 @@ const Groups = () => {
             <div className="flex w-full items-center justify-center">
               <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60" />
             </div>
-          ) : groups.length > 0 ? (
+          ) : wsGroups !== null ? 
+
+          (
+            <div className="flex items-center gap-[10px] flex-wrap w-full">
+            {wsGroups.map((group, index) => {
+              return (
+                <div
+                  key={index}
+                  className={`md:w-[32%] cursor-pointer flex items-center justify-between flex-grow rounded-[15px] p-[12px] ${
+                    selectedGroups === group.id
+                      ? "border-primary border-[2px]"
+                      : "border-[#E6EDFF] border-[1px]"
+                  }`}
+                  onClick={() => {
+                    if (selectedGroups === group.id) {
+                      setSelectedGroups(null);
+                    } else {
+                      setSelectedGroups(group.id);
+                    }
+                  }}
+                >
+                  <div className="flex items-center gap-[11px]">
+                    <span className="rounded-[50%] p-[3px] bg-n300">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                      >
+                        <path
+                          d="M17.5 16.457C17.5 14.7154 16.1083 12.2337 14.1667 11.6845M12.5 16.457C12.5 14.2479 10.2617 11.457 7.5 11.457C4.73833 11.457 2.5 14.2479 2.5 16.457"
+                          stroke="#514F6E"
+                          strokeWidth="1.25"
+                          fillOpacity="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M7.5 8.54102C8.88071 8.54102 10 7.42173 10 6.04102C10 4.6603 8.88071 3.54102 7.5 3.54102C6.11929 3.54102 5 4.6603 5 6.04102C5 7.42173 6.11929 8.54102 7.5 8.54102Z"
+                          stroke="#514F6E"
+                          strokeWidth="1.25"
+                          fillOpacity="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M12.5 8.54102C13.163 8.54102 13.7989 8.27762 14.2678 7.80878C14.7366 7.33994 15 6.70406 15 6.04102C15 5.37797 14.7366 4.74209 14.2678 4.27325C13.7989 3.80441 13.163 3.54102 12.5 3.54102"
+                          stroke="#514F6E"
+                          strokeWidth="1.25"
+                          fillOpacity="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <span className="text-[12px] leading-[18px] text-n800 font-medium">
+                      {group.name}
+                    </span>
+                  </div>
+
+                  <svg
+                    className="hover:scale-[1.15] transition-all duration-150"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // setEditMail(mail);
+                      setOpenedGroup(group);
+                      handleOpenDialog(view_edit_GroupDialogRef);
+                    }}
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
+                      stroke="#A0A3BD"
+                      strokeWidth="2"
+                      fillOpacity="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
+                      stroke="#A0A3BD"
+                      strokeWidth="2"
+                      fillOpacity="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="3"
+                      stroke="#A0A3BD"
+                      strokeWidth="2"
+                      fillOpacity="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              );
+            })}
+          </div>
+          )
+          
+          : 
+          groups.length > 0 ? (
             <div className="flex items-center gap-[10px] flex-wrap w-full">
               {groups.map((group, index) => {
                 return (
