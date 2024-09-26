@@ -62,8 +62,8 @@ const Main: React.FC<HeaderProps> = (props) => {
 
   return (
     <main className="flex items-center flex-col  gap-[10px] lg:pr-[16px] w-full h-fit">
-      <div className="pl-[24px] lg:flex items-center justify-between w-full hidden">
-        <div className="flex items-center xl:gap-[27px] gap-[15px]">
+      <div className="pl-[24px] xl:flex items-center justify-between w-full hidden">
+        <div className="flex items-center xl:gap-[21px] gap-[15px]">
           {props.flitration.map((item, index) => (
             <span
               key={index}
@@ -123,7 +123,7 @@ const Main: React.FC<HeaderProps> = (props) => {
       </div>
 
       <div className="flex items-center justify-between w-full">
-        <div className="relative lg:hidden">
+        <div className="relative xl:hidden">
           <h3
             className="text-[20px] font-medium leading-[30px] text-primary flex items-center gap-[5px]"
             onClick={() => {

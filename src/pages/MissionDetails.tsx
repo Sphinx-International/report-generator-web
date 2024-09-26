@@ -312,6 +312,7 @@ const MissionDetails = () => {
         case 200:
           {
             const data = await response.json();
+            console.log(data)
             setWorkorder(data);
             setBasicDataWorkorder({
               title: data.workorder.title,
@@ -2868,11 +2869,9 @@ const MissionDetails = () => {
                 <button
                   className={`py-[12px] px-[48px] w-full md:w-auto rounded-[30px] bg-primary text-white  border-[2px] leading-[20px] font-semibold text-[14px]
                    ${
-                     (workorder.workorder.status > 4 && getRole() !== 0) ||
-                     (workorder.workorder.status > 1 &&
-                       workorder.workorder.status < 5)
-                       ? "hidden"
-                       : ""
+                    
+                     (workorder.workorder.status !== 1)
+                       && "hidden"
                    }  `}
                   disabled={isLoading ? true : false}
                   onClick={() => {
@@ -2890,11 +2889,9 @@ const MissionDetails = () => {
                         strokeColor="white"
                       />
                     </div>
-                  ) : workorder.workorder.status === 1 ? (
+                  ) : workorder.workorder.status === 1 && (
                     "Execution Finished"
-                  ) : workorder.workorder.status === 5 ? (
-                    "Close"
-                  ) : null}
+                  )}
                 </button>
               </div>
             ) : (

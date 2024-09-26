@@ -311,6 +311,7 @@ const Missions = () => {
                     "Validated",
                     "Accepted",
                     "Closed",
+                    "Update Requested"
                   ]
                 : ["All", "To do", "Executed", "Validated", "Accepted"]
               : []
@@ -488,7 +489,7 @@ const Missions = () => {
                       </div>
 
                       <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                        {workorder.id}
+                        {++index}
                       </span>
                     </div>
                   ))}
