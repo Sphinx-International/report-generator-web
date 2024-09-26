@@ -472,7 +472,7 @@ const Header: React.FC<headerProps> = (props) => {
                             key={index}
                             className="cursor-pointer px-[45px] py-[15px] rounded-[22px] w-full flex items-center gap-[16px] border-[2.5px] border-[#FF3B30]"
                             onClick={() => {
-                              navigate(`/missions/${workorder.id}`);
+                              navigate(`/workorders/${workorder.id}`);
                             }}
                           >
                             <svg
@@ -624,7 +624,7 @@ const Header: React.FC<headerProps> = (props) => {
                 <div className="flex items-center justify-center w-full">
                   <RotatingLines strokeColor="#4A3AFF" width="20" />
                 </div>
-              ) : searchResult!== null && (
+              ) : searchResult!== null && ( searchResult.length > 0 ?
                 searchResult.map((user: User, index) => {
                   return (
                     <div
@@ -646,7 +646,7 @@ const Header: React.FC<headerProps> = (props) => {
                     </div>
                   );
                 })
-              )}
+            :   <div className="w-full py-1 flex items-center justify-center text-n700 font-medium">no users founded . . .</div>  )}
             </div>
           )}
         </div>

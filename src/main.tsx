@@ -12,6 +12,7 @@ import MissionDetails from "./pages/MissionDetails.tsx";
 import EditUsers from "./pages/EditUsers.tsx";
 import Groups from "./pages/Groups.tsx";
 import Individuals from "./pages/Individuals.tsx";
+import WorkorderByUser from "./pages/WorkordersByUser.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -50,13 +51,19 @@ const router = createBrowserRouter([
     element: <ProtectedRoute element={<Dashboard />} allowedRoles={[0]} />,
   },
   {
-    path: "/missions",
+    path: "/workorders",
     element: <ProtectedRoute element={<Missions />} allowedRoles={[0, 1, 2]} />,
   },
   {
-    path: "/missions/:id",
+    path: "/workorders/:id",
     element: (
       <ProtectedRoute element={<MissionDetails/>} allowedRoles={[0, 1, 2]} />
+    ),
+  },
+  {
+    path: "/workorders-by-user/:id",
+    element: (
+      <ProtectedRoute element={<WorkorderByUser/>} allowedRoles={[0, 1, 2]} />
     ),
   },
   {

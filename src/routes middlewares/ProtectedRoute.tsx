@@ -61,7 +61,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowedRoles }
   }
 
   if (!allowedRoles.includes(userRole!)) {
-    return <Navigate to="/missions" state={{ from: location }} replace />;
+    return <Navigate to="/workorders" state={{ from: location }} replace />;
   }
 
   return element;

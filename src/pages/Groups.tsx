@@ -142,7 +142,7 @@ const Groups = () => {
             </div>
           ) : wsGroups !== null ? 
 
-          (
+          ( wsGroups.length > 0   ? 
             <div className="flex items-center gap-[10px] flex-wrap w-full">
             {wsGroups.map((group, index) => {
               return (
@@ -240,7 +240,16 @@ const Groups = () => {
               );
             })}
           </div>
-          )
+          : <div className="flex flex-col gap-6 items-center justify-center">
+          <img
+            src="/astronaut/astro2.png"
+            alt="astro"
+            className="w-[230px]"
+          />
+          <h3 className="sm:text-[30px] text-[25px] font-bold text-n800">
+            No result founded
+          </h3>
+        </div>)
           
           : 
           groups.length > 0 ? (

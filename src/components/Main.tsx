@@ -16,9 +16,9 @@ interface HeaderProps {
   page: "workorders" | "accounts";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
-  functionalties: Functionalities;
+  functionalties?: Functionalities;
   children: ReactNode;
-  handleAddPrimaryButtonClick: () => void;
+  handleAddPrimaryButtonClick?: () => void;
   handleSecondaryButtonClick?: () => void;
   setCurrentPage: (page: number) => void;
 }
@@ -80,7 +80,8 @@ const Main: React.FC<HeaderProps> = (props) => {
         </div>
         {["0", "1"].includes(localStorage.getItem("role")!) && (
           <div className="flex items-center gap-[7px]">
-            {props.functionalties.secondaryFuncs &&
+            {props.functionalties &&
+            props.functionalties.secondaryFuncs &&
             localStorage.getItem("role") === "0"
               ? props.functionalties.secondaryFuncs.map((button, index) => {
                   return (
@@ -109,13 +110,14 @@ const Main: React.FC<HeaderProps> = (props) => {
                   );
                 })
               : null}
-
-            <button
-              className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-              onClick={props.handleAddPrimaryButtonClick}
-            >
-              {props.functionalties.primaryFunc.name}
-            </button>
+            {props.functionalties && (
+              <button
+                className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+                onClick={props.handleAddPrimaryButtonClick}
+              >
+                {props.functionalties.primaryFunc.name}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -165,26 +167,30 @@ const Main: React.FC<HeaderProps> = (props) => {
           )}
         </div>
         <div className="flex items-center gap-3 flex-row-reverse">
+        {props.functionalties && (
           <button
-            className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-            onClick={props.handleAddPrimaryButtonClick}
-          >
-            {props.functionalties.primaryFunc.name}
-          </button>
-          {props.functionalties.secondaryFuncs?.some(
-            (func) => func.name === "Delete"
-          ) && (
-            <button
-              className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
-                selectedWorkorders.length === 0
-                  ? "text-n600 border-n400"
-                  : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
-              }`}
-              onClick={props.handleSecondaryButtonClick}
-            >
-              Delete
-            </button>
-          )}
+          className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+          onClick={props.handleAddPrimaryButtonClick}
+        >
+          {props.functionalties && props.functionalties.primaryFunc.name}
+        </button>
+        )}
+
+          {props.functionalties &&
+            props.functionalties.secondaryFuncs?.some(
+              (func) => func.name === "Delete"
+            ) && (
+              <button
+                className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                  selectedWorkorders.length === 0
+                    ? "text-n600 border-n400"
+                    : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
+                }`}
+                onClick={props.handleSecondaryButtonClick}
+              >
+                Delete
+              </button>
+            )}
         </div>
       </div>
 

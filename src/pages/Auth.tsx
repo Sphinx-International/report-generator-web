@@ -78,7 +78,7 @@ const Auth = () => {
             navigate("/users");
             localStorage.setItem("role", data.account.role.toString());
           } else {
-            navigate("/missions");
+            navigate("/workorders");
             localStorage.setItem("role", data.account.role.toString());
           }
         } else if (response.status === 401) {
