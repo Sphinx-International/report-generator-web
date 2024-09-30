@@ -57,6 +57,8 @@ type WorkorderProperties = {
 
 const MissionDetails = () => {
   const { id } = useParams();
+ // const decodedId = decodeURIComponent(id || "");
+
   const dispatch = useDispatch<AppDispatch>();
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
@@ -296,7 +298,6 @@ const MissionDetails = () => {
       console.error("No token found");
       return;
     }
-
     const url = `${baseUrl}/workorder/get-workorder/${id}`;
 
     try {

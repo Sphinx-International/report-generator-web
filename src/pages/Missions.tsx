@@ -301,7 +301,7 @@ const Missions = () => {
         <Main
           page="workorders"
           flitration={
-            !typeOfSearch == !"Wo" && !searchQuery
+            !typeOfSearch === !"Wo" && !searchQuery
               ? ["0", "1"].includes(localStorage.getItem("role")!)
                 ? [
                     "All",
@@ -311,7 +311,7 @@ const Missions = () => {
                     "Validated",
                     "Accepted",
                     "Closed",
-                    "Update Requested"
+                    "Update Requested",
                   ]
                 : ["All", "To do", "Executed", "Validated", "Accepted"]
               : []
@@ -339,7 +339,11 @@ const Missions = () => {
                           <div
                             className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
                             onClick={() =>
-                              navigate(`/workorders/${workorder.id}`)
+                              navigate(
+                                `/workorders/${encodeURIComponent(
+                                  workorder.id
+                                )}`
+                              )
                             }
                           >
                             <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
@@ -434,7 +438,11 @@ const Missions = () => {
                     >
                       <div
                         className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
-                        onClick={() => navigate(`/workorders/${workorder.id}`)}
+                        onClick={() =>
+                          navigate(
+                            `/workorders/${encodeURIComponent(workorder.id)}`
+                          )
+                        }
                       >
                         <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
                           {workorder.title}
