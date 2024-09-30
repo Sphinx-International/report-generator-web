@@ -44,7 +44,7 @@ const Missions = () => {
   const limit = 6;
   const totalPages = Math.ceil(totalWorkorders / limit);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [typeOfSearch, setTypeOfSearch] = useState<"Wo" | "User">("Wo");
   const [typeOfSearchPopupVisible, setTypeOfSearchPopupVisible] =
     useState<boolean>(false);
@@ -301,20 +301,30 @@ const Missions = () => {
         <Main
           page="workorders"
           flitration={
-            !typeOfSearch === !"Wo" && !searchQuery
-              ? ["0", "1"].includes(localStorage.getItem("role")!)
-                ? [
-                    "All",
-                    "Created",
-                    "Assigned",
-                    "Executed",
-                    "Validated",
-                    "Accepted",
-                    "Closed",
-                    "Update Requested",
-                  ]
-                : ["All", "To do", "Executed", "Validated", "Accepted"]
-              : []
+            searchQuery 
+              ? typeOfSearch === "Wo" ? [] : ["0", "1"].includes(localStorage.getItem("role")!)
+              ? [
+                  "All",
+                  "Created",
+                  "Assigned",
+                  "Executed",
+                  "Validated",
+                  "Accepted",
+                  "Closed",
+                  "Update Requested",
+                ]
+              : ["All", "To do", "Executed", "Validated", "Accepted"] : ["0", "1"].includes(localStorage.getItem("role")!)
+              ? [
+                  "All",
+                  "Created",
+                  "Assigned",
+                  "Executed",
+                  "Validated",
+                  "Accepted",
+                  "Closed",
+                  "Update Requested",
+                ]
+              : ["All", "To do", "Executed", "Validated", "Accepted"]
           }
           FiltrationFunc={fetchWorkOrders}
           functionalties={{
