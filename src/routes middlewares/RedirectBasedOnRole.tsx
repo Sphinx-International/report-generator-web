@@ -11,7 +11,7 @@ const RedirectBasedOnRole: React.FC = () => {
     if (role === 0) {
       navigate('/users');
     } else if (role === 1 || role === 2) {
-      navigate('/missions');
+      navigate('/workorders');
     }
   }, [navigate]);
 

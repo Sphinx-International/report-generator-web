@@ -6,7 +6,7 @@ const Page404 = () => {
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header
-          pageSentence="It's LooK Like You are loset .."
+          pageSentence="It's LooK Like You are lost .."
           searchBar={false}
         />
         <div className="flex flex-col items-center justify-center w-full flex-grow gap-[25px]">

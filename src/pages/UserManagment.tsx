@@ -13,6 +13,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 import { Link } from "react-router-dom";
+import EmptyData from "../components/EmptyData";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const titlesRow = [
   {
@@ -98,8 +100,8 @@ const UserManagment = () => {
       return { total: 0, current_offset: 0 };
     }
     const url = role
-      ? `https://auto-reporting-server.sphinx-international.online/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
-      : `https://auto-reporting-server.sphinx-international.online/account/get-accounts?offset=${offset}&limit=${limit}`;
+      ? `${baseUrl}/account/get-accounts-by-role/${role}?offset=${offset}&limit=${limit}`
+      : `${baseUrl}/account/get-accounts?offset=${offset}&limit=${limit}`;
 
     setIsloading(true);
     try {
@@ -114,7 +116,7 @@ const UserManagment = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error response text: ", errorText);
-        localStorage.clear();
+
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       switch (response.status) {
@@ -130,7 +132,6 @@ const UserManagment = () => {
         case 204:
           setUsers(null);
           break;
-
         default:
           break;
       }
@@ -144,7 +145,7 @@ const UserManagment = () => {
 
   useEffect(() => {
     const offset = (currentPage - 1) * limit;
-    const filter = localStorage.getItem("selectedFilter");
+    const filter = localStorage.getItem("selectedFilterForUsers");
 
     if (filter === "all" || !filter) {
       fetchUsers(offset, limit);
@@ -177,8 +178,6 @@ const UserManagment = () => {
     handledeleteUserButtonClick();
   };
 
-  console.log(isloading);
-
   return (
     <div className="w-full flex md:h-[100vh]">
       <SideBar />
@@ -186,6 +185,7 @@ const UserManagment = () => {
         <Header
           pageSentence="Here are information about all users"
           searchBar={true}
+          wsUrl="search-account"
         />
         <Main
           page="accounts"
@@ -221,8 +221,8 @@ const UserManagment = () => {
                     fill="none"
                   >
                     <path
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
+                      fillRule="evenodd"
+                      clipRule="evenodd"
                       d="M18.412 6.5L17.611 20.117C17.5812 20.6264 17.3577 21.1051 16.9865 21.4551C16.6153 21.8052 16.1243 22.0001 15.614 22H8.386C7.87575 22.0001 7.38475 21.8052 7.0135 21.4551C6.64226 21.1051 6.41885 20.6264 6.389 20.117L5.59 6.5H3.5V5.5C3.5 5.36739 3.55268 5.24021 3.64645 5.14645C3.74021 5.05268 3.86739 5 4 5H20C20.1326 5 20.2598 5.05268 20.3536 5.14645C20.4473 5.24021 20.5 5.36739 20.5 5.5V6.5H18.412ZM10 2.5H14C14.1326 2.5 14.2598 2.55268 14.3536 2.64645C14.4473 2.74021 14.5 2.86739 14.5 3V4H9.5V3C9.5 2.86739 9.55268 2.74021 9.64645 2.64645C9.74021 2.55268 9.86739 2.5 10 2.5ZM9 9L9.5 18H11L10.6 9H9ZM13.5 9L13 18H14.5L15 9H13.5Z"
                       fill={`${
                         selectedUsers.length === 0 ? "#6F6C8F" : "#df0505"
@@ -291,14 +291,14 @@ const UserManagment = () => {
                                   d="M10 2.5H4.16667C3.72464 2.5 3.30072 2.67559 2.98816 2.98816C2.67559 3.30072 2.5 3.72464 2.5 4.16667V15.8333C2.5 16.2754 2.67559 16.6993 2.98816 17.0118C3.30072 17.3244 3.72464 17.5 4.16667 17.5H15.8333C16.2754 17.5 16.6993 17.3244 17.0118 17.0118C17.3244 16.6993 17.5 16.2754 17.5 15.8333V10"
                                   stroke="#7C8DB5"
                                   strokeWidth="1.66667"
-                                  strokeLinecap="round"
+                                  fillOpacity="round"
                                   strokeLinejoin="round"
                                 />
                                 <path
                                   d="M15.3125 2.18744C15.644 1.85592 16.0937 1.66968 16.5625 1.66968C17.0313 1.66968 17.481 1.85592 17.8125 2.18744C18.144 2.51897 18.3303 2.9686 18.3303 3.43744C18.3303 3.90629 18.144 4.35592 17.8125 4.68744L10.3017 12.1991C10.1038 12.3968 9.85933 12.5415 9.59083 12.6199L7.19666 13.3199C7.12496 13.3409 7.04895 13.3421 6.97659 13.3236C6.90423 13.305 6.83819 13.2674 6.78537 13.2146C6.73255 13.1618 6.6949 13.0957 6.67637 13.0234C6.65783 12.951 6.65908 12.875 6.68 12.8033L7.38 10.4091C7.45877 10.1408 7.60378 9.89666 7.80166 9.69911L15.3125 2.18744Z"
                                   stroke="#7C8DB5"
                                   strokeWidth="1.66667"
-                                  strokeLinecap="round"
+                                  fillOpacity="round"
                                   strokeLinejoin="round"
                                 />
                               </svg>
@@ -329,16 +329,7 @@ const UserManagment = () => {
                     />
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-6 items-center justify-center py-4">
-                    <img
-                      src="/astronaut/astronaut.png"
-                      alt="astro"
-                      className="w-[300px]"
-                    />
-                    <h3 className="text-[36px] font-bold text-n800">
-                      No User Founded
-                    </h3>
-                  </div>
+                  <EmptyData data="mails" />
                 )}
               </div>
 
@@ -398,8 +389,8 @@ const UserManagment = () => {
                             <path
                               d="M8.16876 1.42914C8.44354 1.15437 8.81621 1 9.20481 1C9.5934 1 9.96608 1.15437 10.2409 1.42914C10.5156 1.70392 10.67 2.0766 10.67 2.46519C10.67 2.85379 10.5156 3.22646 10.2409 3.50124L4.01559 9.7272C3.85158 9.89106 3.64897 10.011 3.42642 10.076L1.44205 10.6562C1.38261 10.6735 1.31961 10.6746 1.25964 10.6592C1.19967 10.6438 1.14493 10.6126 1.10115 10.5689C1.05737 10.5251 1.02617 10.4703 1.0108 10.4104C0.99544 10.3504 0.996479 10.2874 1.01381 10.228L1.594 8.24358C1.65929 8.02121 1.77948 7.81884 1.94349 7.6551L8.16876 1.42914Z"
                               stroke="#A0A3BD"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              fillOpacity="round"
+                              strokeLinejoin="round"
                             />
                           </svg>
                         </Link>
@@ -440,12 +431,13 @@ const UserManagment = () => {
         fetchUsers={() => fetchUsers((currentPage - 1) * limit, limit)}
       />
       <DeletePopup
+        page="accounts"
         ref={deleteDialogRef}
         deleteItems={selectedUsers}
-        deleteUrl= {`https://auto-reporting-server.sphinx-international.online/account/delete-accounts`}
+        deleteUrl={`${baseUrl}/account/delete-accounts`}
         jsonTitle="accounts"
         fetchFunc={fetchUsers}
-        fetchUrl={`https://auto-reporting-server.sphinx-international.online/account/get-accounts`}
+        fetchUrl={`${baseUrl}/account/get-accounts`}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

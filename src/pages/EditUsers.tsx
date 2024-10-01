@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ThreeDots, RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const EditUsers = () => {
   const { id } = useParams();
@@ -53,7 +54,9 @@ const EditUsers = () => {
       return;
     }
 
-    const url = `https://auto-reporting-server.sphinx-international.online//account/get-account/${id}`;
+    const url = `${baseUrl}/account/get-account/${id}`;
+
+
     setIsPageLoading(true);
     try {
       const response = await fetch(url, {
@@ -77,7 +80,6 @@ const EditUsers = () => {
       setLastName(data.last_name);
       setEmail(data.email);
       setSelectedOption(data.role === 1 ? "Coordinator" : "Engineer");
-      console.log(data);
     } catch (err) {
       console.error("Error: ", err);
     } finally {
@@ -96,7 +98,8 @@ const EditUsers = () => {
     setIsLoadingGeneral(true);
     setErrGeneral("");
     try {
-      const response = await fetch(`https://auto-reporting-server.sphinx-international.online//account/update-account/generals`, {
+      const response = await fetch(`${baseUrl}/account/update-account/generals`, {
+
         // Added a leading slash
         method: "PUT",
         headers: {
@@ -146,7 +149,8 @@ const EditUsers = () => {
     setIsLoadingRole(true);
     setErrRole("");
     try {
-      const response = await fetch(`https://auto-reporting-server.sphinx-international.online//account/update-account/role`, {
+      const response = await fetch(`${baseUrl}/account/update-account/role`, {
+
         // Added a leading slash
         method: "PUT",
         headers: {
@@ -237,9 +241,9 @@ const EditUsers = () => {
                       <path
                         d="M10.5003 4.49996L12.5003 6.49996M9.16699 13.8333H14.5003M3.83366 11.1666L3.16699 13.8333L5.83366 13.1666L13.5577 5.44263C13.8076 5.19259 13.948 4.85351 13.948 4.49996C13.948 4.14641 13.8076 3.80733 13.5577 3.55729L13.443 3.44263C13.193 3.19267 12.8539 3.05225 12.5003 3.05225C12.1468 3.05225 11.8077 3.19267 11.5577 3.44263L3.83366 11.1666Z"
                         stroke="#4A3AFF"
-                        stroke-width="1.66667"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="1.66667"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                     </svg>{" "}
                     Edit
@@ -385,9 +389,9 @@ const EditUsers = () => {
                       <path
                         d="M10.5003 4.49996L12.5003 6.49996M9.16699 13.8333H14.5003M3.83366 11.1666L3.16699 13.8333L5.83366 13.1666L13.5577 5.44263C13.8076 5.19259 13.948 4.85351 13.948 4.49996C13.948 4.14641 13.8076 3.80733 13.5577 3.55729L13.443 3.44263C13.193 3.19267 12.8539 3.05225 12.5003 3.05225C12.1468 3.05225 11.8077 3.19267 11.5577 3.44263L3.83366 11.1666Z"
                         stroke="#4A3AFF"
-                        stroke-width="1.66667"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="1.66667"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                     </svg>{" "}
                     Edit
@@ -422,7 +426,7 @@ const EditUsers = () => {
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          strokeLinecap="round"
+                          fillOpacity="round"
                           strokeLinejoin="round"
                           strokeWidth="2"
                           d="M19 9l-7 7-7-7"

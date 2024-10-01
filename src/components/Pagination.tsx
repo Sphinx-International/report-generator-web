@@ -13,7 +13,7 @@ interface PaginationProps {
 
 const Pagination: React.FC<PaginationProps> = (props) => {
   return (
-    <div className="md:relative z-50 sticky bottom-0 bg-white sm:p-[20px] py-[20px] md:p-0 w-full flex flex-col gap-[20.5px] items-center ">
+    <div className="md:relative z-20 sticky bottom-0 bg-white sm:p-[20px] py-[20px] md:p-0 w-full flex flex-col gap-[20.5px] items-center ">
       <div className="flex items-center lg:gap-[36px] sm:gap-[26px] gap-[21px] ">
         <span         className={` font-medium text-primary sm:text-[14px] text-[11px] ${props.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
 

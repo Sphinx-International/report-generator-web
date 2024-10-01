@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { isValidEmail, isValidPassword } from "../func/authValidation";
 import { ThreeDots } from "react-loader-spinner";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const Auth = () => {
 
@@ -54,7 +55,8 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(`https://auto-reporting-server.sphinx-international.online//account/login`, {
+      const response = await fetch(`${baseUrl}/account/login`, {
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,8 +66,6 @@ const Auth = () => {
 
       if (response) {
         const data = await response.json();
-        console.log("Form submitted successfully", data);
-
         if (response.status === 200) {
           if (rememberMe) {
             localStorage.setItem("token", data.token);
@@ -78,7 +78,7 @@ const Auth = () => {
             navigate("/users");
             localStorage.setItem("role", data.account.role.toString());
           } else {
-            navigate("/missions");
+            navigate("/workorders");
             localStorage.setItem("role", data.account.role.toString());
           }
         } else if (response.status === 401) {
@@ -210,25 +210,25 @@ const Auth = () => {
                       <path
                         d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
                         stroke="#A0A3BD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                       <path
                         d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
                         stroke="#A0A3BD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                       <circle
                         cx="12"
                         cy="12"
                         r="3"
                         stroke="#A0A3BD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
                   ) : (
@@ -242,9 +242,9 @@ const Auth = () => {
                       <path
                         d="M8.82089 8.82243C8.50837 9.13505 8.33285 9.55902 8.33293 10.0011C8.333 10.4431 8.50868 10.867 8.8213 11.1795C9.13393 11.492 9.55789 11.6675 9.99993 11.6675C10.442 11.6674 10.8659 11.4917 11.1784 11.1791M13.9008 13.8942C12.7319 14.6256 11.3789 15.0091 10 15C7 15 4.5 13.3334 2.5 10C3.56 8.23336 4.76 6.93503 6.1 6.10503M8.48333 5.15002C8.98253 5.04897 9.49068 4.99871 10 5.00002C13 5.00002 15.5 6.66669 17.5 10C16.945 10.925 16.3508 11.7225 15.7183 12.3917M2.5 2.5L17.5 17.5"
                         stroke="#A0A3BD"
-                        stroke-width="1.3"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="1.3"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
                   )}
@@ -313,7 +313,7 @@ const Auth = () => {
           <div className="flex flex-col items-start justify-center gap-[35px] w-full ">
             <div className="flex flex-col items-start justify-center gap-[15px] w-full">
               <label
-                htmlFor="email"
+                htmlFor="email-for-mobile"
                 className="text-[15px] leading-[20px] text-n700 ml-[4px] font-medium"
               >
                 Email
@@ -321,7 +321,7 @@ const Auth = () => {
               <input
                 type="email"
                 name="email"
-                id="email"
+                id="email-for-mobile"
                 placeholder="Email address"
                 className="w-full h-[46px] rounded-[46px] shadow-md px-[21px] text-n600"
                 value={email}
@@ -338,7 +338,7 @@ const Auth = () => {
 
             <div className="flex flex-col items-start justify-center gap-[15px] w-full">
               <label
-                htmlFor="password"
+                htmlFor="password-for-mobile"
                 className="text-[15px] leading-[20px] text-n700 ml-[4px] font-medium"
               >
                 Password
@@ -347,7 +347,7 @@ const Auth = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  id="password"
+                  id="password-for-mobile"
                   placeholder="Password"
                   className="w-full h-[46px] rounded-[46px] shadow-md px-[21px] text-n600 pr-[45px]"
                   value={password}
@@ -370,25 +370,25 @@ const Auth = () => {
                       <path
                         d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
                         stroke="#A0A3BD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                       <path
                         d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
                         stroke="#A0A3BD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                       <circle
                         cx="12"
                         cy="12"
                         r="3"
                         stroke="#A0A3BD"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="2"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
                   ) : (
@@ -402,9 +402,9 @@ const Auth = () => {
                       <path
                         d="M8.82089 8.82243C8.50837 9.13505 8.33285 9.55902 8.33293 10.0011C8.333 10.4431 8.50868 10.867 8.8213 11.1795C9.13393 11.492 9.55789 11.6675 9.99993 11.6675C10.442 11.6674 10.8659 11.4917 11.1784 11.1791M13.9008 13.8942C12.7319 14.6256 11.3789 15.0091 10 15C7 15 4.5 13.3334 2.5 10C3.56 8.23336 4.76 6.93503 6.1 6.10503M8.48333 5.15002C8.98253 5.04897 9.49068 4.99871 10 5.00002C13 5.00002 15.5 6.66669 17.5 10C16.945 10.925 16.3508 11.7225 15.7183 12.3917M2.5 2.5L17.5 17.5"
                         stroke="#A0A3BD"
-                        stroke-width="1.3"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="1.3"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
                   )}
@@ -422,7 +422,7 @@ const Auth = () => {
               <input
                 type="checkbox"
                 name="remember"
-                id="Remember"
+                id="Remember-for-mobile"
                 className="w-[15.75px] h-[15.75px] rounded-[4.5px] border-[1.13px] border-n500"
                 checked={rememberMe}
                 onChange={() => setRememberMe(!rememberMe)}

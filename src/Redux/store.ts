@@ -1,17 +1,22 @@
-// store.ts
-import { configureStore } from '@reduxjs/toolkit';
-import dialogReducer from './slices/dialogSlice';
-import sideBarReducer from './slices/sideBarSlice';
-import selectedUsersReducer from './slices/selectedUsersSlice';
-import selectedWorkorderssReducer from './slices/selectedWorkordersSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import sideBarReducer from "./slices/sideBarSlice";
+import selectedUsersReducer from "./slices/selectedUsersSlice";
+import selectedWorkorderssReducer from "./slices/selectedWorkordersSlice";
+import uploadingFilesReducer from "./slices/uploadingFilesSlice";
+import uploadedAttachOnCreationReducer from "./slices/uploadAttachOnCreation";
+import selectedIndividualsReducer from "./slices/selectedIndividuals";
+import notificationCountReducer from "./slices/notificationCountSlice";
 
 
 export const store = configureStore({
   reducer: {
-    dialog: dialogReducer,
-    sidebar:sideBarReducer,
-    selectedUsers:selectedUsersReducer,
-    selectedWorkorders:selectedWorkorderssReducer
+    sidebar: sideBarReducer,
+    selectedUsers: selectedUsersReducer,
+    selectedWorkorders: selectedWorkorderssReducer,
+    uploadingFiles: uploadingFilesReducer,
+    uploadedAttachOnCreation: uploadedAttachOnCreationReducer,
+    selectedIndividuals: selectedIndividualsReducer,
+    notificationCount: notificationCountReducer,
   },
 });
 
