@@ -102,7 +102,7 @@ export const getActionNotificationTitle = (actionNumber: number): string => {
       303: "Workorder drop assign",
       304: "Workorder executed",
       305: "Workorder report uploaded",
-      306: "Workorder validated",
+      306: "Workorder reported",
       307: "Workorder certificate uploaded",
       308: "Workorder accepted",
     };

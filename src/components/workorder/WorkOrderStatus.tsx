@@ -34,7 +34,7 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({ status,styles }) => {
           : status === 2
           ? "executed"
           : status === 3
-          ? "validated"
+          ? "Reported"
           : status === 4
           ? "Acceptance"
         

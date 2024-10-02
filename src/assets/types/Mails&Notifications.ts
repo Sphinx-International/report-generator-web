@@ -16,3 +16,10 @@ export interface Notification {
   at: Date;
   seen:boolean;
 }
+
+export interface MutedMail {
+  id: number;
+  type: number;
+  muted_at: Date,
+  account: number
+}
