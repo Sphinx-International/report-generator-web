@@ -17,7 +17,7 @@ const ResetPassword = () => {
 
   const [error, setError] = useState<string>("");
   const [errorVisible, setErrorVisible] = useState<boolean>(false);
-  const [newPassError, setNewPassError] = useState<boolean>(false);
+  const [newPassError, setNewPassError] = useState<string>("");
   const [confirmPassError, setConfirmPassError] = useState<boolean>(false);
 
   const [resetPage, setResetPage] = useState<1 | 2 | 3>(1);
@@ -63,7 +63,7 @@ const ResetPassword = () => {
 
   const checkNewPassword = (newPass: string, confirmPass: string) => {
     if (isValidPassword(newPass)) {
-      setNewPassError(false);
+      setNewPassError("");
       if (newPass === confirmPass) {
         setConfirmPassError(false);
         return true;
@@ -72,7 +72,7 @@ const ResetPassword = () => {
         return false;
       }
     } else {
-      setNewPassError(true);
+      setNewPassError("Enter a valid password");
       return false;
     }
   };
@@ -177,8 +177,6 @@ const ResetPassword = () => {
         body: JSON.stringify({password: newPassword }),
       });
 
-      console.log(response.status);
-
       switch (response.status) {
         case 200:
           setError("");
@@ -186,6 +184,9 @@ const ResetPassword = () => {
           enqueueSnackbar("Password successfully reset", { variant: "success" , autoHideDuration: 3000,});
           navigate("/")
           break;
+          case 406:
+            setNewPassError("Weak password");
+            break;
 
         default:
           console.error("Error submitting form");
@@ -388,11 +389,10 @@ const ResetPassword = () => {
                       setNewPassword(eo.target.value);
                     }}
                   />
-                  {newPassError && (
+                  
                     <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                      Enter a valid password
+                      {newPassError}
                     </span>
-                  )}
                 </div>
 
                 <div className="flex flex-col items-start justify-center gap-[15px] w-full">
@@ -436,7 +436,7 @@ const ResetPassword = () => {
                       />
                     </svg>
                     <span className="text-[14px] leading-[22px] text-[#475467]">
-                      Password at least contain 6 character
+                      Password at least contain 8 character
                     </span>
                   </div>
                   <div className="flex items-center gap-[10px]">
@@ -456,7 +456,7 @@ const ResetPassword = () => {
                       />
                     </svg>
                     <span className="text-[14px] leading-[22px] text-[#475467]">
-                      Password must contain both letters and numbers.
+                       Password cannot contain only numbers.
                     </span>
                   </div>
                 </div>

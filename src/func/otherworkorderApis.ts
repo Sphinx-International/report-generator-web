@@ -17,9 +17,7 @@ export const handle_edit_or_reqUpdate_report = async (
     console.error("No token found");
     return;
   }
-  console.log(`Token ${token}`)
   setIsLoading(true);
-  console.log(JSON.stringify({ workorder_id, notify_engineer,message }));
   try {
     const response = await fetch(`${baseUrl}/workorder/request-update`, {
       method: "PUT",
@@ -30,7 +28,6 @@ export const handle_edit_or_reqUpdate_report = async (
       body: JSON.stringify({ workorder_id, notify_engineer,message }),
     });
     if (response) {
-      console.log(response.status);
 
       switch (response.status) {
         case 200:
@@ -62,7 +59,6 @@ export const handle_update_cert_type = async (
     console.error("No token found");
     return;
   }
-  console.log(JSON.stringify({ workorder_id, certificate_type }));
   try {
     const response = await fetch(
       `${baseUrl}/workorder/update-workorder-certificate-type`,
@@ -76,8 +72,6 @@ export const handle_update_cert_type = async (
       }
     );
     if (response) {
-      console.log(response.status);
-
       switch (response.status) {
         case 200:
           fetchOneWorkOrder();

@@ -313,7 +313,6 @@ const MissionDetails = () => {
         case 200:
           {
             const data = await response.json();
-            console.log(data)
             setWorkorder(data);
             setBasicDataWorkorder({
               title: data.workorder.title,
@@ -1462,7 +1461,7 @@ const MissionDetails = () => {
                       <span
                         className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
                         onClick={() => {
-                          if (getRole() !== 2) {
+                          if (getRole() !== 2 && workorder.workorder.status < 5) {
                             handleeditReqAccStatus(workorder.workorder.id, 0);
                           }
                         }}
@@ -1474,7 +1473,7 @@ const MissionDetails = () => {
                       <span
                         className="px-[10px] py-[6px] rounded-[50%] text-[#DB2C2C] bg-[#DB2C2C4D] cursor-pointer"
                         onClick={() => {
-                          if (getRole() !== 2) {
+                          if (getRole() !== 2 && workorder.workorder.status < 5) {
                             handleeditReqAccStatus(workorder.workorder.id, 1);
                           }
                         }}
