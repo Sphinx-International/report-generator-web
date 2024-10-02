@@ -17,6 +17,7 @@ import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
 import { User } from "../assets/types/User";
+import { getRole } from "../func/getUserRole";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const Missions = () => {
@@ -197,7 +198,11 @@ const Missions = () => {
             />
           </svg>
 
-          <div
+        {getRole() !== 2 &&
+        
+        <>
+         
+         <div
             className="absolute right-1 top-[50%] translate-y-[-50%] z-50 flex items-center gap-2 cursor-pointer sm:border-[2px] sm:border-n500 rounded-[20px] p-[6px]"
             onClick={() => {
               setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
@@ -296,6 +301,10 @@ const Missions = () => {
               )}
             </div>
           )}
+        </>
+        
+        }
+
         </div>
 
         <Main
@@ -308,23 +317,23 @@ const Missions = () => {
                   "Created",
                   "Assigned",
                   "Executed",
-                  "Validated",
+                  "Reported",
                   "Accepted",
                   "Closed",
                   "Update Requested",
                 ]
-              : ["All", "To do", "Executed", "Validated", "Accepted"] : ["0", "1"].includes(localStorage.getItem("role")!)
+              : ["All", "To do", "Executed", "Reported", "Accepted"] : ["0", "1"].includes(localStorage.getItem("role")!)
               ? [
                   "All",
                   "Created",
                   "Assigned",
                   "Executed",
-                  "Validated",
+                  "Reported",
                   "Accepted",
                   "Closed",
                   "Update Requested",
                 ]
-              : ["All", "To do", "Executed", "Validated", "Accepted"]
+              : ["All", "To do", "Executed", "Reported", "Accepted"]
           }
           FiltrationFunc={fetchWorkOrders}
           functionalties={{
