@@ -40,6 +40,10 @@ export type ResFile = {
   is_completed: boolean;
 };
 
+export type ReturnVoucherFile = ResFile & {
+  is_last: boolean;
+};
+
 export type CertificateFile = ResFile & {
   type: 1 | 2 | 3;
 };
@@ -64,6 +68,7 @@ export interface ResOfOneMission {
     status: 0 | 1 | 2 | 3 | 4 | 5;
     description: string;
     require_acceptence?: boolean;
+    require_return_voucher?: boolean;
     created_at: Date;
     created_by: string;
     assigned_to: string | null;
@@ -73,6 +78,7 @@ export interface ResOfOneMission {
   attachments: ResFile[];
   reports?: ReportFile[];
   acceptance_certificates?: CertificateFile[];
+  return_vouchers?: ReturnVoucherFile[]
 }
 
 export interface alertWorkorder {

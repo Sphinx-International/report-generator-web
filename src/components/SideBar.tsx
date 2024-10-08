@@ -66,7 +66,7 @@ const SideBar = () => {
         </svg>
         <div className="flex flex-col items-start gap-[10px]">
           <img src="/logo.png" alt="logo" className="w-[110px]" />
-          <div className="flex flex-col items-start gap-[28px] pt-[32%] pb-[80%] border-r-[1px] border-r-[#E6EDFF]">
+          <div className="flex flex-col items-start gap-[28px] pt-[32%] border-r-[1px] border-r-[#E6EDFF]">
             {sideBarTab.map((item, index) => {
               switch (localStorage.getItem("role")) {
                 case "0":

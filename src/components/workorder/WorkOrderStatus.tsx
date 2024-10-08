@@ -20,7 +20,7 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({ status,styles }) => {
             : status === 2
             ? "bg-n300 text-n600"
             : status === 3
-            ? "bg-[#FEF6FF] text-primary"
+            ? "bg-primary text-white"
             : status === 4
             ? "bg-[#F6FFF9] text-[#48C1B5]"
             : "bg-primary text-white"
@@ -34,13 +34,8 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({ status,styles }) => {
           : status === 2
           ? "executed"
           : status === 3
-          ? "Reported"
-          : status === 4
-          ? "Acceptance"
-        
-          : status === 5
           ? "Closed"
-          : status === 6 ?  "Update Requested" : "Uknown status"}
+          : status === 4 ?  "Update Requested" : "Uknown status"}
       </span>
     );
 }

@@ -228,10 +228,8 @@ export async function storeFileInIndexedDB(
           if (cursor) {
             results.push(cursor.value);
             cursor.continue();
-            console.log("if")
           } else {
             resolve(results);
-            
           }
         };
   

@@ -314,6 +314,7 @@ const MissionDetails = () => {
           {
             const data = await response.json();
             setWorkorder(data);
+            console.log(data)
             setBasicDataWorkorder({
               title: data.workorder.title,
               id: data.workorder.id,
@@ -2320,8 +2321,9 @@ const MissionDetails = () => {
                               </div>
                             );
                           })}
-                        {workorder.workorder.status !== 3 &&
-                          workorder.workorder.status !== 5 && (
+
+                        {(workorder.reports === null || ( workorder.reports && workorder.reports[workorder.reports?.length - 1].type !== 1 )) &&
+                           (
                             <div
                               className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
                               onClick={() => {
@@ -2335,8 +2337,7 @@ const MissionDetails = () => {
                           )}
                       </div>
                       <div className="flex justify-end w-full">
-                        {(workorder.workorder.status === 3 ||
-                          workorder.workorder.status === 5) &&
+                        {(workorder.reports && workorder.reports[workorder.reports?.length - 1].type === 1) &&
                           getRole() !== 2 && (
                             <div className="flex items-center gap-[12px]">
                               <button
@@ -2756,7 +2757,7 @@ const MissionDetails = () => {
                                 );
                               }
                             )}
-                          {workorder.workorder.status < 4 &&
+                          {workorder.workorder.status < 3 &&
                             workorder.acceptance_certificates !== undefined &&
                             (workorder.acceptance_certificates === null ||
                               (workorder.acceptance_certificates.length > 0 &&

@@ -24,7 +24,7 @@ const EditUsers = () => {
 
   const [isEditingGeneral, setIsEditingGeneral] = useState<boolean>(false);
   const [isEditingRole, setIsEditingRole] = useState<boolean>(false);
-  const [isPgaeLoading, setIsPageLoading] = useState<boolean>(true);
+  const [isPageeLoading, setIsPageLoading] = useState<boolean>(true);
 
   const [isLoadingGeneral, setIsLoadingGeneral] = useState<boolean>(false);
   const [isLoadingRole, setIsLoadingRole] = useState<boolean>(false);
@@ -198,7 +198,7 @@ const EditUsers = () => {
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header pageSentence="User profile" searchBar={false} />
-        {isPgaeLoading ? (
+        {isPageeLoading ? (
           <div className="flex w-full items-center justify-center py-[60px]">
             {" "}
             <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60" />

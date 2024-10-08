@@ -95,9 +95,10 @@ const Auth = () => {
       }
     } catch (err) {
       console.error("Error submitting form", err);
+    } finally{
+      setIsLoading(false);
     }
 
-    setIsLoading(false);
   };
 
   return (

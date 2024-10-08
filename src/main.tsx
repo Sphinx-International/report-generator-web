@@ -13,6 +13,8 @@ import EditUsers from "./pages/EditUsers.tsx";
 import Groups from "./pages/Groups.tsx";
 import Individuals from "./pages/Individuals.tsx";
 import WorkorderByUser from "./pages/WorkordersByUser.tsx";
+import Sites from "./pages/Sites.tsx";
+import LosCommands from "./pages/LosCommands.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -78,6 +80,24 @@ const router = createBrowserRouter([
     path: "/mails/individuals",
     element: <ProtectedRoute element={<Individuals />} allowedRoles={[0,1]} />,
   },
+
+
+  {
+    path: "/los",
+    element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0,1]} />,
+  },
+  {
+    path: "/los/site-management",
+    element: <ProtectedRoute element={<Sites />} allowedRoles={[0,1]} />,
+  },
+  {
+    path: "/los/commands",
+    element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0,1]} />,
+  },
+
+
+
+  
   {
     path: "*",
     element: <Page404 />,
