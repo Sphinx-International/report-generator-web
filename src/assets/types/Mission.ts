@@ -9,7 +9,8 @@ export interface ReqMission {
   id: string | undefined;
   priority: 0 | 1 | 2 | 3;
   description: string;
-  require_acceptence: boolean; // False by default | Not required
+  require_acceptence: boolean; 
+  require_return_voucher:boolean;
   assigned_to?: string;
   emails: string[];
   attachments: TheUploadingFile[];

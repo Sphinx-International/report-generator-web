@@ -6,26 +6,28 @@ export interface SliceState {
   attachFiles: TheUploadingFile[];
   reportFiles: TheUploadingFile[];
   acceptenceFiles: TheUploadingFile[];
+  voucherFiles: TheUploadingFile[];
 }
 
 const initialState: SliceState = {
   attachFiles: [],
   reportFiles: [],
   acceptenceFiles: [],
+  voucherFiles: [],
 };
 
 interface AddFilePayload {
-  type: "attachements" |"report" |"certificate";
+  type: "attachements" | "report" | "certificate" | "voucher"| "voucher";
   file: TheUploadingFile;
 }
 
 interface RemoveFilePayload {
-  type: "attachements" |"report" |"certificate";
+  type: "attachements" | "report" | "certificate" | "voucher"|"voucher";
   fileId: number;
 }
 
 interface UpdateProgressPayload {
-    type: "attachements" |"report" |"certificate";
+    type: "attachements" | "report" | "certificate" | "voucher" | "voucher";
     fileId: number;
     progress: number;
   }
@@ -46,6 +48,9 @@ interface UpdateProgressPayload {
           case "certificate":
             state.acceptenceFiles.push(file);
             break;
+            case "voucher":
+              state.voucherFiles.push(file);
+              break;
         }
       },
       removeUploadingFile(state, action: PayloadAction<RemoveFilePayload>) {
@@ -66,6 +71,12 @@ interface UpdateProgressPayload {
               (file) => file.id !== fileId
             );
             break;
+
+            case "voucher":
+              state.voucherFiles = state.voucherFiles.filter(
+                (file) => file.id !== fileId
+              );
+              break;
         }
       },
       updateFileProgress(state, action: PayloadAction<UpdateProgressPayload>) {
@@ -83,7 +94,11 @@ interface UpdateProgressPayload {
           case "certificate":
             filesArray = state.acceptenceFiles;
             break;
+            case "voucher":
+              filesArray = state.voucherFiles;
+              break;
         }
+        
   
         if (filesArray) {
           const file = filesArray.find(file => file.id === fileId);

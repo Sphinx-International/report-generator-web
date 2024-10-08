@@ -84,6 +84,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       description: "",
       id: undefined,
       require_acceptence: false,
+      require_return_voucher:true,
       emails: [],
       attachments: [],
     });
@@ -225,6 +226,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       formData.append(
         "require_acceptence",
         formValues.require_acceptence.toString()
+      );
+      formData.append(
+        "require_return_voucher",
+        formValues.require_return_voucher.toString()
       );
       if (formValues.assigned_to) {
         formData.append("assigned_to", formValues.assigned_to);

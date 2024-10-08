@@ -33,7 +33,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   /*  for (const [key, value] of formData.entries()) {
         console.log(`${key}: ${value}`);
       }  */
-        setIsLoading(true)
+  setIsLoading(true);
   try {
     const response = await fetch(
       `${baseUrl}/workorder/update-workorder-attachments`,
@@ -65,14 +65,14 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     console.error("Error submitting form", err);
   } finally {
     setIsLoading(false);
-    console.log("finaly")
+    console.log("finaly");
   }
 };
 
 export const upload_workorder_files = async (
   workorder: string,
   file: number,
-  fileType: "report" | "certificate",
+  fileType: "report" | "certificate" | "voucher",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
   fileStatus?: 0 | 1 | 2 | 3
@@ -87,17 +87,19 @@ export const upload_workorder_files = async (
 
   try {
     const body =
-      fileType === "certificate"
+      fileType === "certificate" || fileType === "report"
         ? JSON.stringify({
             workorder,
             file,
             type: fileStatus,
           })
-        : JSON.stringify({ workorder, file, type: fileStatus });
+        : JSON.stringify({ workorder, file });
 
     console.log(body);
     const response = await fetch(
-      `${baseUrl}/workorder/upload-workorder-${fileType}`,
+      fileType === "voucher"
+        ? `${baseUrl}/workorder/upload-workorder-return-${fileType}`
+        : `${baseUrl}/workorder/upload-workorder-${fileType}`,
       {
         method: "POST",
         headers: {
@@ -131,7 +133,7 @@ export const upload_workorder_files = async (
 const uploadRemainingChunks = async (
   dispatch: AppDispatch,
   file: File,
-  fileType: "attachements" | "report" | "certificate",
+  fileType: "attachements" | "report" | "certificate" | "voucher",
   fileId: number,
   totalChunks: number,
   uploadedChunks?: number[]
@@ -193,7 +195,7 @@ const uploadRemainingChunks = async (
 export const handle_chunck = async (
   dispatch: AppDispatch, // Add dispatch as a parameter
   workorder_id: string,
-  fileType: "attachements" | "report" | "certificate",
+  fileType: "attachements" | "report" | "certificate" | "voucher",
   file: File,
   file_token: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
@@ -238,7 +240,6 @@ export const handle_chunck = async (
     if (response.ok) {
       const data = await response.json();
       const fileId = data.id;
-      console.log(file, fileId, fileType);
       storeFileInIndexedDB(file, fileId, fileType, workorder_id);
 
       dispatch(
@@ -285,7 +286,7 @@ export const handle_resuming_upload = async (
   dispatch: AppDispatch,
   fileId: number,
   file: File,
-  fileType: "attachements" | "report" | "certificate",
+  fileType: "attachements" | "report" | "certificate" | "voucher",
   file_token: string,
   workorder_id: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
@@ -378,7 +379,7 @@ export const handle_resuming_upload = async (
 export const handle_files_with_one_chunk = async (
   dispatch: AppDispatch, // Add dispatch as a parameter
   workorder_id: string,
-  fileType: "attachements" | "report" | "certificate",
+  fileType: "attachements" | "report" | "certificate" | "voucher",
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
@@ -458,7 +459,7 @@ export const handle_files_with_one_chunk = async (
 export const handleCancelUpload = async (
   fileId: number,
   dispatch?: AppDispatch,
-  fileType?: "attachements" | "report" | "certificate",
+  fileType?: "attachements" | "report" | "certificate" | "voucher",
   setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc?: () => void,
   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>

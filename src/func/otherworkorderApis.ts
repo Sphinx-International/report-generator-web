@@ -3,13 +3,12 @@ import { handle_files_with_one_chunk, handle_chunck } from "./chunkUpload";
 import { generateFileToken } from "./generateFileToken";
 import { AppDispatch } from "../Redux/store";
 
-
 export const handle_edit_or_reqUpdate_report = async (
   workorder_id: string,
   notify_engineer: boolean,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
-  message?:string,
+  message?: string
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -25,10 +24,9 @@ export const handle_edit_or_reqUpdate_report = async (
         "Content-Type": "application/json",
         Authorization: `Token ${token}`,
       },
-      body: JSON.stringify({ workorder_id, notify_engineer,message }),
+      body: JSON.stringify({ workorder_id, notify_engineer, message }),
     });
     if (response) {
-
       switch (response.status) {
         case 200:
           fetchOneWorkOrder();
@@ -92,7 +90,7 @@ export const handle_update_cert_type = async (
 export const handleFileChange = async (
   dispatch: AppDispatch,
   workorder_id: string,
-  fileType: "attachements" | "report" | "certificate",
+  fileType: "attachements" | "report" | "certificate" | "voucher",
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
@@ -128,5 +126,52 @@ export const handleFileChange = async (
   // Reset the file input value to allow re-selection of the same file
   if (fileInputRef?.current) {
     fileInputRef.current.value = "";
+  }
+};
+
+export const handle_open_or_close_returnVoucher = async (
+  workorder_id: string,
+  action: "close" | "open",
+  fetchOneWorkOrder: () => void,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+  try {
+    const response = await fetch(
+      action === "close"
+        ? `${baseUrl}/workorder/submit-workorder-return-voucher`
+        : `${baseUrl}/workorder/open-workorder-return-voucher`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ workorder: workorder_id }),
+      }
+    );
+    if (response) {
+      switch (response.status) {
+        case 200:
+          fetchOneWorkOrder();
+          break;
+        case 400:
+          console.log("verify your data");
+          break;
+        default:
+          console.log("error");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
+  } finally {
+    setIsLoading(false);
   }
 };

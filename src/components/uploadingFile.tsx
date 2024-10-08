@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 
 interface UploadingFilePopup extends TheUploadingFile {
-  fileType: "attachements" | "report" | "certificate";
+  fileType: "attachements" | "report" | "certificate" | "voucher" | "voucher";
   fetchFunc?: () => void;
   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>;
 }
