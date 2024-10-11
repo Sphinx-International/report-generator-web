@@ -71,8 +71,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
     const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
 
-    const [loaderGettingGroupMembers, setLoaderGettingGroupMembers] = useState(false);
-
+    const [loaderGettingGroupMembers, setLoaderGettingGroupMembers] =
+      useState(false);
 
     const priorities = ["Low", "Medium", "High", "Urgent"];
     const [currentPriorityIndex, setCurrentPriorityIndex] = useState<
@@ -84,7 +84,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       description: "",
       id: undefined,
       require_acceptence: false,
-      require_return_voucher:true,
+      require_return_voucher: false,
       emails: [],
       attachments: [],
     });
@@ -92,7 +92,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const [isLoading, setIsLoading] = useState(false);
 
     const [formErrs, setFormErrs] = useState<FormErrors>({});
-
 
     const closeDialog = (
       eo: MouseEvent<HTMLButtonElement> | React.FormEvent
@@ -441,7 +440,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           setIsLoading(false);
           await uploadRemainingChunks(file, fileId, chunks);
           dispatch(removeUploadingFile({ type: "attachements", fileId }));
-          dispatch(addUploadedAttachOnCreation({id:fileId,file_name:file.name,workorder:formValues.id!}))
+          dispatch(
+            addUploadedAttachOnCreation({
+              id: fileId,
+              file_name: file.name,
+              workorder: formValues.id!,
+            })
+          );
         } else {
           console.error("Failed to upload first chunk");
         }
@@ -912,13 +917,17 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <div className="absolute right-1 top-[50%] translate-y-[-50%] z-50 flex items-center gap-2 cursor-pointer sm:border-[2px] sm:border-n500 rounded-[15px] p-[6px]"
-                                        onClick={() => {
-                                          setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
-                                        }}>
-                  <span className="text-n500 text-[14px] sm:flex hidden">
-             {typeOfSearchForCoord === "Groupes" ? "Search by Groups" : "Search by Emails"}
-           </span>
+                  <div
+                    className="absolute right-1 top-[50%] translate-y-[-50%] z-50 flex items-center gap-2 cursor-pointer sm:border-[2px] sm:border-n500 rounded-[15px] p-[6px]"
+                    onClick={() => {
+                      setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
+                    }}
+                  >
+                    <span className="text-n500 text-[14px] sm:flex hidden">
+                      {typeOfSearchForCoord === "Groupes"
+                        ? "Search by Groups"
+                        : "Search by Emails"}
+                    </span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="18"
@@ -1018,8 +1027,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                               key={coord.id}
                               className="flex items-center px-[18px] gap-[8px] w-full cursor-pointer hover:bg-slate-100"
                               onClick={() => {
-                            fetchGroupMembers(coord.id,setSelectedCoord,setLoaderGettingGroupMembers,setformValues)
-                            setSearchQueryCoord("");  
+                                fetchGroupMembers(
+                                  coord.id,
+                                  setSelectedCoord,
+                                  setLoaderGettingGroupMembers,
+                                  setformValues
+                                );
+                                setSearchQueryCoord("");
                               }}
                             >
                               <img
@@ -1039,7 +1053,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                         </span>
                       )}
                     </div>
-                  ): loaderGettingGroupMembers && typeOfSearchForCoord === "Groupes" &&<div className="rounded-[20px] py-[18px] z-40 bg-white absolute w-full shadow-md flex justify-center items-center text-[14px] text-primary font-medium">Getting group members ...</div>}
+                  ) : (
+                    loaderGettingGroupMembers &&
+                    typeOfSearchForCoord === "Groupes" && (
+                      <div className="rounded-[20px] py-[18px] z-40 bg-white absolute w-full shadow-md flex justify-center items-center text-[14px] text-primary font-medium">
+                        Getting group members ...
+                      </div>
+                    )
+                  )}
                 </div>
                 {formErrs.emails !== "" && formErrs.emails !== undefined ? (
                   <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
@@ -1148,22 +1169,102 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                     </div>
                   )
                 : null}
+              <div className="flex flex-col items-start gap-3 sm:hidden">
+                <div className="items-center gap-[7px] flex">
+                  <input
+                    type="checkbox"
+                    id="acceptance"
+                    className="hidden peer"
+                    checked={formValues.require_acceptence ? true : false}
+                    onChange={(e) => {
+                      setformValues((prev) => ({
+                        ...prev,
+                        require_acceptence: e.target.checked,
+                      }));
+                    }}
+                  />
+                  <label
+                    htmlFor="acceptance"
+                    className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
+                  >
+                    <svg
+                      className="text-white hidden"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="10"
+                      viewBox="0 0 12 10"
+                      fill="none"
+                    >
+                      <path
+                        d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
+                        fill="white"
+                      />
+                    </svg>
+                  </label>
+                  <label
+                    htmlFor="acceptance"
+                    className="text-550 text-[14px] leading-[20px] font-medium"
+                  >
+                    Require acceptance
+                  </label>
+                </div>
+                <div className="items-center gap-[7px] flex">
+                  <input
+                    type="checkbox"
+                    id="return-voucher"
+                    className="hidden peer"
+                    checked={formValues.require_return_voucher ? true : false}
+                    onChange={(e) => {
+                      setformValues((prev) => ({
+                        ...prev,
+                        require_return_voucher: e.target.checked,
+                      }));
+                    }}
+                  />
+                  <label
+                    htmlFor="return-voucher"
+                    className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
+                  >
+                    <svg
+                      className="text-white hidden"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="10"
+                      viewBox="0 0 12 10"
+                      fill="none"
+                    >
+                      <path
+                        d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
+                        fill="white"
+                      />
+                    </svg>
+                  </label>
+                  <label
+                    htmlFor="return-voucher"
+                    className="text-550 text-[14px] leading-[20px] font-medium"
+                  >
+                    Require Return voucher
+                  </label>
+                </div>
+              </div>
+            </div>
 
-              <div className="items-center gap-[7px] sm:hidden flex">
+            <div className="flex items-center justify-end  sm:justify-between w-full">
+              <div className="items-center gap-[7px] hidden sm:flex">
                 <input
                   type="checkbox"
-                  id="acceptance"
+                  id="return-voucher"
                   className="hidden peer"
-                  checked={formValues.require_acceptence ? true : false}
+                  checked={formValues.require_return_voucher ? true : false}
                   onChange={(e) => {
                     setformValues((prev) => ({
                       ...prev,
-                      require_acceptence: e.target.checked,
+                      require_return_voucher: e.target.checked,
                     }));
                   }}
                 />
                 <label
-                  htmlFor="acceptance"
+                  htmlFor="return-voucher"
                   className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
                 >
                   <svg
@@ -1181,38 +1282,38 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   </svg>
                 </label>
                 <label
-                  htmlFor="acceptance"
+                  htmlFor="return-voucher"
                   className="text-550 text-[14px] leading-[20px] font-medium"
                 >
-                  Require acceptance
+                  Require Return voucher
                 </label>
               </div>
-            </div>
 
-            <div className="flex items-center gap-[6px]">
-              <button
-                className="text-n600 sm:px-[42px] px-[36px] sm:py-[10px] py-[7px] font-semibold rounded-[86px] border-[1px] border-n400 bg-n300 sm:text-[15px] text-[13px]"
-                onClick={() => {
-                  setCurrentSliderIndex(1);
-                }}
-              >
-                Previous
-              </button>
-              <button
-                className={`text-white sm:px-[42px] px-[36px] sm:py-[10px] py-[7px]  font-semibold rounded-[86px] sm:text-[15px] text-[13px] ${
-                  isLoading ? "bg-n600 cursor-not-allowed" : "bg-primary"
-                }`}
-                onClick={(e) => {
-                  handleSecondSubmit(e);
-                }}
-                disabled={isLoading ? true : false}
-              >
-                {isLoading ? (
-                  <RotatingLines strokeColor="white" width="22.5" />
-                ) : (
-                  "Confirm"
-                )}
-              </button>
+              <div className="flex items-center gap-[6px]">
+                <button
+                  className="text-n600 sm:px-[42px] px-[36px] sm:py-[10px] py-[7px] font-semibold rounded-[86px] border-[1px] border-n400 bg-n300 sm:text-[15px] text-[13px]"
+                  onClick={() => {
+                    setCurrentSliderIndex(1);
+                  }}
+                >
+                  Previous
+                </button>
+                <button
+                  className={`text-white sm:px-[42px] px-[36px] sm:py-[10px] py-[7px]  font-semibold rounded-[86px] sm:text-[15px] text-[13px] ${
+                    isLoading ? "bg-n600 cursor-not-allowed" : "bg-primary"
+                  }`}
+                  onClick={(e) => {
+                    handleSecondSubmit(e);
+                  }}
+                  disabled={isLoading ? true : false}
+                >
+                  {isLoading ? (
+                    <RotatingLines strokeColor="white" width="22.5" />
+                  ) : (
+                    "Confirm"
+                  )}
+                </button>
+              </div>
             </div>
           </>
         )}

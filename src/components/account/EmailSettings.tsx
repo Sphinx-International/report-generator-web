@@ -3,6 +3,7 @@ import { getRole } from "../../func/getUserRole";
 import { emailMetuSettings } from "../../assets/emailSetting";
 import { useState, useEffect } from "react";
 import { MutedMail } from "../../assets/types/Mails&Notifications";
+import "../../styles/CustomCheckbox.css";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -161,6 +162,7 @@ const EmailSettings = () => {
                           type="checkbox"
                           name="email"
                           id="email"
+                          // className="custom-checkbox"
                           className="w-[15px] h-[15px] cursor-pointer"
                           checked={
                             !mutedMails.some(
@@ -177,7 +179,7 @@ const EmailSettings = () => {
                               }
                             }
                           }}
-                          disabled={loading} // Disable the checkbox while loading
+                          disabled={loading}
                         />
                         <span className="text-n700">{email.title}</span>
                       </div>
@@ -216,7 +218,7 @@ const EmailSettings = () => {
                       </div>
                     );
                   }
-                  return null; 
+                  return null;
                 })
               : emailMetuSettings.map((email, index) => {
                   if (email.access === "eng" || email.access === "all") {
@@ -265,17 +267,20 @@ const EmailSettings = () => {
                 <input
                   type="checkbox"
                   className="sr-only peer"
-                  checked={!mutedMails.some(mutedMail => mutedMail.type === 107)}
+                  checked={
+                    !mutedMails.some((mutedMail) => mutedMail.type === 306)
+                  }
                   onChange={(e) => {
-                    if (!loading) { // Prevent changing the toggle when loading is true
+                    if (!loading) {
+                      // Prevent changing the toggle when loading is true
                       if (e.target.checked) {
-                        unmuteMail(107);
+                        unmuteMail(306);
                       } else {
-                        muteMail(107);
+                        muteMail(306);
                       }
                     }
                   }}
-                  disabled={loading} 
+                  disabled={loading}
                 />
                 <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 dark:peer-focus:ring-n700 rounded-full peer dark:bg-n500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4A3AFF]"></div>
               </label>
