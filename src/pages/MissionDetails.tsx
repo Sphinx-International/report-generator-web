@@ -1536,7 +1536,9 @@ const MissionDetails = () => {
                                       attach.is_completed
                                         ? "border-[1px] border-n400"
                                         : attach.uploaded_by ===
-                                          localStorage.getItem("user_id")!
+                                          Number(
+                                                                                           Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) 
+                                          )
                                         ? "border-[2px] border-[#DB2C2C]"
                                         : "border-[2px] border-[#FFB84D]"
                                     }`}
@@ -1616,7 +1618,11 @@ const MissionDetails = () => {
                                             attach.is_completed
                                               ? "#6F6C8F"
                                               : attach.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "#DB2C2C"
                                               : " #FFB84D"
                                           }
@@ -1628,7 +1634,11 @@ const MissionDetails = () => {
                                             attach.is_completed
                                               ? "text-n600"
                                               : attach.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -1640,7 +1650,11 @@ const MissionDetails = () => {
                                             attach.is_completed
                                               ? "text-n600"
                                               : attach.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -1690,7 +1704,9 @@ const MissionDetails = () => {
                                         </span>
                                       ) : (
                                         attach.uploaded_by ===
-                                          localStorage.getItem("user_id")! &&
+                                          Number(
+                                                                                           Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) 
+                                          ) &&
                                         !isLoadingCancelUpload && (
                                           <div className="flex flex-col gap-2 items-center">
                                             <label
@@ -2072,7 +2088,7 @@ const MissionDetails = () => {
                                   className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
                                     (report.uploaded_by ===
-                                    localStorage.getItem("user_id")!
+                                    Number(                                               Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) )
                                       ? "border-[2px] border-[#db2c2c]"
                                       : "border-[2px] border-[#FFB84D]")
                                   } `}
@@ -2159,7 +2175,11 @@ const MissionDetails = () => {
                                             report.is_completed
                                               ? "#6F6C8F"
                                               : report.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "#DB2C2C"
                                               : " #FFB84D"
                                           }
@@ -2171,7 +2191,11 @@ const MissionDetails = () => {
                                             report.is_completed
                                               ? "text-n600"
                                               : report.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2186,9 +2210,7 @@ const MissionDetails = () => {
                                                   ? "text-primary"
                                                   : "text-[#DB2C9F]"
                                                 : report.uploaded_by ===
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
+                                                Number(localStorage.getItem("user_id")!) 
                                                 ? "text-[#DB2C2C]"
                                                 : "text-[#FFB84D]"
                                             }`}
@@ -2248,7 +2270,11 @@ const MissionDetails = () => {
                                             report.is_completed
                                               ? "text-n600"
                                               : report.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2259,7 +2285,8 @@ const MissionDetails = () => {
                                     </div>
                                     {!report.is_completed &&
                                       report.uploaded_by ===
-                                        localStorage.getItem("user_id") &&
+                                      Number(localStorage.getItem("user_id")!) 
+                                      &&
                                       !isLoadingCancelUpload && (
                                         <div className="flex flex-col items-center gap-3">
                                           <label
@@ -2438,7 +2465,7 @@ const MissionDetails = () => {
                                     className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                       !certificate.is_completed &&
                                       (certificate.uploaded_by ===
-                                      localStorage.getItem("user_id")!
+                                      Number(                                               Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) )
                                         ? "border-[2px] border-[#db2c2c]"
                                         : "border-[2px] border-[#FFB84D]")
                                     }`}
@@ -2526,7 +2553,11 @@ const MissionDetails = () => {
                                             certificate.is_completed
                                               ? "#6F6C8F"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "#DB2C2C"
                                               : " #FFB84D"
                                           }
@@ -2538,7 +2569,11 @@ const MissionDetails = () => {
                                             certificate.is_completed
                                               ? "text-n600"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2554,7 +2589,11 @@ const MissionDetails = () => {
                                                 ? "text-[#FFAA29]"
                                                 : "text-[#DB2C2C]"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2570,7 +2609,11 @@ const MissionDetails = () => {
                                             certificate.is_completed
                                               ? "text-n600"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2695,7 +2738,9 @@ const MissionDetails = () => {
 
                                         {!certificate.is_completed &&
                                           certificate.uploaded_by ===
-                                            localStorage.getItem("user_id")! &&
+                                            Number(
+                                                                                             Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) 
+                                            ) &&
                                           !isLoadingCancelUpload && (
                                             <>
                                               <label
@@ -2833,7 +2878,7 @@ const MissionDetails = () => {
                                       className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                         !voucher.is_completed &&
                                         (voucher.uploaded_by ===
-                                        localStorage.getItem("user_id")!
+                                        Number(                                               Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) )
                                           ? "border-[2px] border-[#db2c2c]"
                                           : "border-[2px] border-[#FFB84D]")
                                       }`}
@@ -2919,9 +2964,7 @@ const MissionDetails = () => {
                                               voucher.is_completed
                                                 ? "#6F6C8F"
                                                 : voucher.uploaded_by ===
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
+                                                Number(localStorage.getItem("user_id")!) 
                                                 ? "#DB2C2C"
                                                 : " #FFB84D"
                                             }
@@ -2933,9 +2976,7 @@ const MissionDetails = () => {
                                               voucher.is_completed
                                                 ? "text-n600"
                                                 : voucher.uploaded_by ===
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
+                                                Number(localStorage.getItem("user_id")!) 
                                                 ? "text-[#DB2C2C]"
                                                 : "text-[#FFB84D]"
                                             }`}
@@ -2947,9 +2988,7 @@ const MissionDetails = () => {
                                               voucher.is_completed
                                                 ? "text-n600"
                                                 : voucher.uploaded_by ===
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
+                                                Number(localStorage.getItem("user_id")!) 
                                                 ? "text-[#DB2C2C]"
                                                 : "text-[#FFB84D]"
                                             }`}
@@ -2961,9 +3000,8 @@ const MissionDetails = () => {
 
                                           {!voucher.is_completed &&
                                             voucher.uploaded_by ===
-                                              localStorage.getItem(
-                                                "user_id"
-                                              )! &&
+                                            Number(localStorage.getItem("user_id")!) 
+                                            &&
                                             !isLoadingCancelUpload && (
                                               <>
                                                 <label

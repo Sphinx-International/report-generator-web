@@ -71,7 +71,7 @@ const Auth = () => {
             localStorage.setItem("token", data.token);
           }
           sessionStorage.setItem("token", data.token);
-          localStorage.setItem("user_id", data.account.email);
+          localStorage.setItem("user_id", data.account.id);
           localStorage.setItem("user", JSON.stringify(data.account));
 
           if (data.account.role === 0) {
