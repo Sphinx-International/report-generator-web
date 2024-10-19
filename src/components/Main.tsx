@@ -23,6 +23,14 @@ interface HeaderProps {
   setCurrentPage: (page: number) => void;
 }
 
+// type ExcutedFilter = string
+
+const excutedFilter: string[] = [
+  "All",
+  "Missing reports",
+  "Missing acceptance certificat",
+  "Missing return voucher",
+];
 const Main: React.FC<HeaderProps> = (props) => {
   const getDefaultFilter = () => {
     const storedFilter =
@@ -42,6 +50,11 @@ const Main: React.FC<HeaderProps> = (props) => {
     useState<string>(getDefaultFilter);
   const [isOpen, setIsOpen] = useState(false);
 
+  const [visibleExcutedPopup, setVisibleExcutedPopup] =
+    useState<boolean>(false);
+
+  const [selectedExcutedFilter, setSelectedExcutedFilter] = useState("");
+
   const handleFilterClick = (item: string) => {
     setSelectedFilter(item);
     props.page === "accounts"
@@ -51,12 +64,21 @@ const Main: React.FC<HeaderProps> = (props) => {
     props.setCurrentPage(1);
     const limit = props.page === "accounts" ? 4 : 6;
 
-    if (item === "all") {
-      props.FiltrationFunc!(0, limit);
-    } else if (item === "to do") {
-      props.FiltrationFunc!(0, limit, "assigned");
-    } else {
-      props.FiltrationFunc!(0, limit, item.toLowerCase());
+    switch (item) {
+      case "all":
+        props.FiltrationFunc!(0, limit);
+        break;
+      case "to do":
+        props.FiltrationFunc!(0, limit, "assigned");
+        break;
+      case "allzzz":
+        props.FiltrationFunc!(0, limit);
+        break;
+
+      default:
+        props.FiltrationFunc!(0, limit, item.toLowerCase());
+
+        break;
     }
   };
 
@@ -65,17 +87,69 @@ const Main: React.FC<HeaderProps> = (props) => {
       <div className="pl-[24px] xl:flex items-center justify-between w-full hidden">
         <div className="flex items-center xl:gap-[21px] gap-[15px]">
           {props.flitration.map((item, index) => (
-            <span
-              key={index}
-              className={`${
-                selectedFilter === item.toLowerCase()
-                  ? "text-primary border-b-[2px] border-primary"
-                  : "text-n600"
-              } leading-[36px] cursor-pointer text-[15px]`}
-              onClick={() => handleFilterClick(item.toLowerCase())}
-            >
-              {item}
-            </span>
+            <div key={index} className="relative">
+              <span
+                className={`${
+                  selectedFilter === item.toLowerCase()
+                    ? "text-primary border-b-[2px] border-primary"
+                    : "text-n600"
+                } leading-[36px] cursor-pointer text-[15px] flex items-center gap-[6px] relative`}
+                onClick={() => {
+                  if (item === "Executed") {
+                    setVisibleExcutedPopup(!visibleExcutedPopup);
+                  } else {
+                    handleFilterClick(item.toLowerCase());
+                    setSelectedExcutedFilter("")
+                    setVisibleExcutedPopup(false)
+                  }
+                }}
+              >
+                {item}
+                {item === "Executed" && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="11"
+                    height="7"
+                    viewBox="0 0 11 7"
+                    fill="none"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M9.00212 0L5.09068 4.10187L1.211 0L0.0205562 1.24839L5.08101 6.59865L10.1829 1.24839L9.00212 0Z"
+                      fill="#6E7191"
+                    />
+                  </svg>
+                )}
+              </span>
+              {item === "Executed" && visibleExcutedPopup && (
+                <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
+                  {excutedFilter.map((file, index) => {
+                    return (
+                      <span
+                        key={index}
+                        className={`text-[14px] text-nowrap cursor-pointer ${
+                          selectedExcutedFilter === file
+                            ? "text-primary"
+                            : "text-n600"
+                        }`}
+                        onClick={() => {
+                          if (file === "All") {
+                            handleFilterClick("executed");
+                          } else {
+                            //handleFilterClick("executed");
+                          }
+                          setSelectedExcutedFilter(file);
+                          setVisibleExcutedPopup(false)
+                        }}
+                      >
+                        {file}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           ))}
         </div>
         {["0", "1"].includes(localStorage.getItem("role")!) && (
@@ -167,14 +241,14 @@ const Main: React.FC<HeaderProps> = (props) => {
           )}
         </div>
         <div className="flex items-center gap-3 flex-row-reverse">
-        {props.functionalties && (
-          <button
-          className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-          onClick={props.handleAddPrimaryButtonClick}
-        >
-          {props.functionalties && props.functionalties.primaryFunc.name}
-        </button>
-        )}
+          {props.functionalties && (
+            <button
+              className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+              onClick={props.handleAddPrimaryButtonClick}
+            >
+              {props.functionalties && props.functionalties.primaryFunc.name}
+            </button>
+          )}
 
           {props.functionalties &&
             props.functionalties.secondaryFuncs?.some(

@@ -270,7 +270,7 @@ const SideBar = () => {
           </div>
         </div>
         <button
-          className="flex flex-row-reverse items-center gap-[15px] text-[#6F6C90] font-medium text-[14px]"
+          className="flex flex-row-reverse items-center py-[5px] gap-[15px] text-[#6F6C90] font-medium text-[14px]"
           onClick={handleLogout}
         >
           Log out{" "}
