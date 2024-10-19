@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction  } from '@reduxjs/toolkit';
 
 export interface DialogState {
-  UsersTab: string[];
+  UsersTab: number[];
 }
 
 const initialState: DialogState = {
@@ -15,7 +15,7 @@ const selectedUsersSlice = createSlice({
     deleteSelectedUsers(state) {
       state.UsersTab = [];
     },
-    toggleUserInTab(state, action: PayloadAction<string>) {
+    toggleUserInTab(state, action: PayloadAction<number>) {
       const user = action.payload;
       const userIndex = state.UsersTab.indexOf(user);
       if (userIndex !== -1) {

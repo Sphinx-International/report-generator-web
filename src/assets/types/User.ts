@@ -3,9 +3,10 @@ export type User = {
     last_name:string,
     email:string,
     id:number,
-    groups: string[],
-    is_superuser:boolean,
-    last_login:null,
+    is_active: boolean,
     role: 0 |1 | 2,
-    user_permissions: string[]
+    groups?: string[],
+    is_superuser?:boolean,
+    last_login?:null,
+    user_permissions?: string[]
 }

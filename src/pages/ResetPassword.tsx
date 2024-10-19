@@ -24,7 +24,7 @@ const ResetPassword = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar(); // Destructure enqueueSnackbar from the hook
+  const { enqueueSnackbar } = useSnackbar(); 
 
   const handleCodeChange = (index: number, value: string) => {
     if (value === "" || /^\d$/.test(value)) {
@@ -96,7 +96,6 @@ const ResetPassword = () => {
       switch (response.status) {
         case 200:
           // Handling success based on the status code
-          console.log("Form submitted successfully. Please check your email.");
           setResetPage(2);
           setError("");
           setErrorVisible(false);

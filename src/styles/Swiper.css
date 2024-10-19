@@ -1,0 +1,32 @@
+.swiper-button-next, .swiper-button-prev {
+    transform: scale(0.5); /* Scaling the buttons */
+  }
+  
+  .swiper-button-next {
+    right: 0px; 
+  }
+  
+  .swiper-button-prev {
+    left: 0px;
+  }
+
+.swiper-container {
+    overflow: visible; /* Ensure overflow is visible */
+  }
+  .swiper-wrapper {
+  position: relative; /* Positioning context for absolute positioning */
+}
+
+
+.recharts-surface {
+  height: 320px; /* Default height for larger devices */
+}
+
+@media (max-width: 600px) {
+  .recharts-surface {
+    height: 200px; /* Smaller height for small devices */
+  }
+}
+
+
+  

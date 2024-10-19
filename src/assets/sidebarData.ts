@@ -18,6 +18,64 @@ export const sideBarTab: sideBarItem[] = [
 </svg>`,
     link: "/dashboard",
     access: "admin",
+
+    subItem: [
+      {
+        title: "Overview",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 24 24">
+
+<defs>
+
+<style>.cls-1{fill:none;stroke:#6F6C8F;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style>
+
+</defs>
+
+<g id="ic-statistics-2">
+
+<line class="cls-1" x1="2" y1="20" x2="22" y2="20"/>
+
+<path class="cls-1" d="M5,20V8.2A.2.2,0,0,1,5.2,8H7.8a.2.2,0,0,1,.2.2V20"/>
+
+<path class="cls-1" d="M11,20V4.27c0-.15.09-.27.2-.27h2.6c.11,0,.2.12.2.27V20"/>
+
+<path class="cls-1" d="M17,20V11.15c0-.08.09-.15.2-.15h2.6c.11,0,.2.07.2.15V20"/>
+
+</g>
+
+</svg>`,
+        activeSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 24 24">
+
+<defs>
+
+<style>.cls-1{fill:none;stroke:#4A3AFF;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style>
+
+</defs>
+
+<g id="ic-statistics-2">
+
+<line class="cls-1" x1="2" y1="20" x2="22" y2="20"/>
+
+<path class="cls-1" d="M5,20V8.2A.2.2,0,0,1,5.2,8H7.8a.2.2,0,0,1,.2.2V20"/>
+
+<path class="cls-1" d="M11,20V4.27c0-.15.09-.27.2-.27h2.6c.11,0,.2.12.2.27V20"/>
+
+<path class="cls-1" d="M17,20V11.15c0-.08.09-.15.2-.15h2.6c.11,0,.2.07.2.15V20"/>
+
+</g>
+
+</svg>`,
+        link: "/dashboard/overview",
+        access: "admin",
+      },
+
+      {
+        title: "Users performance",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" width="20" height="20" viewBox="0 0 64 64" stroke="#6F6C8F" ><path d="M1.553,51.9l1.507.752L4.005,62.1A1,1,0,0,0,5,63H9a1,1,0,0,0,.995-.9l.945-9.453,1.507-.752A1,1,0,0,0,13,51V45a3.992,3.992,0,0,0-3.45-3.944,4,4,0,1,0-5.1,0A3.992,3.992,0,0,0,1,45v6A1,1,0,0,0,1.553,51.9ZM7,36a2,2,0,1,1-2,2A2,2,0,0,1,7,36ZM3,45a2,2,0,0,1,2-2H9a2,2,0,0,1,2,2v5.382l-1.447.723a1,1,0,0,0-.548.8L8.1,61H5.905L5,51.9a1,1,0,0,0-.548-.8L3,50.382Z"/><path d="M60,40a1,1,0,0,0-1-1H53a1,1,0,0,0-1,1V61H48V49a1,1,0,0,0-1-1H41a1,1,0,0,0-1,1V61H36V56a1,1,0,0,0-1-1H29a1,1,0,0,0-1,1v5H25v2H63V61H60ZM34,61H30V57h4Zm12,0H42V50h4Zm12,0H54V41h4Z"/><path d="M44.49,41.559a1,1,0,0,0,.839.455l.061,0a1,1,0,0,0,.838-.56l2.554-5.242a1,1,0,0,0-.06-.984.981.981,0,0,0-.875-.454l-5.827.213a1,1,0,0,0-.8,1.544l1.091,1.677L20.517,52.387l1.09,1.675L43.4,39.882Zm1.764-4.727L45.2,38.987l-1.347-2.068Z"/><path d="M59.925,31.073C59.975,30.39,60,29.692,60,29A28,28,0,0,0,4,29c0,.692.025,1.39.075,2.073l2-.146C6.023,30.292,6,29.644,6,29a26,26,0,0,1,52,0c0,.644-.023,1.292-.07,1.927Z"/><path d="M31,28H23v2h9a1,1,0,0,0,1-1V11H31Z"/></svg>`,
+        activeSvg: `<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" width="20" height="20" viewBox="0 0 64 64" stroke="#4A3AFF" ><path d="M1.553,51.9l1.507.752L4.005,62.1A1,1,0,0,0,5,63H9a1,1,0,0,0,.995-.9l.945-9.453,1.507-.752A1,1,0,0,0,13,51V45a3.992,3.992,0,0,0-3.45-3.944,4,4,0,1,0-5.1,0A3.992,3.992,0,0,0,1,45v6A1,1,0,0,0,1.553,51.9ZM7,36a2,2,0,1,1-2,2A2,2,0,0,1,7,36ZM3,45a2,2,0,0,1,2-2H9a2,2,0,0,1,2,2v5.382l-1.447.723a1,1,0,0,0-.548.8L8.1,61H5.905L5,51.9a1,1,0,0,0-.548-.8L3,50.382Z"/><path d="M60,40a1,1,0,0,0-1-1H53a1,1,0,0,0-1,1V61H48V49a1,1,0,0,0-1-1H41a1,1,0,0,0-1,1V61H36V56a1,1,0,0,0-1-1H29a1,1,0,0,0-1,1v5H25v2H63V61H60ZM34,61H30V57h4Zm12,0H42V50h4Zm12,0H54V41h4Z"/><path d="M44.49,41.559a1,1,0,0,0,.839.455l.061,0a1,1,0,0,0,.838-.56l2.554-5.242a1,1,0,0,0-.06-.984.981.981,0,0,0-.875-.454l-5.827.213a1,1,0,0,0-.8,1.544l1.091,1.677L20.517,52.387l1.09,1.675L43.4,39.882Zm1.764-4.727L45.2,38.987l-1.347-2.068Z"/><path d="M59.925,31.073C59.975,30.39,60,29.692,60,29A28,28,0,0,0,4,29c0,.692.025,1.39.075,2.073l2-.146C6.023,30.292,6,29.644,6,29a26,26,0,0,1,52,0c0,.644-.023,1.292-.07,1.927Z"/><path d="M31,28H23v2h9a1,1,0,0,0,1-1V11H31Z"/></svg>`,
+        link: "/dashboard/users-performance",
+        access: "admin",
+      },
+    ],
   },
   {
     title: "Users",
@@ -106,15 +164,8 @@ export const sideBarTab: sideBarItem[] = [
         link: "/mails/groups",
         access: "admin",
       },
-      
     ],
   },
-
-
-
-
-
-
 
   {
     title: "Los",
@@ -164,7 +215,6 @@ export const sideBarTab: sideBarItem[] = [
         link: "/los/commands",
         access: "all",
       },
-      
     ],
   },
 ];

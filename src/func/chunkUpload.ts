@@ -208,10 +208,10 @@ export const handle_chunck = async (
     console.error("No token found");
     return;
   }
-  const chunkSize = 512 * 1024; // 512 KB
+  const chunkSize = 32 * 1024; // 512 KB
   const fileSize = file.size; // File size in bytes
 
-  const chunks = Math.ceil(fileSize / chunkSize);
+  const chunks = Math.ceil(fileSize / (512 * 1024));
   // Extract the first chunk
   const firstChunk = file.slice(0, chunkSize);
   const formData = new FormData();
@@ -291,7 +291,7 @@ export const handle_resuming_upload = async (
   workorder_id: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc: () => void,
-  enqueueSnackbar: (message: string, options?: any) => void // Accept the enqueueSnackbar as is
+  enqueueSnackbar: (message: string, options?: any) => void 
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");

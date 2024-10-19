@@ -20,6 +20,7 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
     useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  setIsLoading(false)
 
   const handlePreviousClick = () => {
     setCurrentPriorityIndex((prevIndex) => {
@@ -331,8 +332,8 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
               <button
                 className="text-n600 sm:px-[42px] px-[36px] sm:py-[10px] py-[7px] font-semibold rounded-[86px] border-[1px] border-n400 bg-n300 sm:text-[15px] text-[13px]"
                 onClick={(eo) => {
-                    eo.preventDefault()
-                  handleCloseDialog(ref)
+                  eo.preventDefault();
+                  handleCloseDialog(ref);
                 }}
               >
                 Cancel
@@ -340,7 +341,7 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
               <button
                 className="text-white sm:px-[42px] px-[36px] sm:py-[10px] py-[7px]  font-semibold rounded-[86px] bg-primary sm:text-[15px] text-[13px]"
                 onClick={(eo) => {
-                    eo.preventDefault()
+                  eo.preventDefault();
                   setCurrentSliderIndex(2);
                 }}
               >
@@ -435,9 +436,9 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                 </svg>
                 <div
                   className="absolute right-1 top-[50%] translate-y-[-50%] z-50 flex items-center gap-2 cursor-pointer sm:border-[2px] sm:border-n500 rounded-[15px] p-[6px]"
-                  /*  onClick={() => {
+                  onClick={() => {
                     setTypeOfSearchPopupVisible(!typeOfSearchPopupVisible);
-                  }}  */
+                  }}
                 >
                   <span className="text-n500 text-[14px] sm:flex hidden">
                     {typeOfSearchForCoord === "Groupes"

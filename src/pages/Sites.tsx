@@ -10,7 +10,7 @@ import { AppDispatch } from "../Redux/store";
 import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
 import EmptyData from "../components/EmptyData";
-import CreateSitePopup from "../components/los/createSitePopup";
+import CreateSitePopup from "../components/los/CreateSitePopup";
 
 
 const titlesRow = [
@@ -55,6 +55,7 @@ const Sites = () => {
   const [isloading, setIsloading] = useState<boolean>(false);
 
   const [sites, setSites] = useState<any | null>();
+  console.log(sites)
 
 
   const handleCheckboxChange = (userId: string) => {

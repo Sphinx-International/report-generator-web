@@ -102,6 +102,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         priority: currentPriorityIndex,
         description: "",
         id: undefined,
+        require_return_voucher: false,
         require_acceptence: false,
         emails: [],
         attachments: [],
@@ -175,7 +176,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setSelectedEng(null);
       setformValues((prev) => ({
         ...prev,
-        assigned_to: "",
+        assigned_to: null,
       }));
     };
     const removeCoord = (deletedItem: string) => {
@@ -231,7 +232,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         formValues.require_return_voucher.toString()
       );
       if (formValues.assigned_to) {
-        formData.append("assigned_to", formValues.assigned_to);
+        formData.append("assigned_to", formValues.assigned_to.id.toString());
       }
 
       formValues.emails.forEach((mail) => {
@@ -392,10 +393,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         return;
       }
 
-      const chunkSize = 512 * 1024; // 512 KB
+      const chunkSize = 32 * 1024; // 512 KB
       const fileSize = file.size; // File size in bytes
 
-      const chunks = Math.ceil(fileSize / chunkSize);
+      const chunks = Math.ceil(fileSize / (512 * 1024));
       // Extract the first chunk
       const firstChunk = file.slice(0, chunkSize);
       const formData = new FormData();
@@ -685,7 +686,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                   onClick={() => {
                                     setformValues((prev) => ({
                                       ...prev,
-                                      assigned_to: eng.email,
+                                      assigned_to: eng,
                                     }));
                                     setSelectedEng(eng.email);
                                     setSearchQueryEng("");

@@ -204,7 +204,7 @@ const WorkorderByUser = () => {
                             className="sm:w-[29px] w-[26px]"
                           />
                           <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
-                            {workorder.assigned_to}
+                            {workorder.assigned_to.email}
                           </span>
                         </div>
                       ) : null}

@@ -6,9 +6,6 @@ import { ThreeDots } from "react-loader-spinner";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const Auth = () => {
-
-
-  
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +53,6 @@ const Auth = () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${baseUrl}/account/login`, {
-
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,39 +62,52 @@ const Auth = () => {
 
       if (response) {
         const data = await response.json();
-        if (response.status === 200) {
-          if (rememberMe) {
-            localStorage.setItem("token", data.token);
-          }
-          sessionStorage.setItem("token", data.token);
-          localStorage.setItem("user_id", data.account.id);
-          localStorage.setItem("user", JSON.stringify(data.account));
 
-          if (data.account.role === 0) {
-            navigate("/users");
-            localStorage.setItem("role", data.account.role.toString());
-          } else {
-            navigate("/workorders");
-            localStorage.setItem("role", data.account.role.toString());
-          }
-        } else if (response.status === 401) {
-          setPasswordErr(true);
-          setPasswordErrMsg("Wrong password");
-        } else if (response.status === 404) {
-          setEmailErr(true);
-          setEmailErrMsg("email not found");
-        } else {
-          console.error("Unexpected error", response.statusText);
+        switch (response.status) {
+          case 200:
+            if (rememberMe) {
+              localStorage.setItem("token", data.token);
+            }
+            sessionStorage.setItem("token", data.token);
+            localStorage.setItem("user_id", data.account.id);
+            localStorage.setItem("user", JSON.stringify(data.account));
+
+            if (data.account.role === 0) {
+              navigate("/users");
+              localStorage.setItem("role", data.account.role.toString());
+            } else {
+              navigate("/workorders");
+              localStorage.setItem("role", data.account.role.toString());
+            }
+            break;
+
+          case 401:
+            setPasswordErr(true);
+            setPasswordErrMsg("Wrong password");
+            break;
+
+          case 403:
+            setEmailErr(true);
+            setEmailErrMsg("This account is not active");
+            break;
+          case 404:
+            setEmailErr(true);
+            setEmailErrMsg("email not found");
+            break;
+
+          default:
+            console.error("Unexpected error", response.statusText);
+
+            break;
         }
       } else {
         console.error("Error submitting form");
       }
     } catch (err) {
       console.error("Error submitting form", err);
-    } finally{
+    } finally {
       setIsLoading(false);
     }
-
   };
 
   return (

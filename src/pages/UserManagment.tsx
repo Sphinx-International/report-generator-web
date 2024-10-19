@@ -19,27 +19,31 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 const titlesRow = [
   {
     title: "Picture",
-    width: "w-[13%]",
+    width: "w-[11%]",
   },
   {
     title: "Name",
-    width: "w-[25%]",
+    width: "w-[15%]",
   },
   {
     title: "Email",
-    width: "w-[30%]",
+    width: "w-[26%]",
   },
   {
     title: "Birthdate",
-    width: "w-[16%]",
+    width: "w-[13%]",
   },
   {
     title: "Role",
-    width: "w-[13%]",
+    width: "w-[12%]",
+  },
+  {
+    title: "Status",
+    width: "w-[12%]",
   },
   {
     title: "Edit",
-    width: "w-[13%]",
+    width: "w-[11%]",
   },
 ];
 const UserManagment = () => {
@@ -57,7 +61,7 @@ const UserManagment = () => {
   const limit = 4;
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const handleCheckboxChange = (userId: string) => {
+  const handleCheckboxChange = (userId: number) => {
     dispatch(toggleUserInTab(userId));
   };
   const handleAddUserButtonClick = () => {
@@ -248,36 +252,47 @@ const UserManagment = () => {
                 {Users && !isloading ? (
                   <div className="flex flex-col h-[100%] overflow-y-auto">
                     {Users.map((user: User, index) => {
-                      const isSelected = selectedUsers.includes(user.email);
+                      const isSelected = selectedUsers.includes(user.id);
                       return (
                         <div
                           key={index}
                           className="relative flex  items-center w-full h-[50px] border-b-[1px] hover:bg-n200 cursor-pointer group py-[6px]"
                         >
-                          <div className="w-[13%] flex items-center justify-center">
+                          <div className="w-[11%] flex items-center justify-center">
                             <img
                               src="/avatar1.png"
                               alt="avatar"
                               className="w-[35px]"
                             />
                           </div>
-                          <span className="w-[25%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          <span className="w-[15%] text-center leading-[18px] text-[11px] text-n800 font-medium">
                             {user.last_name} {user.first_name}
                           </span>
-                          <span className="w-[30%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          <span className="w-[26%] text-center leading-[18px] text-[11px] text-n800 font-medium">
                             {user.email}
                           </span>
-                          <span className="w-[16%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          <span className="w-[13%] text-center leading-[18px] text-[11px] text-n800 font-medium">
                             10-09-2002
                           </span>
-                          <span className="w-[13%] text-center leading-[18px] text-[11px] text-n800 font-medium">
+                          <span className="w-[12%] text-center leading-[18px] text-[11px] text-n800 font-medium">
                             {user.role === 1
                               ? "Coordinator"
                               : user.role === 2
                               ? "Engineer"
                               : null}
                           </span>
-                          <span className="w-[13%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
+                          <div className="w-[12%] text-center">
+                            <span
+                              className={`leading-[18px] text-[11px] font-medium rounded-[20px] px-5 py-[6px] ${
+                                user.is_active
+                                  ? "text-[#23B4A6] bg-[#48C1B521]"
+                                  : "text-[#DB2C2C] bg-[#DB2C2C1C]"
+                              }`}
+                            >
+                              {user.is_active ? "Active" : "Banned"}
+                            </span>
+                          </div>
+                          <span className="w-[11%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
                             <Link to={`/edit-user/${user.email}`}>
                               <svg
                                 className="cursor-pointer hover:scale-105"
@@ -313,7 +328,7 @@ const UserManagment = () => {
                             className="absolute left-2 top-1/2 transform -translate-y-1/2 checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleCheckboxChange(user.email);
+                              handleCheckboxChange(user.id);
                             }}
                           />
                         </div>
@@ -344,22 +359,22 @@ const UserManagment = () => {
                   </div>
                 ) : Users !== null ? (
                   Users.map((user: User, index) => {
-                    const isSelected = selectedUsers.includes(user.email);
+                    const isSelected = selectedUsers.includes(user.id);
                     return (
                       <div
                         key={index}
-                        className={`relative p-[9px] flex items-center gap-[9px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow ${
+                        className={`relative p-[9px] flex items-center gap-[14px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow ${
                           isSelected ? "bg-primary" : ""
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleCheckboxChange(user.email);
+                          handleCheckboxChange(user.id);
                         }}
                       >
                         <img
-                          src="/avatar.png"
+                          src="/avatar2.jpg"
                           alt="avatar"
-                          className="w-[52.5px] rounded-[11px]"
+                          className="w-[52.5px] rounded-[11px] h-full"
                         />
                         <span
                           className={` text-[12px] leading-[18px] ${
@@ -373,6 +388,18 @@ const UserManagment = () => {
                             : user.role === 2
                             ? "Engineer"
                             : null}
+                          <br />
+                          <div className="mt-2">
+                            <span
+                              className={`leading-[15px] text-[10px] rounded-[10px] px-[11px] py-[3px] ${
+                                user.is_active
+                                  ? "text-[#23B4A6] bg-[#48C1B521]"
+                                  : "text-[#DB2C2C] bg-[#DB2C2C1C]"
+                              }`}
+                            >
+                              {user.is_active ? "active" : "Inactive"}
+                            </span>
+                          </div>
                         </span>
                         <Link to={`/edit-user/${user.email}`}>
                           <svg

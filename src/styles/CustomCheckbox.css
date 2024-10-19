@@ -5,7 +5,8 @@
     cursor: pointer;
     display: inline-block;
     position: relative;
-    border: none;
+    border: 1px solid gray;
+    border-radius: 3px;
     background-color: transparent;
   }
 

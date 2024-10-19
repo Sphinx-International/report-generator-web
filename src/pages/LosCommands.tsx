@@ -13,7 +13,9 @@ const LosCommands = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+  console.log(currentPage)
   const [commands, setCommands] = useState<any | null >();
+  console.log(commands)
   const losRef = useRef<HTMLDialogElement>(null);
 
 

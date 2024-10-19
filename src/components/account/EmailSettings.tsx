@@ -162,8 +162,8 @@ const EmailSettings = () => {
                           type="checkbox"
                           name="email"
                           id="email"
-                          // className="custom-checkbox"
-                          className="w-[15px] h-[15px] cursor-pointer"
+                          className="custom-checkbox"
+                          // className="w-[15px] h-[15px] cursor-pointer"
                           checked={
                             !mutedMails.some(
                               (mutedMail) => mutedMail.type === email.type

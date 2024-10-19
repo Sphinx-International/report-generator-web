@@ -94,7 +94,7 @@ const MissionDetails = () => {
     { email: string; id: number; name: string }[]
   >([]);
 
-  const [selectedEng, setSelectedEng] = useState<string | null>(null);
+  const [selectedEng, setSelectedEng] = useState<User | null>(null);
 
   const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
   const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
@@ -159,7 +159,7 @@ const MissionDetails = () => {
 
   const [visibleHistory, setVisibleHistory] = useState<boolean>(false);
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar(); // Get enqueueSnackbar function
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const handleLabelClick = (
     fileId: number,
@@ -367,7 +367,6 @@ const MissionDetails = () => {
       setIsPageLoading(false);
     }
   }, [id]);
-
   const handleEditWorkorder = async (properties: WorkorderProperties = {}) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -691,6 +690,10 @@ const MissionDetails = () => {
                                   <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
                                     {formatDate(action.at)}
                                   </span>
+                                  <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
+                                    <span className="">By:</span>{" "}
+                                    {action.by.first_name} {action.by.last_name}
+                                  </span>
                                 </div>
                               );
                             })}
@@ -733,7 +736,7 @@ const MissionDetails = () => {
                         )}
                       </div>
                       <span className="sm:text-[18px] text-[15px] text-n600 font-medium leading-[27px]">
-                        {workorder.workorder.assigned_to}
+                        {workorder.workorder.assigned_to.email}
                       </span>
                       {visibleEngPopup && (
                         <div className="sm:w-[400px] w-[280px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
@@ -804,13 +807,13 @@ const MissionDetails = () => {
                                           "PATCH",
                                           setIsLoading,
                                           undefined,
-                                          user.email
+                                          user.id
                                         );
                                         setWorkorder((prevState) => ({
                                           ...prevState!,
                                           workorder: {
                                             ...prevState!.workorder,
-                                            assigned_to: user.email,
+                                            assigned_to: user,
                                           },
                                         }));
                                         setVisibleEngPopup(false);
@@ -852,7 +855,7 @@ const MissionDetails = () => {
                         }}
                       />
                       <span className="text-[17px] text-550 leading-[30px]">
-                        {selectedEng}
+                        {selectedEng.email}
                       </span>
                       {visibleEngPopup && (
                         <div className="sm:w-[400px] w-[280px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
@@ -917,7 +920,7 @@ const MissionDetails = () => {
                                       key={index}
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                       onClick={() => {
-                                        setSelectedEng(user.email);
+                                        setSelectedEng(user);
                                         setVisibleEngPopup(false);
                                       }}
                                     >
@@ -1033,7 +1036,7 @@ const MissionDetails = () => {
                                       key={index}
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                       onClick={() => {
-                                        setSelectedEng(user.email);
+                                        setSelectedEng(user);
                                         setVisibleEngPopup(false);
                                       }}
                                     >
@@ -1466,6 +1469,51 @@ const MissionDetails = () => {
                         </div>
                       )}
                     </div>
+                    {workorder.reports && workorder.reports?.length > 0 ? (
+                      <WorkOrderStatus
+                        status={
+                          workorder.reports[workorder.reports.length - 1]
+                            .type === 1
+                            ? "rep"
+                            : "noRep"
+                        }
+                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                      />
+                    ) : (
+                      <WorkOrderStatus
+                        status="noRep"
+                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                      />
+                    )}
+                    {workorder.workorder.require_acceptence ? (
+                      <WorkOrderStatus
+                        status={
+                          workorder.acceptance_certificates &&
+                          workorder.acceptance_certificates?.length > 0 &&
+                          workorder.acceptance_certificates[
+                            workorder.acceptance_certificates.length - 1
+                          ].type === 1
+                            ? "acc"
+                            : "noAcc"
+                        }
+                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                      />
+                    ) : null}
+                    {workorder.workorder.require_return_voucher ? (
+                      <WorkOrderStatus
+                        status={
+                          workorder.return_vouchers &&
+                          workorder.return_vouchers?.length > 0 &&
+                          workorder.return_vouchers[
+                            workorder.return_vouchers.length - 1
+                          ].is_last
+                            ? "vo"
+                            : "noVo"
+                        }
+                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                      />
+                    ) : null}
+
                     {reqAcc ? (
                       <span
                         className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
@@ -1537,7 +1585,17 @@ const MissionDetails = () => {
                                         ? "border-[1px] border-n400"
                                         : attach.uploaded_by ===
                                           Number(
-                                                                                           Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) 
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                )
+                                              )
+                                            )
                                           )
                                         ? "border-[2px] border-[#DB2C2C]"
                                         : "border-[2px] border-[#FFB84D]"
@@ -1705,7 +1763,17 @@ const MissionDetails = () => {
                                       ) : (
                                         attach.uploaded_by ===
                                           Number(
-                                                                                           Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) 
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                )
+                                              )
+                                            )
                                           ) &&
                                         !isLoadingCancelUpload && (
                                           <div className="flex flex-col gap-2 items-center">
@@ -2088,7 +2156,17 @@ const MissionDetails = () => {
                                   className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
                                     (report.uploaded_by ===
-                                    Number(                                               Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) )
+                                    Number(
+                                      Number(
+                                        Number(
+                                          Number(
+                                            Number(
+                                              localStorage.getItem("user_id")!
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
                                       ? "border-[2px] border-[#db2c2c]"
                                       : "border-[2px] border-[#FFB84D]")
                                   } `}
@@ -2099,11 +2177,6 @@ const MissionDetails = () => {
                                         "download-workorder-report",
                                         report.file_name,
                                         (progress) => {
-                                          console.log(
-                                            `Download progress: ${progress.toFixed(
-                                              2
-                                            )}%`
-                                          );
                                           // You can update the progress in the state to show it in the UI
                                           setWorkorder((prev) => {
                                             if (!prev) return null;
@@ -2210,7 +2283,11 @@ const MissionDetails = () => {
                                                   ? "text-primary"
                                                   : "text-[#DB2C9F]"
                                                 : report.uploaded_by ===
-                                                Number(localStorage.getItem("user_id")!) 
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
                                                 ? "text-[#DB2C2C]"
                                                 : "text-[#FFB84D]"
                                             }`}
@@ -2285,8 +2362,9 @@ const MissionDetails = () => {
                                     </div>
                                     {!report.is_completed &&
                                       report.uploaded_by ===
-                                      Number(localStorage.getItem("user_id")!) 
-                                      &&
+                                        Number(
+                                          localStorage.getItem("user_id")!
+                                        ) &&
                                       !isLoadingCancelUpload && (
                                         <div className="flex flex-col items-center gap-3">
                                           <label
@@ -2465,7 +2543,17 @@ const MissionDetails = () => {
                                     className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                       !certificate.is_completed &&
                                       (certificate.uploaded_by ===
-                                      Number(                                               Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) )
+                                      Number(
+                                        Number(
+                                          Number(
+                                            Number(
+                                              Number(
+                                                localStorage.getItem("user_id")!
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
                                         ? "border-[2px] border-[#db2c2c]"
                                         : "border-[2px] border-[#FFB84D]")
                                     }`}
@@ -2476,11 +2564,6 @@ const MissionDetails = () => {
                                           "download-workorder-acceptance-certificate",
                                           certificate.file_name,
                                           (progress) => {
-                                            console.log(
-                                              `Download progress: ${progress.toFixed(
-                                                2
-                                              )}%`
-                                            );
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
 
@@ -2739,7 +2822,17 @@ const MissionDetails = () => {
                                         {!certificate.is_completed &&
                                           certificate.uploaded_by ===
                                             Number(
-                                                                                             Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) 
+                                              Number(
+                                                Number(
+                                                  Number(
+                                                    Number(
+                                                      localStorage.getItem(
+                                                        "user_id"
+                                                      )!
+                                                    )
+                                                  )
+                                                )
+                                              )
                                             ) &&
                                           !isLoadingCancelUpload && (
                                             <>
@@ -2878,7 +2971,19 @@ const MissionDetails = () => {
                                       className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                         !voucher.is_completed &&
                                         (voucher.uploaded_by ===
-                                        Number(                                               Number(                                               Number(Number(Number(localStorage.getItem("user_id")!) ) ) ) )
+                                        Number(
+                                          Number(
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
                                           ? "border-[2px] border-[#db2c2c]"
                                           : "border-[2px] border-[#FFB84D]")
                                       }`}
@@ -2886,14 +2991,9 @@ const MissionDetails = () => {
                                         if (voucher.is_completed) {
                                           downloadFile(
                                             voucher.id,
-                                            "download-workorder-acceptance-certificate",
+                                            "download-workorder-return-voucher",
                                             voucher.file_name,
                                             (progress) => {
-                                              console.log(
-                                                `Download progress: ${progress.toFixed(
-                                                  2
-                                                )}%`
-                                              );
                                               setWorkorder((prev) => {
                                                 if (!prev) return null;
 
@@ -2964,7 +3064,11 @@ const MissionDetails = () => {
                                               voucher.is_completed
                                                 ? "#6F6C8F"
                                                 : voucher.uploaded_by ===
-                                                Number(localStorage.getItem("user_id")!) 
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
                                                 ? "#DB2C2C"
                                                 : " #FFB84D"
                                             }
@@ -2976,7 +3080,11 @@ const MissionDetails = () => {
                                               voucher.is_completed
                                                 ? "text-n600"
                                                 : voucher.uploaded_by ===
-                                                Number(localStorage.getItem("user_id")!) 
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
                                                 ? "text-[#DB2C2C]"
                                                 : "text-[#FFB84D]"
                                             }`}
@@ -2988,7 +3096,11 @@ const MissionDetails = () => {
                                               voucher.is_completed
                                                 ? "text-n600"
                                                 : voucher.uploaded_by ===
-                                                Number(localStorage.getItem("user_id")!) 
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
                                                 ? "text-[#DB2C2C]"
                                                 : "text-[#FFB84D]"
                                             }`}
@@ -3000,8 +3112,9 @@ const MissionDetails = () => {
 
                                           {!voucher.is_completed &&
                                             voucher.uploaded_by ===
-                                            Number(localStorage.getItem("user_id")!) 
-                                            &&
+                                              Number(
+                                                localStorage.getItem("user_id")!
+                                              ) &&
                                             !isLoadingCancelUpload && (
                                               <>
                                                 <label
@@ -3200,7 +3313,7 @@ const MissionDetails = () => {
                       "PUT",
                       setIsLoading,
                       fetchOneWorkOrder,
-                      selectedEng!
+                      selectedEng!.id
                     );
                   }}
                 >
