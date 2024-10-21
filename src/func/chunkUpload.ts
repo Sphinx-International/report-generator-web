@@ -11,6 +11,7 @@ import {
 } from "./generateFileToken";
 import React, { Dispatch, SetStateAction } from "react";
 import { TheUploadingFile } from "../assets/types/Mission";
+import { url } from "inspector";
 
 export const upload_or_delete_workorder_files_for_attachements = async (
   workorder_id: string,
@@ -202,6 +203,7 @@ export const handle_chunck = async (
   fetchOneWorkOrder: () => void,
   fileStatus?: 0 | 1 | 2 | 3
 ) => {
+  
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   if (!token) {
@@ -236,7 +238,7 @@ export const handle_chunck = async (
       },
       body: formData,
     });
-
+   console.log(url)
     if (response.ok) {
       const data = await response.json();
       const fileId = data.id;
