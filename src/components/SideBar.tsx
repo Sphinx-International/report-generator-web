@@ -77,6 +77,7 @@ const SideBar = () => {
                       onClick={() => {
                         localStorage.removeItem("selectedFilterForWorkorders");
                         localStorage.removeItem("selectedFilterForUsers");
+                        localStorage.removeItem("selectedSubExecutedFilter")
                         dispatch(closeSidebar());
                       }}
                       className={({ isActive, isPending }) =>
@@ -155,6 +156,8 @@ const SideBar = () => {
                             "selectedFilterForWorkorders"
                           );
                           localStorage.removeItem("selectedFilterForUsers");
+                          localStorage.removeItem("selectedSubExecutedFilter")
+
                           dispatch(closeSidebar());
                         }}
                         className={({ isActive, isPending }) =>

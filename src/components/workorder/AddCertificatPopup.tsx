@@ -34,7 +34,7 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
       >
         <div className="flex flex-col items-center gap-[17px]">
           <h3 className="text-[19px] font-semibold text-primary leading-[20px]">
-            Add your certificat{" "}
+            Add your certificate{" "}
           </h3>
           <span className="text-[12px] text-n600 leading-[20px]">
             Choose certeficat type

@@ -74,7 +74,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/workorders-by-user/:id",
+    path: "/workorders-by-user/:userInfo",
     element: (
       <ProtectedRoute element={<WorkorderByUser />} allowedRoles={[0, 1, 2]} />
     ),

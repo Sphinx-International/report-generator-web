@@ -175,3 +175,57 @@ export const handle_open_or_close_returnVoucher = async (
     setIsLoading(false);
   }
 };
+
+export const EditAcceptenceStatus = async (
+  id: string,
+  requirement: boolean,
+  type: "acceptance" | "return voucher",
+  fetchOneWorkOrder: () => void,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+  try {
+    const response = await fetch(
+      type === "acceptance"
+        ? `${baseUrl}/workorder/update-workorder-acceptence`
+        : `${baseUrl}/workorder/update-workorder-return-voucher`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          ...(type === "acceptance" 
+            ? { require_acceptance: requirement } 
+            : { require_return_voucher: requirement })
+        })      }
+    );
+
+    if (response) {
+      console.log(response.status);
+      switch (response.status) {
+        case 200:
+           fetchOneWorkOrder();
+          break;
+        case 400:
+          console.log("verify your data");
+          break;
+        default:
+          console.log("error");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
+  } finally {
+    setIsLoading(false);
+  }
+};

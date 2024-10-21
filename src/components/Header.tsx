@@ -402,7 +402,7 @@ const Header: React.FC<headerProps> = (props) => {
                           {uploadingFiles.acceptenceFiles.length > 0 && (
                             <div className="flex items-start flex-col gap-[10px] w-full">
                               <span className="text-[15px] font-semibold text-n600 ">
-                                Acceptance certificat:
+                                Acceptance certificate:
                               </span>
                               <div className="flex flex-col gap-[8px] w-full">
                                 {uploadingFiles.acceptenceFiles.map(

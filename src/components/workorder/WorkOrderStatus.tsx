@@ -1,21 +1,30 @@
 import React from "react";
 
 interface WorkOrderStatusProps {
-  status: 0 | 1 | 2 | 3 | "acc" | "rep" | "vo" | "noRep" | "noAcc" | "noVo";
+  status: 0 | 1 | 2 | 3 | "acc" | "rep" | "vo" | "noRep" | "noAcc" | "noVo" | "unneededAcc" | "unneededVo";
   styles: {
     fontSize: number;
     px: number;
     py: number;
   };
+  setState?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({
   status,
   styles,
+  setState,
 }) => {
+  const handleClick = () => {
+    if (setState) {
+      setState((prevState) => !prevState); // Toggle the boolean state
+    }
+  };
+
   return (
     <span
-      className={`rounded-[100px] text-[${
+      onClick={handleClick}
+      className={`rounded-[100px] cursor-pointer text-[${
         styles.fontSize
       }px] font-medium leading-[15px] ${
         status === 0
@@ -30,7 +39,8 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({
           ? "bg-[#C8ECE98A] text-[#48C1B5]"
           : status === "noAcc" || status === "noRep" || status === "noVo"
           ? "bg-[#F8D7DA8A] text-[#D9534F]"
-          : "bg-primary text-white"
+          :  status === "unneededAcc" || status === "unneededVo"
+          ? "bg-[#E0E0E0] text-[#A0A0A0]"   : "bg-primary text-white"
       } `}
       style={{ padding: `${styles.py}px ${styles.px}px ` }}
     >
@@ -44,9 +54,9 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({
         ? "Closed"
         : status === "rep" || status === "noRep"
         ? "Reported"
-        : status === "acc"  || status === "noAcc"
+        : status === "acc" || status === "noAcc" || status === "unneededAcc"
         ? "Acceptance"
-        : status === "vo"  || status === "noVo"
+        : status === "vo" || status === "noVo" || status === "unneededVo"
         ? "Return voucher"
         : "Uknown status"}
     </span>

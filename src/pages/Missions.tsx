@@ -23,7 +23,7 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 const Missions = () => {
   const navigate = useNavigate();
 
-  const dispatch = useDispatch<AppDispatch>(); 
+  const dispatch = useDispatch<AppDispatch>();
   const selectedWorkorders = useSelector(
     (state: RootState) => state.selectedWorkorders.workOrdersTab
   );
@@ -128,6 +128,64 @@ const Missions = () => {
     }
   };
 
+  const filterExcuted = async (
+    offset = 0,
+    limit = 6,
+    report: boolean | null,
+    certificate: boolean | null,
+    voucher: boolean | null
+  ) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return { total: 0, current_offset: 0 };
+    }
+
+    setIsLoading(true);
+
+    const url = `${baseUrl}/workorder/get-executed-workorder?offset=${offset}&limit=${limit}&report=${report}&certificate=${certificate}&voucher=${voucher}`;
+    console.log(url);
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response text: ", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      switch (response.status) {
+        case 200:
+          {
+            const data = await response.json();
+            setWorkorders(data.data);
+            setTotalWorkorders(data.total);
+            return { total: data.total, current_offset: offset };
+          }
+          break;
+
+        case 204:
+          setWorkorders(null);
+          break;
+
+        default:
+          break;
+      }
+    } catch (err) {
+      console.error("Error: ", err);
+      return { total: 0, current_offset: 0 };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFirstPage = () => setCurrentPage(1);
   const handlePreviousPage = () =>
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -137,9 +195,18 @@ const Missions = () => {
 
   useEffect(() => {
     const filter = localStorage.getItem("selectedFilterForWorkorders");
+    const subFilter = localStorage.getItem("selectedSubExecutedFilter");
 
     if (filter === "all" || !filter) {
       fetchWorkOrders((currentPage - 1) * limit, limit);
+    } else if (subFilter && subFilter !== "All" && filter === "executed") {
+      filterExcuted(
+        (currentPage - 1) * limit,
+        limit,
+        subFilter === "Missing reports" ? false : null,
+        subFilter === "Missing acceptance certificate" ? false : null,
+        subFilter === "Missing return voucher" ? false : null
+      );
     } else {
       fetchWorkOrders((currentPage - 1) * limit, limit, filter);
     }
@@ -269,7 +336,9 @@ const Missions = () => {
                           <div
                             className="flex items-center gap-2 px-3 w-full hover:bg-slate-300 cursor-pointer"
                             onClick={() => {
-                              navigate(`/workorders-by-user/${user.email}`);
+                              navigate(
+                                `/workorders-by-user/${user.email}-${user.id}`
+                              );
                             }}
                           >
                             <img
@@ -319,6 +388,7 @@ const Missions = () => {
               : ["All", "To do", "Executed", "Closed"]
           }
           FiltrationFunc={fetchWorkOrders}
+          subFilterFunc={filterExcuted}
           functionalties={{
             primaryFunc: { name: "Add workorder" },
             secondaryFuncs: [{ name: "Delete" }],
@@ -459,7 +529,7 @@ const Missions = () => {
                         >
                           {workorder.description}
                         </p>
-                        <div className="flex items-center gap-[8px]">
+                        <div className="flex items-center gap-[8px] flex-wrap">
                           <WorkOrderStatus
                             status={workorder.status}
                             styles={{ fontSize: 10, px: 6, py: 4.5 }}
@@ -468,6 +538,43 @@ const Missions = () => {
                             priority={workorder.priority}
                             styles={{ fontSize: 10, px: 6, py: 4.5 }}
                           />
+                          {workorder.report_status === 1 ? (
+                            <WorkOrderStatus
+                              status="rep"
+                              styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            />
+                          ) : (
+                            <WorkOrderStatus
+                              status="noRep"
+                              styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            />
+                          )}
+                          {workorder.require_acceptence ? (
+                            workorder.certificate_status === 1 ? (
+                              <WorkOrderStatus
+                                status="acc"
+                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                              />
+                            ) : (
+                              <WorkOrderStatus
+                                status="noAcc"
+                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                              />
+                            )
+                          ) : null}
+                          {workorder.require_return_voucher ? (
+                            workorder.voucher_status ? (
+                              <WorkOrderStatus
+                                status="vo"
+                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                              />
+                            ) : (
+                              <WorkOrderStatus
+                                status="noVo"
+                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                              />
+                            )
+                          ) : null}
                         </div>
                       </div>
 

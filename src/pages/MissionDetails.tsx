@@ -52,6 +52,7 @@ import {
   setDownloadProgress,
 } from "../Redux/slices/uploadAttachOnCreation";
 import AddVoucherPopup from "../components/workorder/AddVouchePopup";
+import RequirementPopup from "../components/workorder/RequirementPopup";
 
 type WorkorderProperties = {
   title?: string;
@@ -158,6 +159,9 @@ const MissionDetails = () => {
     useState<"attachements" | "report" | "certificate" | "voucher">();
 
   const [visibleHistory, setVisibleHistory] = useState<boolean>(false);
+
+  const [visibleReqAccPopup, setVisibleReqAccPopup] = useState(false);
+  const [visibleReqVoucherPopup, setVisibleReqVoucherPopup] = useState(false);
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
@@ -432,87 +436,6 @@ const MissionDetails = () => {
   useEffect(() => {
     fetchOneWorkOrder();
   }, [fetchOneWorkOrder]);
-
-  const handleeditReqAccStatus = (workorder_id: string, new_status: 0 | 1) => {
-    setUndoMessageVisible(false);
-    setUndo_req_acc_MessageVisible(true);
-    setTimeLeft(5); // Set countdown to 5 seconds
-    undoActionTriggeredRef.current = true;
-    undo_req_acc_ActionTriggeredRef.current = false;
-    setIsLoading(false);
-
-    if (undoTimeoutRef.current) {
-      clearTimeout(undoTimeoutRef.current);
-    }
-
-    // Start countdown timer
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    intervalRef.current = window.setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(intervalRef.current!);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    undoTimeoutRef.current = window.setTimeout(async () => {
-      if (!undo_req_acc_ActionTriggeredRef.current) {
-        await EditAcceptenceStatus(workorder_id, new_status);
-      }
-      setUndo_req_acc_MessageVisible(false);
-    }, 5000);
-  };
-
-  const EditAcceptenceStatus = async (
-    id: string,
-    require_acceptance: 0 | 1
-  ) => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-    try {
-      const response = await fetch(
-        `${baseUrl}/workorder/update-workorder-acceptence`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id, require_acceptance }),
-        }
-      );
-
-      if (response) {
-        console.log(response.status);
-        switch (response.status) {
-          case 200:
-            setReqAcc(require_acceptance);
-            await fetchOneWorkOrder();
-            break;
-          case 400:
-            console.log("verify your data");
-            break;
-          default:
-            console.log("error");
-            break;
-        }
-      }
-    } catch (err) {
-      console.error("Error submitting form", err);
-    } finally {
-      false;
-      setIsLoading;
-    }
-  };
 
   const handleUndo = () => {
     if (undoTimeoutRef.current !== null) {
@@ -1486,65 +1409,102 @@ const MissionDetails = () => {
                       />
                     )}
                     {workorder.workorder.require_acceptence ? (
-                      <WorkOrderStatus
-                        status={
-                          workorder.acceptance_certificates &&
-                          workorder.acceptance_certificates?.length > 0 &&
-                          workorder.acceptance_certificates[
-                            workorder.acceptance_certificates.length - 1
-                          ].type === 1
-                            ? "acc"
-                            : "noAcc"
-                        }
-                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
-                      />
-                    ) : null}
-                    {workorder.workorder.require_return_voucher ? (
-                      <WorkOrderStatus
-                        status={
-                          workorder.return_vouchers &&
-                          workorder.return_vouchers?.length > 0 &&
-                          workorder.return_vouchers[
-                            workorder.return_vouchers.length - 1
-                          ].is_last
-                            ? "vo"
-                            : "noVo"
-                        }
-                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
-                      />
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={
+                            workorder.acceptance_certificates &&
+                            workorder.acceptance_certificates?.length > 0 &&
+                            workorder.acceptance_certificates[
+                              workorder.acceptance_certificates.length - 1
+                            ].type === 1
+                              ? "acc"
+                              : "noAcc"
+                          }
+                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          setState={setVisibleReqAccPopup}
+                        />
+                        {visibleReqAccPopup &&
+                          workorder.workorder.status < 2 && (
+                            <RequirementPopup
+                              woId={workorder.workorder.id}
+                              RequirementType="acceptance"
+                              Requirement={
+                                workorder.workorder.require_acceptence
+                              }
+                              setState={setVisibleReqAccPopup}
+                              fetchOneWorkOrder={fetchOneWorkOrder}
+                            />
+                          )}
+                      </div>
+                    ) : workorder.workorder.status < 2 ? (
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={"unneededAcc"}
+                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          setState={setVisibleReqAccPopup}
+                        />
+                        {visibleReqAccPopup && (
+                          <RequirementPopup
+                            woId={workorder.workorder.id}
+                            RequirementType="acceptance"
+                            Requirement={
+                              workorder.workorder.require_acceptence!
+                            }
+                            setState={setVisibleReqAccPopup}
+                            fetchOneWorkOrder={fetchOneWorkOrder}
+                          />
+                        )}
+                      </div>
                     ) : null}
 
-                    {reqAcc ? (
-                      <span
-                        className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
-                        onClick={() => {
-                          if (
-                            getRole() !== 2 &&
-                            workorder.workorder.status < 5
-                          ) {
-                            handleeditReqAccStatus(workorder.workorder.id, 0);
+                    {workorder.workorder.require_return_voucher ? (
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={
+                            workorder.return_vouchers &&
+                            workorder.return_vouchers?.length > 0 &&
+                            workorder.return_vouchers[
+                              workorder.return_vouchers.length - 1
+                            ].is_last
+                              ? "vo"
+                              : "noVo"
                           }
-                        }}
-                        title="require acceptance"
-                      >
-                        ✓
-                      </span>
-                    ) : (
-                      <span
-                        className="px-[10px] py-[6px] rounded-[50%] text-[#DB2C2C] bg-[#DB2C2C4D] cursor-pointer"
-                        onClick={() => {
-                          if (
-                            getRole() !== 2 &&
-                            workorder.workorder.status < 5
-                          ) {
-                            handleeditReqAccStatus(workorder.workorder.id, 1);
-                          }
-                        }}
-                        title="dosen't require acceptance"
-                      >
-                        🗙
-                      </span>
-                    )}
+                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          setState={setVisibleReqVoucherPopup}
+                        />
+                        {visibleReqVoucherPopup &&
+                          workorder.workorder.status < 2 && (
+                            <RequirementPopup
+                              woId={workorder.workorder.id}
+                              RequirementType="return voucher"
+                              Requirement={
+                                workorder.workorder.require_return_voucher
+                              }
+                              setState={setVisibleReqVoucherPopup}
+                              fetchOneWorkOrder={fetchOneWorkOrder}
+                            />
+                          )}
+                      </div>
+                    ) : workorder.workorder.status < 2 ? (
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={"unneededVo"}
+                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          setState={setVisibleReqVoucherPopup}
+                        />
+                        {visibleReqVoucherPopup && (
+                          <RequirementPopup
+                            woId={workorder.workorder.id}
+                            RequirementType="return voucher"
+                            Requirement={
+                              workorder.workorder.require_return_voucher!
+                            }
+                            setState={setVisibleReqVoucherPopup}
+                            fetchOneWorkOrder={fetchOneWorkOrder}
+                          />
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -2525,7 +2485,7 @@ const MissionDetails = () => {
                           htmlFor="acceptence-label"
                           className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
                         >
-                          Acceptance certificat
+                          Acceptance certificate
                         </label>
                         <div className="flex w-full items-center flex-wrap gap-[16px]">
                           {workorder.acceptance_certificates &&
@@ -2938,7 +2898,7 @@ const MissionDetails = () => {
                                 }}
                               >
                                 <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
-                                  Add new certificat
+                                  Add new certificate
                                 </span>
                               </div>
                             )}

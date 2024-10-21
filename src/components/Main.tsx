@@ -16,6 +16,13 @@ interface HeaderProps {
   page: "workorders" | "accounts";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
+  subFilterFunc?: (
+    offset: number,
+    limit: number,
+    report: boolean | null,
+    certificate: boolean | null,
+    voucher: boolean | null
+  ) => void;
   functionalties?: Functionalities;
   children: ReactNode;
   handleAddPrimaryButtonClick?: () => void;
@@ -23,13 +30,28 @@ interface HeaderProps {
   setCurrentPage: (page: number) => void;
 }
 
-// type ExcutedFilter = string
+type ExcutedFilter = {
+  title: string;
+  report: boolean | null;
+  certificate: boolean | null;
+  voucher: boolean | null;
+};
 
-const excutedFilter: string[] = [
-  "All",
-  "Missing reports",
-  "Missing acceptance certificat",
-  "Missing return voucher",
+const excutedFilter: ExcutedFilter[] = [
+  { title: "All", report: null, certificate: null, voucher: null },
+  { title: "Missing reports", report: false, certificate: null, voucher: null },
+  {
+    title: "Missing acceptance certificate",
+    report: null,
+    certificate: false,
+    voucher: null,
+  },
+  {
+    title: "Missing return voucher",
+    report: null,
+    certificate: null,
+    voucher: false,
+  },
 ];
 const Main: React.FC<HeaderProps> = (props) => {
   const getDefaultFilter = () => {
@@ -53,12 +75,30 @@ const Main: React.FC<HeaderProps> = (props) => {
   const [visibleExcutedPopup, setVisibleExcutedPopup] =
     useState<boolean>(false);
 
-  const [selectedExcutedFilter, setSelectedExcutedFilter] = useState("");
+  const [selectedExcutedFilter, setSelectedExcutedFilter] = useState(
+    localStorage.getItem("selectedSubExecutedFilter") &&
+      localStorage.getItem("selectedFilterForWorkorders") === "executed"
+      ? `${localStorage.getItem("selectedSubExecutedFilter")}`
+      : ""
+  );
 
   const handleFilterClick = (item: string) => {
-    setSelectedFilter(item);
+    if (
+      item === "Missing reports" ||
+      item === "Missing acceptance certificate" ||
+      item === "Missing return voucher"
+    ) {
+      setSelectedFilter("executed");
+    } else {
+      setSelectedFilter(item);
+      localStorage.removeItem("selectedSubExecutedFilter");
+    }
     props.page === "accounts"
       ? localStorage.setItem("selectedFilterForUsers", item.toLowerCase())
+      : item === "Missing reports" ||
+        item === "Missing acceptance certificate" ||
+        item === "Missing return voucher"
+      ? localStorage.setItem("selectedFilterForWorkorders", "executed")
       : localStorage.setItem("selectedFilterForWorkorders", item.toLowerCase());
 
     props.setCurrentPage(1);
@@ -71,8 +111,20 @@ const Main: React.FC<HeaderProps> = (props) => {
       case "to do":
         props.FiltrationFunc!(0, limit, "assigned");
         break;
-      case "allzzz":
-        props.FiltrationFunc!(0, limit);
+      case "all-executed":
+        props.FiltrationFunc!(0, limit, "executed");
+        break;
+
+      case "Missing reports":
+        props.subFilterFunc!(0, limit, false, null, null);
+        break;
+
+      case "Missing acceptance certificate":
+        props.subFilterFunc!(0, limit, null, false, null);
+        break;
+
+      case "Missing return voucher":
+        props.subFilterFunc!(0, limit, null, null, false);
         break;
 
       default:
@@ -99,8 +151,8 @@ const Main: React.FC<HeaderProps> = (props) => {
                     setVisibleExcutedPopup(!visibleExcutedPopup);
                   } else {
                     handleFilterClick(item.toLowerCase());
-                    setSelectedExcutedFilter("")
-                    setVisibleExcutedPopup(false)
+                    setSelectedExcutedFilter("");
+                    setVisibleExcutedPopup(false);
                   }
                 }}
               >
@@ -124,26 +176,30 @@ const Main: React.FC<HeaderProps> = (props) => {
               </span>
               {item === "Executed" && visibleExcutedPopup && (
                 <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
-                  {excutedFilter.map((file, index) => {
+                  {excutedFilter.map((filter, index) => {
                     return (
                       <span
                         key={index}
                         className={`text-[14px] text-nowrap cursor-pointer ${
-                          selectedExcutedFilter === file
+                          selectedExcutedFilter === filter.title
                             ? "text-primary"
                             : "text-n600"
                         }`}
                         onClick={() => {
-                          if (file === "All") {
+                          if (filter.title === "All") {
                             handleFilterClick("executed");
                           } else {
-                            //handleFilterClick("executed");
+                            handleFilterClick(filter.title);
                           }
-                          setSelectedExcutedFilter(file);
-                          setVisibleExcutedPopup(false)
+                          setSelectedExcutedFilter(filter.title);
+                          setVisibleExcutedPopup(false);
+                          localStorage.setItem(
+                            "selectedSubExecutedFilter",
+                            filter.title
+                          );
                         }}
                       >
-                        {file}
+                        {filter.title}
                       </span>
                     );
                   })}
@@ -221,21 +277,74 @@ const Main: React.FC<HeaderProps> = (props) => {
           </h3>
 
           {isOpen && (
-            <ul className="absolute sm:w-[300px] w-[190px] bg-white rounded-[30px] shadow-lg mt-2 z-30">
+            <ul className="absolute sm:w-[300px] w-[270px] bg-white rounded-[30px] shadow-lg mt-2 z-30">
               {props.flitration.map((option) => (
-                <li
-                  key={option}
-                  className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
-                    option === selectedFilter ? "bg-gray-100" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedFilter(option);
-                    setIsOpen(false);
-                    handleFilterClick(option.toLowerCase());
-                  }}
-                >
-                  {option}
-                </li>
+                <div className="relative" key={option}>
+                  <li
+                    className={`px-[18px] py-[10px] flex items-center gap-3 text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
+                      option === selectedFilter ? "bg-gray-100" : ""
+                    }`}
+                    onClick={() => {
+                      if (option !== "Executed") {
+                        setSelectedFilter(option);
+                        setIsOpen(false);
+                        handleFilterClick(option.toLowerCase());
+                        setSelectedExcutedFilter("")
+                      } else {
+                        setVisibleExcutedPopup(!visibleExcutedPopup);
+                      }
+                    }}
+                  >
+                    {option}
+                    {option === "Executed" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="9"
+                        height="6"
+                        viewBox="0 0 9 6"
+                        fill="none"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M7.6591 0.0488281L4.33048 3.24385L1.03362 0.0488281L0.0205562 1.02123L4.32081 5.18865L8.66249 1.02123L7.6591 0.0488281Z"
+                          fill="#6F6C8F"
+                        />
+                      </svg>
+                    )}
+                  </li>
+                  {option === "Executed" && (
+                    <div
+                      className={`flex flex-col items-start gap-2 transition-all duration-1000 overflow-hidden ${
+                        visibleExcutedPopup ? "h-[145px]" : "h-0"
+                      }`}
+                    >
+                      {excutedFilter.map((filter, index) => {
+                        return (
+                          <sub
+                            key={index}
+                            className={`w-full px-[28px] py-[14px] ${selectedExcutedFilter === filter.title ? "text-primary":"text-n600"}  sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
+                            onClick={() => {
+                              if (filter.title === "All") {
+                                handleFilterClick("executed");
+                              } else {
+                                handleFilterClick(filter.title);
+                              }
+                              setSelectedExcutedFilter(filter.title);
+                              setIsOpen(false);
+                              localStorage.setItem(
+                                "selectedSubExecutedFilter",
+                                filter.title
+                              );
+                            }}
+                         >
+                            {filter.title}
+                          </sub>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               ))}
             </ul>
           )}

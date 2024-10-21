@@ -24,6 +24,9 @@ export interface ResMission {
   priority: 0 | 1 | 2 | 3;
   status: 0 | 1 | 2 | 3 ;
   description: string;
+  report_status: 1 | 2 ,
+  certificate_status: 1 | 2 | 3,
+  voucher_status: boolean,
   require_acceptence?: boolean;
   require_return_voucher?: boolean;
   created_at: Date;
