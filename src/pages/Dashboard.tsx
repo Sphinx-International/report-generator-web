@@ -10,6 +10,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "../styles/Swiper.css";
+import { projects } from "../assets/Projects";
 
 type Analytics = {
   title: string;
@@ -17,12 +18,7 @@ type Analytics = {
 };
 
 const Dashboard = () => {
-  const projects: string[] = [
-    "Workorders",
-    "Line of sight",
-    "New site",
-    "Transmission Modernization",
-  ];
+
   const analytics: Analytics[] = [
     {
       title: "Created WO",
@@ -126,9 +122,9 @@ const Dashboard = () => {
               Dashboard
             </h1>
             <div className="w-full flex items-center justify-between">
-            <h4 className="sm:text-[21px] text-n800 font-medium leading-5 lg:pl-0 pl-5">
-            Statistics
-        </h4>
+              <h4 className="sm:text-[21px] text-n800 font-medium leading-5 lg:pl-0 pl-5">
+                Statistics
+              </h4>
               <div className="flex items-center gap-4">
                 <select
                   name="timing"
@@ -293,7 +289,7 @@ const Dashboard = () => {
             </Swiper>
           </div>
 
-          <Linechart />
+          <Linechart title="Productivity"/>
         </div>
       </div>
     </div>

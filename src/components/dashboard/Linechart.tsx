@@ -69,7 +69,11 @@ const woTypes: WoOptions[] = [
   },
 ];
 
-const Linechart = () => {
+type LinechartProps = {
+  title: string;
+};
+
+const Linechart: React.FC<LinechartProps> = ({title}) => {
   const [analyticsTiming, setAnalyticsTiming] = useState<0 | 1 | 2 | 3 | 4>(3);
   const [selectedOption, setSelectedOption] = useState<WoOptions>({
     name: "Created",
@@ -97,7 +101,7 @@ const Linechart = () => {
     <div className="flex flex-col gap-[50px] w-full lg:px-7 pr-5 py-10 border-[1px] border-[#E6EDFF] rounded-[20px] h-[500px]">
       <div className="flex sm:items-center sm:flex-row flex-col sm:gap-0 gap-2 justify-between w-full lg:pl-0 pl-5">
         <h4 className="sm:text-[21px] text-n800 font-medium leading-5">
-          Productivity
+          {title}
         </h4>
         <div className="flex items-center gap-3">
           <select

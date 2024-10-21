@@ -322,7 +322,7 @@ const Main: React.FC<HeaderProps> = (props) => {
                       {excutedFilter.map((filter, index) => {
                         return (
                           <sub
-                            key={index}
+                            key={`sub-${index}`}
                             className={`w-full px-[28px] py-[14px] ${selectedExcutedFilter === filter.title ? "text-primary":"text-n600"}  sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
                             onClick={() => {
                               if (filter.title === "All") {
