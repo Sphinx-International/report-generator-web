@@ -11,7 +11,6 @@ import {
 } from "./generateFileToken";
 import React, { Dispatch, SetStateAction } from "react";
 import { TheUploadingFile } from "../assets/types/Mission";
-import { url } from "inspector";
 
 export const upload_or_delete_workorder_files_for_attachements = async (
   workorder_id: string,
