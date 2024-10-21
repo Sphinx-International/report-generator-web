@@ -224,7 +224,7 @@ const Header: React.FC<headerProps> = (props) => {
                                         : notif.action >= 200 &&
                                           notif.action < 300
                                         ? "mails/groups"
-                                        : `missions/${notif.on}`
+                                        : `workorders/${notif.on}`
                                     }`
                                   );
                                   setOffset(0);
