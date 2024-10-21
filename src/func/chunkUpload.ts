@@ -237,7 +237,6 @@ export const handle_chunck = async (
       },
       body: formData,
     });
-   console.log(url)
     if (response.ok) {
       const data = await response.json();
       const fileId = data.id;

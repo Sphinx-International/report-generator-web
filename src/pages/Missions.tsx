@@ -145,7 +145,6 @@ const Missions = () => {
     setIsLoading(true);
 
     const url = `${baseUrl}/workorder/get-executed-workorder?offset=${offset}&limit=${limit}&report=${report}&certificate=${certificate}&voucher=${voucher}`;
-    console.log(url);
     try {
       const response = await fetch(url, {
         method: "GET",
