@@ -1286,7 +1286,7 @@ const MissionDetails = () => {
                           ? 3
                           : workorder.workorder.status
                       }
-                      styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                      styles={{ fontSize: 13, px: 22, py: 8.5 }}
                     />
 
                     <div className="relative">
@@ -1403,12 +1403,12 @@ const MissionDetails = () => {
                             ? "rep"
                             : "noRep"
                         }
-                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                        styles={{ fontSize: 13, px: 22, py: 8.5 }}
                       />
                     ) : (
                       <WorkOrderStatus
                         status="noRep"
-                        styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                        styles={{ fontSize: 13, px: 22, py: 8.5 }}
                       />
                     )}
                     {workorder.workorder.require_acceptence ? (
@@ -1426,7 +1426,7 @@ const MissionDetails = () => {
                               ? "acc"
                               : "noAcc"
                           }
-                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqAccPopup}
                         />
                         {visibleReqAccPopup &&
@@ -1446,7 +1446,7 @@ const MissionDetails = () => {
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededAcc"}
-                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqAccPopup}
                         />
                         {visibleReqAccPopup && (
@@ -1478,7 +1478,7 @@ const MissionDetails = () => {
                               ? "vo"
                               : "noVo"
                           }
-                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqVoucherPopup}
                         />
                         {visibleReqVoucherPopup &&
@@ -1498,7 +1498,7 @@ const MissionDetails = () => {
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededVo"}
-                          styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqVoucherPopup}
                         />
                         {visibleReqVoucherPopup && (

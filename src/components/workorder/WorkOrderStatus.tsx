@@ -39,9 +39,9 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({
   return (
     <span
       onClick={handleClick}
-      className={`rounded-[100px] cursor-pointer text-nowrap text-[${
+      className={`rounded-[100px] cursor-pointer text-nowrap sm:text-[${
         styles.fontSize
-      }px] font-medium leading-[15px] ${
+      }px] text-[11px] font-medium leading-[15px] ${
         status === 0
           ? "bg-[#F6FFF9] text-[#48C1B5]"
           : status === 1
