@@ -624,7 +624,7 @@ const MissionDetails = () => {
                       <div
                         className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
-                          if (getRole() !== 2) {
+                          if (getRole() !== 2 && workorder.workorder.status < 2) {
                             setVisibleEngPopup(!visibleEngPopup);
                           }
                         }}
