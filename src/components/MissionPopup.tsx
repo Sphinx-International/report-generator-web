@@ -317,18 +317,19 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         console.error("No token found");
         return;
       }
-
+    
       const chunkSize = 512 * 1024; // 512 KB
-
+      const startOffset = 32 * 1024; // Start uploading from 32KB onwards
+    
       for (let index = 1; index < totalChunks; index++) {
-        const start = index * chunkSize;
+        const start = startOffset + (index - 1) * chunkSize; // Adjust to skip first chunk
         const end = Math.min(start + chunkSize, file.size);
         const chunk = file.slice(start, end);
-
+    
         const formData = new FormData();
         formData.append("index", index.toString());
         formData.append("file", chunk, `${file.name}.part`);
-
+    
         try {
           const response = await fetch(
             `${baseUrl}/file/upload-rest-chunks/${fileId}`,
@@ -340,31 +341,29 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
               body: formData,
             }
           );
-
+    
           switch (response.status) {
-            case 200:
-              {
-                const progress = ((index + 1) / totalChunks) * 100;
-                dispatch(
-                  updateFileProgress({ type: "attachements", fileId, progress })
-                );
-
-                updateAttachmentProgress(fileId, Number(progress.toFixed(2)));
-              }
+            case 200: {
+              const progress = ((index + 1) / totalChunks) * 100;
+              dispatch(
+                updateFileProgress({ type: "attachements", fileId, progress })
+              );
+              updateAttachmentProgress(fileId, Number(progress.toFixed(2)));
               break;
+            }
             case 201:
               dispatch(
                 updateFileProgress({
                   type: "attachements",
                   fileId,
                   progress: 100.0,
-                }),
-                deleteFileFromIndexedDB(fileId)
+                })
               );
+              deleteFileFromIndexedDB(fileId);
               updateAttachmentProgress(fileId, 100.0);
               break;
-
-            case 404: {
+    
+            case 404:
               setformValues((prevValues) => ({
                 ...prevValues,
                 attachments: prevValues.attachments.filter(
@@ -372,8 +371,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 ),
               }));
               return;
-            }
-
+    
             default:
               console.error("Failed to upload chunk");
               break;
@@ -384,6 +382,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         }
       }
     };
+    
 
     const handle_chunck = async (file: File, file_token: string) => {
       const token =
@@ -392,26 +391,31 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         console.error("No token found");
         return;
       }
-
-      const chunkSize = 32 * 1024; // 512 KB
-      const fileSize = file.size; // File size in bytes
-
-      const chunks = Math.ceil(fileSize / (512 * 1024));
-      // Extract the first chunk
-      const firstChunk = file.slice(0, chunkSize);
+    
+      const firstChunkSize = 32 * 1024; // 32 KB
+      const chunkSize = 512 * 1024; // 512 KB for subsequent chunks
+      const fileSize = file.size;
+    
+      // Calculate total number of chunks, ensuring we handle small files correctly
+      const chunks =
+        fileSize <= firstChunkSize
+          ? 1 // If file is smaller than or equal to 32 KB, it's just 1 chunk
+          : fileSize <= chunkSize
+          ? 2 // If file is between 32 KB and 512 KB, there will be 2 chunks: the first 32 KB and the remainder
+          : Math.ceil((fileSize - firstChunkSize) / chunkSize) + 1; // For larger files, more chunks
+    
+      // Extract the first 32KB chunk
+      const firstChunk = file.slice(0, firstChunkSize);
+    
       const formData = new FormData();
       formData.append("name", file.name);
       formData.append("type", "1");
       formData.append("total_chunks", chunks.toString());
       formData.append("file", firstChunk, `${file.name}.part`);
       formData.append("file_token", file_token);
-
-      for (const pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-      }
-
+    
       setIsLoading(true);
-
+    
       try {
         const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
           method: "POST",
@@ -420,7 +424,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           },
           body: formData,
         });
-        console.log(response.status);
+    
         if (response.ok) {
           const data = await response.json();
           const fileId = data.id;
@@ -439,7 +443,12 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             })
           );
           setIsLoading(false);
-          await uploadRemainingChunks(file, fileId, chunks);
+    
+          // Upload remaining chunks if the file has more than 32 KB
+          if (chunks > 1) {
+            await uploadRemainingChunks(file, fileId, chunks);
+          }
+    
           dispatch(removeUploadingFile({ type: "attachements", fileId }));
           dispatch(
             addUploadedAttachOnCreation({
@@ -457,6 +466,9 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         setIsLoading(false);
       }
     };
+    
+    
+    
     const handle_files_with_one_chunk = async (file: File) => {
       const token =
         localStorage.getItem("token") || sessionStorage.getItem("token");

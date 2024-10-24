@@ -136,7 +136,7 @@ const Main: React.FC<HeaderProps> = (props) => {
 
   return (
     <main className="flex items-center flex-col  gap-[10px] lg:pr-[16px] w-full h-fit">
-      <div className="pl-[24px] xl:flex items-center justify-between w-full hidden">
+      <div className="pl-[24px] lg:flex items-center justify-between w-full hidden">
         <div className="flex items-center xl:gap-[21px] gap-[15px]">
           {props.flitration.map((item, index) => (
             <div key={index} className="relative">
@@ -253,7 +253,7 @@ const Main: React.FC<HeaderProps> = (props) => {
       </div>
 
       <div className="flex items-center justify-between w-full">
-        <div className="relative xl:hidden">
+        <div className="relative lg:hidden">
           <h3
             className="text-[20px] font-medium leading-[30px] text-primary flex items-center gap-[5px]"
             onClick={() => {
@@ -349,32 +349,36 @@ const Main: React.FC<HeaderProps> = (props) => {
             </ul>
           )}
         </div>
+        
+        
         <div className="flex items-center gap-3 flex-row-reverse">
-          {props.functionalties && (
+        {props.functionalties && (
+          <button
+            className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+            onClick={props.handleAddPrimaryButtonClick}
+          >
+            {props.functionalties && props.functionalties.primaryFunc.name}
+          </button>
+        )}
+
+        {props.functionalties &&
+          props.functionalties.secondaryFuncs?.some(
+            (func) => func.name === "Delete"
+          ) && localStorage.getItem("role") === "0" && (
             <button
-              className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-              onClick={props.handleAddPrimaryButtonClick}
+              className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                selectedWorkorders.length === 0
+                  ? "text-n600 border-n400"
+                  : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
+              }`}
+              onClick={props.handleSecondaryButtonClick}
             >
-              {props.functionalties && props.functionalties.primaryFunc.name}
+              Delete
             </button>
           )}
+      </div>
+        
 
-          {props.functionalties &&
-            props.functionalties.secondaryFuncs?.some(
-              (func) => func.name === "Delete"
-            ) && (
-              <button
-                className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
-                  selectedWorkorders.length === 0
-                    ? "text-n600 border-n400"
-                    : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
-                }`}
-                onClick={props.handleSecondaryButtonClick}
-              >
-                Delete
-              </button>
-            )}
-        </div>
       </div>
 
       {props.children}

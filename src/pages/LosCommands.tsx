@@ -136,7 +136,9 @@ const LosCommands = () => {
             }
 
         </Main>
-        <LosPopup ref={losRef}/>
+        {/*<LosPopup ref={losRef}/> */} 
+        {/*this popup is makinf error of infinity loop, check it on the future */} 
+
       </div>{" "}
     </div>
   );

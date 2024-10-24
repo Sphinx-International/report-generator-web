@@ -30,9 +30,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   formData.append("workorder_id", workorder_id.toString());
   formData.append(`${method}`, file_id.toString());
 
-  /*  for (const [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-      }  */
+
   setIsLoading(true);
   try {
     const response = await fetch(
@@ -136,7 +134,8 @@ const uploadRemainingChunks = async (
   fileType: "attachements" | "report" | "certificate" | "voucher",
   fileId: number,
   totalChunks: number,
-  uploadedChunks?: number[]
+  chunkSize: number,
+  firstChunkSize: number
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -145,15 +144,11 @@ const uploadRemainingChunks = async (
     return;
   }
 
-  const chunkSize = 512 * 1024; // 512 KB
+  // Start from the end of the first chunk (32KB)
+  let start = firstChunkSize;
 
-  for (
-    let index = uploadedChunks ? uploadedChunks.length + 1 : 1;
-    index <= totalChunks;
-    index++
-  ) {
-    const start = index * chunkSize;
-    const end = Math.min(start + chunkSize, file.size);
+  for (let index = 1; index < totalChunks; index++) {
+    const end = Math.min(start + chunkSize, file.size); // Ensure end doesn't exceed file size
     const chunk = file.slice(start, end);
 
     const formData = new FormData();
@@ -171,7 +166,7 @@ const uploadRemainingChunks = async (
           body: formData,
         }
       );
-      console.log(await response.json());
+
       if (response.status === 200) {
         const progress = ((index + 1) / totalChunks) * 100;
         dispatch(updateFileProgress({ type: fileType, fileId, progress }));
@@ -189,11 +184,15 @@ const uploadRemainingChunks = async (
       console.error(`Error uploading chunk ${index + 1}:`, err);
       break;
     }
+
+    // Move start pointer for the next chunk
+    start += chunkSize;
   }
 };
 
+
 export const handle_chunck = async (
-  dispatch: AppDispatch, // Add dispatch as a parameter
+  dispatch: AppDispatch,
   workorder_id: string,
   fileType: "attachements" | "report" | "certificate" | "voucher",
   file: File,
@@ -202,23 +201,28 @@ export const handle_chunck = async (
   fetchOneWorkOrder: () => void,
   fileStatus?: 0 | 1 | 2 | 3
 ) => {
-  
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   if (!token) {
     console.error("No token found");
     return;
   }
-  const chunkSize = 32 * 1024; // 512 KB
-  const fileSize = file.size; // File size in bytes
 
-  const chunks = Math.ceil(fileSize / (512 * 1024));
-  // Extract the first chunk
-  const firstChunk = file.slice(0, chunkSize);
+  const fileSize = file.size;
+  const firstChunkSize = 32 * 1024; // 32KB for the first chunk
+  const chunkSize = 512 * 1024; // 512KB for subsequent chunks
+  const remainingFileSize = fileSize - firstChunkSize;
+
+  // Calculate total number of chunks, including the first 32KB chunk
+  const totalChunks = Math.ceil(remainingFileSize / chunkSize) + 1;
+
+  // Extract the first chunk (32KB)
+  const firstChunk = file.slice(0, firstChunkSize);
+
   const formData = new FormData();
   formData.append("name", file.name);
   formData.append("type", "1");
-  formData.append("total_chunks", chunks.toString());
+  formData.append("total_chunks", totalChunks.toString()); // Ensure this includes all chunks
   formData.append("file", firstChunk, `${file.name}.part`);
   formData.append("file_token", file_token);
 
@@ -249,6 +253,8 @@ export const handle_chunck = async (
         })
       );
       setIsLoading(false);
+
+      // Handle other file actions if needed
       if (fileType === "attachements") {
         upload_or_delete_workorder_files_for_attachements(
           workorder_id,
@@ -267,11 +273,22 @@ export const handle_chunck = async (
           fileStatus
         );
       }
-      if (chunks > 1) {
-        await uploadRemainingChunks(dispatch, file, fileType, fileId, chunks);
+
+      // If there are more chunks, upload them starting from the second chunk
+      if (totalChunks > 1) {
+        await uploadRemainingChunks(
+          dispatch,
+          file,
+          fileType,
+          fileId,
+          totalChunks,
+          chunkSize,
+          firstChunkSize
+        );
       }
-      fetchOneWorkOrder();
+
       dispatch(removeUploadingFile({ type: fileType, fileId }));
+      fetchOneWorkOrder();
     } else {
       console.error("Failed to upload first chunk");
     }
@@ -282,6 +299,7 @@ export const handle_chunck = async (
   }
 };
 
+
 export const handle_resuming_upload = async (
   dispatch: AppDispatch,
   fileId: number,
@@ -291,7 +309,7 @@ export const handle_resuming_upload = async (
   workorder_id: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc: () => void,
-  enqueueSnackbar: (message: string, options?: any) => void 
+  enqueueSnackbar: (message: string, options?: any) => void
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -301,6 +319,9 @@ export const handle_resuming_upload = async (
   }
 
   setIsLoading(true);
+
+  const fileSize = file.size; // File size in bytes
+  const chunkSize = fileSize < 512 * 1024 ? 32 * 1024 : 512 * 1024;
 
   try {
     const response = await fetch(
@@ -342,6 +363,7 @@ export const handle_resuming_upload = async (
           fileType,
           fileId,
           total,
+          chunkSize,
           uploaded_chunks
         );
         fetchFunc();

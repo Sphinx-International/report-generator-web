@@ -99,7 +99,7 @@ export const handleFileChange = async (
 ) => {
   if (file.size > 20 * 1024 * 1024) {
     alert(`${file.name} exceeds the 20MB limit.`);
-  } else if (file.size <= 512 * 1024) {
+  } else if (file.size <= 32 * 1024) {
     handle_files_with_one_chunk(
       dispatch,
       workorder_id,

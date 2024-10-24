@@ -167,7 +167,7 @@ export const sideBarTab: sideBarItem[] = [
     ],
   },
 
-  {
+ /* {
     title: "Los",
     svg: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="23" viewBox="0 0 22 23" fill="none">
 <g clipPath="url(#clip0_234_730)">
@@ -216,5 +216,5 @@ export const sideBarTab: sideBarItem[] = [
         access: "all",
       },
     ],
-  },
+  },  */
 ];

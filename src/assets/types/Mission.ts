@@ -73,6 +73,12 @@ export type History = {
 export interface ResOfOneMission {
   workorder: {
     id: string;
+    report_status: 1 | 2 ,
+    is_report_file_uploaded: boolean,
+    certificate_status: 1 | 2 | 3,
+    is_certificate_file_uploaded: boolean,
+    voucher_status: boolean,
+    is_voucher_file_uploaded: boolean,
     title: string;
     priority: 0 | 1 | 2 | 3 | number;
     status: 0 | 1 | 2 | 3 ;

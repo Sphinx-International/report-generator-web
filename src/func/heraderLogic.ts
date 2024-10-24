@@ -111,6 +111,7 @@ export const getActionNotificationTitle = (actionNumber: number): string => {
     306: "Workorder reported",
     307: "Workorder certificate uploaded",
     308: "Workorder accepted",
+    309: "Workorder need report update",
   };
 
   return actionTitles[actionNumber] || "Unknown action";
@@ -133,10 +134,11 @@ export const getActionNotificationDescription = (
     306: "A work order has been validated",
     307: "A work order certificate has been uploaded",
     308: "A work order has been accepted",
+    309: "A work order ask to update report"
   };
   return (
     actionDescriptions[actionNumber] ||
-    "No description available for this action."
+    `No description available for this action. ${actionNumber}`
   );
 };
 export const clearOneNotification = async (
