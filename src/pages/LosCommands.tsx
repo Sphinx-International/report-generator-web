@@ -5,7 +5,7 @@ import WorkOrderStatus from "../components/workorder/WorkOrderStatus";
 import WorkOrderpriority from "../components/workorder/WorkOrderPriorities";
 import { useState,useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import LosPopup from "../components/los/LosPopup";
+// import LosPopup from "../components/los/LosPopup";
 import SearchBar from "../components/searchBar";
 const LosCommands = () => {
   const navigate = useNavigate()
