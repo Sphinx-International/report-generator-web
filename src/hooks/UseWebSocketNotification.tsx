@@ -32,7 +32,7 @@ const useWebSocketNotification = ({
         ? `edit-user/${notification.on}`
         : notification.action >= 200 && notification.action < 300
         ? "mails/groups"
-        : `missions/${notification.on}`;
+        : `workorders/${notification.on}`;
 
     // Display the snackbar with a custom action button
     enqueueSnackbar(

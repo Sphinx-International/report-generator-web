@@ -8,7 +8,7 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface DeletePopUpProps {
   page: "workorders" | "accounts";
-  deleteItems: string[];
+  deleteItems: number[] | string[];
   deleteUrl: string
   jsonTitle:string
   fetchUrl: string;
@@ -63,6 +63,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialData = await initialResponse.json();
         const initialUserCount = initialData.data.length;
     
+
         if (props.deleteUrl === `${baseUrl}/account/delete-accounts`) {
           const secondResponse = await fetch(`${baseUrl}/workorder/delete-workorders-by-account`, {
 
@@ -146,8 +147,6 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
       }
     };
     
-    
-
     return (
       <dialog
         ref={ref}

@@ -8,47 +8,56 @@ export const emailMetuSettings: EmialSetting[] = [
   {
     title: "Workorder created",
     access: "admin",
-    type: 101
+    type: 300
   },
   {
     title: "Workorder updated",
     access: "all",
-    type: 102
+    type: 301
   },
   {
     title: "Workorder assigned",
     access: "eng",
-    type: 103
+    type: 302
   },
   {
     title: "Workorder reassigned",
     access: "eng",
-    type: 104
+    type: 303
 
   },
   {
     title: "Workorder executed",
     access: "all",
-    type: 105
+    type: 304
   },
   {
     title: "Workorder report uploaded",
     access: "all",
-    type: 106
+    type: 305
   },
   {
     title: "Workorder certificate uploaded",
     access: "all",
-    type: 109
+    type: 307
   },
   {
     title: "Workorder Accepted",
     access: "all",
-    type: 110
+    type: 308
   },
   {
     title: "Request update",
     access: "all",
-    type: 108
+    type: 309
+  },
+  {
+    title: "Return voucher uploaded",
+    access: "all",
+    type: 310
+  },  {
+    title: "Return voucher submitted",
+    access: "all",
+    type: 311
   },
 ];

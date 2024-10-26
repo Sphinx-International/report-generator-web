@@ -1,0 +1,30 @@
+.custom-checkbox {
+    appearance: none; /* Remove default styling */
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    border: 1px solid gray;
+    border-radius: 3px;
+    background-color: transparent;
+  }
+
+  /* Add custom background and border when checked */
+  .custom-checkbox:checked {
+    background-color: #4A3AFF;
+    border: 2px solid #4A3AFF;
+    border-radius: 3px; /* Optional: make it rounded */
+  }
+
+  /* The white checkmark when checked */
+  .custom-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    width: 4.5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    left: 3px;
+    transform: rotate(45deg);
+  }
