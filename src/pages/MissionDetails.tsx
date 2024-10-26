@@ -37,6 +37,7 @@ import {
   handle_edit_or_reqUpdate_report,
   handle_update_cert_type,
   handleFileChange,
+  handle_open_or_close_returnVoucher,
 } from "../func/otherworkorderApis";
 import {
   generateFileToken,
@@ -46,7 +47,12 @@ import {
 } from "../func/generateFileToken";
 import { useSnackbar } from "notistack";
 import { fetchGroupMembersThenAddThemToWorkorder } from "../func/groupsApi";
-import { removeAttachOnCreationArray,setDownloadProgress } from "../Redux/slices/uploadAttachOnCreation";
+import {
+  removeAttachOnCreationArray,
+  setDownloadProgress,
+} from "../Redux/slices/uploadAttachOnCreation";
+import AddVoucherPopup from "../components/workorder/AddVouchePopup";
+import RequirementPopup from "../components/workorder/RequirementPopup";
 
 type WorkorderProperties = {
   title?: string;
@@ -57,7 +63,7 @@ type WorkorderProperties = {
 
 const MissionDetails = () => {
   const { id } = useParams();
- // const decodedId = decodeURIComponent(id || "");
+  // const decodedId = decodeURIComponent(id || "");
 
   const dispatch = useDispatch<AppDispatch>();
   const uploadingFiles = useSelector(
@@ -79,6 +85,7 @@ const MissionDetails = () => {
   const [isLoadingMaildPersons, setIsLoadingMaildPersons] = useState(false);
   const [isLoadingCancelUpload, setIsLoadingCancelUpload] = useState(false);
   const [isLoadingDeleteFile, setIsLoadingDeleteFile] = useState(false);
+  const [isLoadingVoucher, setIsLoadingVoucher] = useState(false);
 
   const [searchQueryEng, setSearchQueryEng] = useState<string>("");
   const [searchQueryCoord, setSearchQueryCoord] = useState<string>("");
@@ -88,7 +95,7 @@ const MissionDetails = () => {
     { email: string; id: number; name: string }[]
   >([]);
 
-  const [selectedEng, setSelectedEng] = useState<string | null>(null);
+  const [selectedEng, setSelectedEng] = useState<User | null>(null);
 
   const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
   const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
@@ -110,11 +117,10 @@ const MissionDetails = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [undoMessageVisible, setUndoMessageVisible] = useState(false);
-  const [undo_req_acc_MessageVisible, setUndo_req_acc_MessageVisible] =
-    useState(false);
   const addCertificatDialogRef = useRef<HTMLDialogElement>(null);
   const addReportDialogRef = useRef<HTMLDialogElement>(null);
   const requestUpdateDialogRef = useRef<HTMLDialogElement>(null);
+  const addVoucherDialogRef = useRef<HTMLDialogElement>(null);
   const undoTimeoutRef = useRef<number | null>(null);
   const undoActionTriggeredRef = useRef(false);
   const undo_req_acc_ActionTriggeredRef = useRef(false);
@@ -132,8 +138,6 @@ const MissionDetails = () => {
     priority: 0,
     description: "",
   });
-  const [reqAcc, setReqAcc] = useState<0 | 1 | null>(null);
-
   const [inputWidth, setInputWidth] = useState(380);
   const spanRef = useRef<HTMLSpanElement>(null);
 
@@ -148,15 +152,18 @@ const MissionDetails = () => {
   const [selectedIdFileForResumeUpload, setSelectedIdFileForResumeUpload] =
     useState<number>();
   const [selectedFileTypeForResumeUpload, setSelectedFileTypeForResumeUpload] =
-    useState<"attachements" | "report" | "certificate">();
+    useState<"attachements" | "report" | "certificate" | "voucher">();
 
   const [visibleHistory, setVisibleHistory] = useState<boolean>(false);
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar(); // Get enqueueSnackbar function
+  const [visibleReqAccPopup, setVisibleReqAccPopup] = useState(false);
+  const [visibleReqVoucherPopup, setVisibleReqVoucherPopup] = useState(false);
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const handleLabelClick = (
     fileId: number,
-    fileType: "attachements" | "report" | "certificate"
+    fileType: "attachements" | "report" | "certificate" | "voucher"
   ) => {
     setSelectedIdFileForResumeUpload(fileId);
     setSelectedFileTypeForResumeUpload(fileType);
@@ -237,7 +244,6 @@ const MissionDetails = () => {
 
   const handleExecute = (workorder_id: string) => {
     setUndoMessageVisible(true);
-    setUndo_req_acc_MessageVisible(false);
     setTimeLeft(5); // Set countdown to 5 seconds
     setIsLoading(true);
     undoActionTriggeredRef.current = false;
@@ -308,19 +314,18 @@ const MissionDetails = () => {
           Authorization: `Token ${token}`,
         },
       });
-
       switch (response.status) {
         case 200:
           {
             const data = await response.json();
             setWorkorder(data);
+            console.log(data);
             setBasicDataWorkorder({
               title: data.workorder.title,
               id: data.workorder.id,
               priority: data.workorder.priority,
               description: data.workorder.description,
             });
-            setReqAcc(data.workorder.require_acceptence);
             setSelectedMembersFromGroup(() => {
               // Extract emails from data.workorder.mail_to
               const newEmails = data.mail_to.map(
@@ -359,7 +364,6 @@ const MissionDetails = () => {
       setIsPageLoading(false);
     }
   }, [id]);
-
   const handleEditWorkorder = async (properties: WorkorderProperties = {}) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -426,87 +430,6 @@ const MissionDetails = () => {
     fetchOneWorkOrder();
   }, [fetchOneWorkOrder]);
 
-  const handleeditReqAccStatus = (workorder_id: string, new_status: 0 | 1) => {
-    setUndoMessageVisible(false);
-    setUndo_req_acc_MessageVisible(true);
-    setTimeLeft(5); // Set countdown to 5 seconds
-    undoActionTriggeredRef.current = true;
-    undo_req_acc_ActionTriggeredRef.current = false;
-    setIsLoading(false);
-
-    if (undoTimeoutRef.current) {
-      clearTimeout(undoTimeoutRef.current);
-    }
-
-    // Start countdown timer
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    intervalRef.current = window.setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(intervalRef.current!);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    undoTimeoutRef.current = window.setTimeout(async () => {
-      if (!undo_req_acc_ActionTriggeredRef.current) {
-        await EditAcceptenceStatus(workorder_id, new_status);
-      }
-      setUndo_req_acc_MessageVisible(false);
-    }, 5000);
-  };
-
-  const EditAcceptenceStatus = async (
-    id: string,
-    require_acceptance: 0 | 1
-  ) => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-    try {
-      const response = await fetch(
-        `${baseUrl}/workorder/update-workorder-acceptence`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id, require_acceptance }),
-        }
-      );
-
-      if (response) {
-        console.log(response.status);
-        switch (response.status) {
-          case 200:
-            setReqAcc(require_acceptance);
-            await fetchOneWorkOrder();
-            break;
-          case 400:
-            console.log("verify your data");
-            break;
-          default:
-            console.log("error");
-            break;
-        }
-      }
-    } catch (err) {
-      console.error("Error submitting form", err);
-    } finally {
-      false;
-      setIsLoading;
-    }
-  };
-
   const handleUndo = () => {
     if (undoTimeoutRef.current !== null) {
       clearTimeout(undoTimeoutRef.current);
@@ -516,7 +439,6 @@ const MissionDetails = () => {
     }
     undoActionTriggeredRef.current = true;
     setUndoMessageVisible(false);
-    setUndo_req_acc_MessageVisible(false);
     setIsLoading(false);
   };
 
@@ -683,6 +605,10 @@ const MissionDetails = () => {
                                   <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
                                     {formatDate(action.at)}
                                   </span>
+                                  <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
+                                    <span className="">By:</span>{" "}
+                                    {action.by.first_name} {action.by.last_name}
+                                  </span>
                                 </div>
                               );
                             })}
@@ -698,7 +624,7 @@ const MissionDetails = () => {
                       <div
                         className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
-                          if (getRole() !== 2) {
+                          if (getRole() !== 2 && workorder.workorder.status < 2) {
                             setVisibleEngPopup(!visibleEngPopup);
                           }
                         }}
@@ -725,7 +651,7 @@ const MissionDetails = () => {
                         )}
                       </div>
                       <span className="sm:text-[18px] text-[15px] text-n600 font-medium leading-[27px]">
-                        {workorder.workorder.assigned_to}
+                        {workorder.workorder.assigned_to.email}
                       </span>
                       {visibleEngPopup && (
                         <div className="sm:w-[400px] w-[280px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
@@ -796,13 +722,13 @@ const MissionDetails = () => {
                                           "PATCH",
                                           setIsLoading,
                                           undefined,
-                                          user.email
+                                          user.id
                                         );
                                         setWorkorder((prevState) => ({
                                           ...prevState!,
                                           workorder: {
                                             ...prevState!.workorder,
-                                            assigned_to: user.email,
+                                            assigned_to: user,
                                           },
                                         }));
                                         setVisibleEngPopup(false);
@@ -844,7 +770,7 @@ const MissionDetails = () => {
                         }}
                       />
                       <span className="text-[17px] text-550 leading-[30px]">
-                        {selectedEng}
+                        {selectedEng.email}
                       </span>
                       {visibleEngPopup && (
                         <div className="sm:w-[400px] w-[280px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
@@ -909,7 +835,7 @@ const MissionDetails = () => {
                                       key={index}
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                       onClick={() => {
-                                        setSelectedEng(user.email);
+                                        setSelectedEng(user);
                                         setVisibleEngPopup(false);
                                       }}
                                     >
@@ -1018,14 +944,14 @@ const MissionDetails = () => {
                                 />
                               </div>
                             ) : searchQueryEng !== "" ? (
-                              searchEngs !== null &&  searchEngs.length > 0 ? (
+                              searchEngs !== null && searchEngs.length > 0 ? (
                                 searchEngs.map((user, index) => {
                                   return (
                                     <div
                                       key={index}
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                       onClick={() => {
-                                        setSelectedEng(user.email);
+                                        setSelectedEng(user);
                                         setVisibleEngPopup(false);
                                       }}
                                     >
@@ -1218,7 +1144,8 @@ const MissionDetails = () => {
                                 />
                               </div>
                             ) : searchQueryCoord !== "" ? (
-                              searchCoords !== null &&  searchCoords.length > 0 ? (
+                              searchCoords !== null &&
+                              searchCoords.length > 0 ? (
                                 typeOfSearchForCoord === "Emails" ? (
                                   searchCoords.map((user, index) => (
                                     <div
@@ -1349,8 +1276,17 @@ const MissionDetails = () => {
 
                   <div className="flex items-center gap-[8px] relative">
                     <WorkOrderStatus
-                      status={workorder.workorder.status}
-                      styles={{ fontSize: 13, px: 28, py: 9.5 }}
+                      status={
+                        workorder.workorder.report_status === 1 &&
+                        workorder.workorder.certificate_status === 1 &&
+                        workorder.workorder.voucher_status &&
+                        workorder.workorder.is_certificate_file_uploaded &&
+                        workorder.workorder.is_report_file_uploaded &&
+                        workorder.workorder.is_voucher_file_uploaded
+                          ? 3
+                          : workorder.workorder.status
+                      }
+                      styles={{ fontSize: 13, px: 22, py: 8.5 }}
                     />
 
                     <div className="relative">
@@ -1457,31 +1393,127 @@ const MissionDetails = () => {
                         </div>
                       )}
                     </div>
-                    {reqAcc ? (
-                      <span
-                        className="px-[12px] py-[6px] rounded-[50%] text-[#48C1B5] bg-[#48C1B54D] cursor-pointer"
-                        onClick={() => {
-                          if (getRole() !== 2 && workorder.workorder.status < 5) {
-                            handleeditReqAccStatus(workorder.workorder.id, 0);
-                          }
-                        }}
-                        title="require acceptance"
-                      >
-                        ✓
-                      </span>
+                    {workorder.reports && workorder.reports?.length > 0 ? (
+                      <WorkOrderStatus
+                        status={
+                          workorder.workorder.is_report_file_uploaded === false
+                            ? "onUpRep"
+                            : workorder.reports[workorder.reports.length - 1]
+                                .type === 1
+                            ? "rep"
+                            : "noRep"
+                        }
+                        styles={{ fontSize: 13, px: 22, py: 8.5 }}
+                      />
                     ) : (
-                      <span
-                        className="px-[10px] py-[6px] rounded-[50%] text-[#DB2C2C] bg-[#DB2C2C4D] cursor-pointer"
-                        onClick={() => {
-                          if (getRole() !== 2 && workorder.workorder.status < 5) {
-                            handleeditReqAccStatus(workorder.workorder.id, 1);
-                          }
-                        }}
-                        title="dosen't require acceptance"
-                      >
-                        🗙
-                      </span>
+                      <WorkOrderStatus
+                        status="noRep"
+                        styles={{ fontSize: 13, px: 22, py: 8.5 }}
+                      />
                     )}
+                    {workorder.workorder.require_acceptence ? (
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={
+                            workorder.workorder.is_certificate_file_uploaded ===
+                            false
+                              ? "onUpAcc"
+                              : workorder.acceptance_certificates &&
+                                workorder.acceptance_certificates?.length > 0 &&
+                                workorder.acceptance_certificates[
+                                  workorder.acceptance_certificates.length - 1
+                                ].type === 1
+                              ? "acc"
+                              : "noAcc"
+                          }
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
+                          setState={setVisibleReqAccPopup}
+                        />
+                        {visibleReqAccPopup &&
+                          workorder.workorder.status < 2 && (
+                            <RequirementPopup
+                              woId={workorder.workorder.id}
+                              RequirementType="acceptance"
+                              Requirement={
+                                workorder.workorder.require_acceptence
+                              }
+                              setState={setVisibleReqAccPopup}
+                              fetchOneWorkOrder={fetchOneWorkOrder}
+                            />
+                          )}
+                      </div>
+                    ) : workorder.workorder.status < 2 ? (
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={"unneededAcc"}
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
+                          setState={setVisibleReqAccPopup}
+                        />
+                        {visibleReqAccPopup && (
+                          <RequirementPopup
+                            woId={workorder.workorder.id}
+                            RequirementType="acceptance"
+                            Requirement={
+                              workorder.workorder.require_acceptence!
+                            }
+                            setState={setVisibleReqAccPopup}
+                            fetchOneWorkOrder={fetchOneWorkOrder}
+                          />
+                        )}
+                      </div>
+                    ) : null}
+
+                    {workorder.workorder.require_return_voucher ? (
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={
+                            workorder.workorder.is_voucher_file_uploaded ===
+                            false
+                              ? "onUpVo"
+                              : workorder.return_vouchers &&
+                                workorder.return_vouchers?.length > 0 &&
+                                workorder.return_vouchers[
+                                  workorder.return_vouchers.length - 1
+                                ].is_last
+                              ? "vo"
+                              : "noVo"
+                          }
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
+                          setState={setVisibleReqVoucherPopup}
+                        />
+                        {visibleReqVoucherPopup &&
+                          workorder.workorder.status < 2 && (
+                            <RequirementPopup
+                              woId={workorder.workorder.id}
+                              RequirementType="return voucher"
+                              Requirement={
+                                workorder.workorder.require_return_voucher
+                              }
+                              setState={setVisibleReqVoucherPopup}
+                              fetchOneWorkOrder={fetchOneWorkOrder}
+                            />
+                          )}
+                      </div>
+                    ) : workorder.workorder.status < 2 ? (
+                      <div className="relative">
+                        <WorkOrderStatus
+                          status={"unneededVo"}
+                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
+                          setState={setVisibleReqVoucherPopup}
+                        />
+                        {visibleReqVoucherPopup && (
+                          <RequirementPopup
+                            woId={workorder.workorder.id}
+                            RequirementType="return voucher"
+                            Requirement={
+                              workorder.workorder.require_return_voucher!
+                            }
+                            setState={setVisibleReqVoucherPopup}
+                            fetchOneWorkOrder={fetchOneWorkOrder}
+                          />
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -1521,7 +1553,19 @@ const MissionDetails = () => {
                                       attach.is_completed
                                         ? "border-[1px] border-n400"
                                         : attach.uploaded_by ===
-                                          localStorage.getItem("user_id")!
+                                          Number(
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
                                         ? "border-[2px] border-[#DB2C2C]"
                                         : "border-[2px] border-[#FFB84D]"
                                     }`}
@@ -1601,7 +1645,11 @@ const MissionDetails = () => {
                                             attach.is_completed
                                               ? "#6F6C8F"
                                               : attach.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "#DB2C2C"
                                               : " #FFB84D"
                                           }
@@ -1613,7 +1661,11 @@ const MissionDetails = () => {
                                             attach.is_completed
                                               ? "text-n600"
                                               : attach.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -1625,7 +1677,11 @@ const MissionDetails = () => {
                                             attach.is_completed
                                               ? "text-n600"
                                               : attach.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -1675,7 +1731,19 @@ const MissionDetails = () => {
                                         </span>
                                       ) : (
                                         attach.uploaded_by ===
-                                          localStorage.getItem("user_id")! &&
+                                          Number(
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          ) &&
                                         !isLoadingCancelUpload && (
                                           <div className="flex flex-col gap-2 items-center">
                                             <label
@@ -1762,11 +1830,23 @@ const MissionDetails = () => {
                                         "download-workorder-attachment",
                                         attach.file_name,
                                         (progress) => {
-                                          dispatch(setDownloadProgress({ id: attach.id, progress: `${progress.toFixed(0)}` }));
+                                          dispatch(
+                                            setDownloadProgress({
+                                              id: attach.id,
+                                              progress: `${progress.toFixed(
+                                                0
+                                              )}`,
+                                            })
+                                          );
                                         },
                                         () => {
                                           // Reset progress to 0% after download is complete
-                                          dispatch(setDownloadProgress({ id: attach.id, progress: "0" }));
+                                          dispatch(
+                                            setDownloadProgress({
+                                              id: attach.id,
+                                              progress: "0",
+                                            })
+                                          );
                                         }
                                       );
                                     }}
@@ -1831,8 +1911,7 @@ const MissionDetails = () => {
                                           );
                                         }}
                                       >
-                                        {isLoadingDeleteFile ? 
-                                        (
+                                        {isLoadingDeleteFile ? (
                                           <RotatingLines
                                             visible={true}
                                             width="20"
@@ -2022,7 +2101,7 @@ const MissionDetails = () => {
                 {workorder.workorder.status > 1 && (
                   <>
                     <div
-                      className={`w-full flex flex-col gap-[20px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]`}
+                      className={`w-full flex flex-col gap-[15px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]`}
                     >
                       <label
                         htmlFor="report-label"
@@ -2046,7 +2125,17 @@ const MissionDetails = () => {
                                   className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
                                     (report.uploaded_by ===
-                                    localStorage.getItem("user_id")!
+                                    Number(
+                                      Number(
+                                        Number(
+                                          Number(
+                                            Number(
+                                              localStorage.getItem("user_id")!
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
                                       ? "border-[2px] border-[#db2c2c]"
                                       : "border-[2px] border-[#FFB84D]")
                                   } `}
@@ -2057,11 +2146,6 @@ const MissionDetails = () => {
                                         "download-workorder-report",
                                         report.file_name,
                                         (progress) => {
-                                          console.log(
-                                            `Download progress: ${progress.toFixed(
-                                              2
-                                            )}%`
-                                          );
                                           // You can update the progress in the state to show it in the UI
                                           setWorkorder((prev) => {
                                             if (!prev) return null;
@@ -2133,7 +2217,11 @@ const MissionDetails = () => {
                                             report.is_completed
                                               ? "#6F6C8F"
                                               : report.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "#DB2C2C"
                                               : " #FFB84D"
                                           }
@@ -2145,7 +2233,11 @@ const MissionDetails = () => {
                                             report.is_completed
                                               ? "text-n600"
                                               : report.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2160,9 +2252,11 @@ const MissionDetails = () => {
                                                   ? "text-primary"
                                                   : "text-[#DB2C9F]"
                                                 : report.uploaded_by ===
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
                                                 ? "text-[#DB2C2C]"
                                                 : "text-[#FFB84D]"
                                             }`}
@@ -2222,7 +2316,11 @@ const MissionDetails = () => {
                                             report.is_completed
                                               ? "text-n600"
                                               : report.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2233,7 +2331,9 @@ const MissionDetails = () => {
                                     </div>
                                     {!report.is_completed &&
                                       report.uploaded_by ===
-                                        localStorage.getItem("user_id") &&
+                                        Number(
+                                          localStorage.getItem("user_id")!
+                                        ) &&
                                       !isLoadingCancelUpload && (
                                         <div className="flex flex-col items-center gap-3">
                                           <label
@@ -2320,23 +2420,27 @@ const MissionDetails = () => {
                               </div>
                             );
                           })}
-                        {workorder.workorder.status !== 3 &&
-                          workorder.workorder.status !== 5 && (
-                            <div
-                              className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
-                              onClick={() => {
-                                handleOpenDialog(addReportDialogRef);
-                              }}
-                            >
-                              <span className="text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
-                                Upload new files
-                              </span>
-                            </div>
-                          )}
+
+                        {(workorder.reports === null ||
+                          (workorder.reports &&
+                            workorder.reports[workorder.reports?.length - 1]
+                              .type !== 1)) && (
+                          <div
+                            className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
+                            onClick={() => {
+                              handleOpenDialog(addReportDialogRef);
+                            }}
+                          >
+                            <span className="text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
+                              Upload new files
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex justify-end w-full">
-                        {(workorder.workorder.status === 3 ||
-                          workorder.workorder.status === 5) &&
+                        {workorder.reports &&
+                          workorder.reports[workorder.reports?.length - 1]
+                            .type === 1 &&
                           getRole() !== 2 && (
                             <div className="flex items-center gap-[12px]">
                               <button
@@ -2385,12 +2489,12 @@ const MissionDetails = () => {
                     </div>
 
                     {workorder.workorder.require_acceptence && (
-                      <div className="w-full flex flex-col gap-[20px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
+                      <div className="w-full flex flex-col gap-[15px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
                         <label
                           htmlFor="acceptence-label"
                           className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
                         >
-                          Acceptance certificat
+                          Acceptance certificate
                         </label>
                         <div className="flex w-full items-center flex-wrap gap-[16px]">
                           {workorder.acceptance_certificates &&
@@ -2408,7 +2512,7 @@ const MissionDetails = () => {
                                     className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
                                       !certificate.is_completed &&
                                       (certificate.uploaded_by ===
-                                      localStorage.getItem("user_id")!
+                                      Number(localStorage.getItem("user_id")!)
                                         ? "border-[2px] border-[#db2c2c]"
                                         : "border-[2px] border-[#FFB84D]")
                                     }`}
@@ -2419,11 +2523,6 @@ const MissionDetails = () => {
                                           "download-workorder-acceptance-certificate",
                                           certificate.file_name,
                                           (progress) => {
-                                            console.log(
-                                              `Download progress: ${progress.toFixed(
-                                                2
-                                              )}%`
-                                            );
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
 
@@ -2496,7 +2595,11 @@ const MissionDetails = () => {
                                             certificate.is_completed
                                               ? "#6F6C8F"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "#DB2C2C"
                                               : " #FFB84D"
                                           }
@@ -2508,7 +2611,11 @@ const MissionDetails = () => {
                                             certificate.is_completed
                                               ? "text-n600"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2524,7 +2631,11 @@ const MissionDetails = () => {
                                                 ? "text-[#FFAA29]"
                                                 : "text-[#DB2C2C]"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2540,7 +2651,11 @@ const MissionDetails = () => {
                                             certificate.is_completed
                                               ? "text-n600"
                                               : certificate.uploaded_by ===
-                                                localStorage.getItem("user_id")!
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
                                               ? "text-[#DB2C2C]"
                                               : "text-[#FFB84D]"
                                           }`}
@@ -2554,7 +2669,9 @@ const MissionDetails = () => {
                                           workorder.acceptance_certificates[
                                             workorder.acceptance_certificates
                                               .length - 1
-                                          ].is_completed && (
+                                          ].is_completed &&
+                                          localStorage.getItem("role") !==
+                                            "2" && (
                                             <div
                                               className="absolute right-2 top-[80%] translate-y-[-50%]"
                                               onClick={(e) => {
@@ -2583,7 +2700,7 @@ const MissionDetails = () => {
                                                 />
                                               </svg>
                                               {showEditCertificatType && (
-                                                <div className="flex flex-col gap-[20px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
+                                                <div className="flex flex-col gap-[18px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
                                                   <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
                                                     {certeficatTypes.map(
                                                       (type, index) => {
@@ -2665,7 +2782,19 @@ const MissionDetails = () => {
 
                                         {!certificate.is_completed &&
                                           certificate.uploaded_by ===
-                                            localStorage.getItem("user_id")! &&
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  Number(
+                                                    Number(
+                                                      localStorage.getItem(
+                                                        "user_id"
+                                                      )!
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            ) &&
                                           !isLoadingCancelUpload && (
                                             <>
                                               <label
@@ -2756,7 +2885,7 @@ const MissionDetails = () => {
                                 );
                               }
                             )}
-                          {workorder.workorder.status < 4 &&
+                          {workorder.workorder.status < 3 &&
                             workorder.acceptance_certificates !== undefined &&
                             (workorder.acceptance_certificates === null ||
                               (workorder.acceptance_certificates.length > 0 &&
@@ -2770,11 +2899,349 @@ const MissionDetails = () => {
                                 }}
                               >
                                 <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
-                                  Add new certificat
+                                  Add new certificate
                                 </span>
                               </div>
                             )}
                         </div>
+                      </div>
+                    )}
+
+                    {workorder.workorder.require_return_voucher && (
+                      <div className="flex flex-col items-end w-full gap-[30px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
+                        <div className="w-full flex flex-col gap-[15px]">
+                          <label
+                            htmlFor="Voucher-label"
+                            className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
+                          >
+                            Return Voucher
+                          </label>
+                          <div className="flex w-full items-center flex-wrap gap-[16px]">
+                            {workorder.return_vouchers &&
+                              workorder.return_vouchers.length > 0 &&
+                              workorder.return_vouchers
+                                .filter((voucher) =>
+                                  uploadingFiles.voucherFiles.every(
+                                    (af) => af.id !== voucher.id
+                                  )
+                                )
+                                .map((voucher, index) => {
+                                  return (
+                                    <div
+                                      key={index}
+                                      className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
+                                        !voucher.is_completed &&
+                                        (voucher.uploaded_by ===
+                                        Number(
+                                          Number(
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  localStorage.getItem(
+                                                    "user_id"
+                                                  )!
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                          ? "border-[2px] border-[#db2c2c]"
+                                          : "border-[2px] border-[#FFB84D]")
+                                      }`}
+                                      onClick={() => {
+                                        if (voucher.is_completed) {
+                                          downloadFile(
+                                            voucher.id,
+                                            "download-workorder-return-voucher",
+                                            voucher.file_name,
+                                            (progress) => {
+                                              setWorkorder((prev) => {
+                                                if (!prev) return null;
+
+                                                return {
+                                                  ...prev,
+                                                  return_vouchers:
+                                                    prev.return_vouchers?.map(
+                                                      (vouch) =>
+                                                        vouch.id === voucher.id
+                                                          ? {
+                                                              ...vouch,
+                                                              downloadProgress: `${progress.toFixed(
+                                                                0
+                                                              )}`,
+                                                            }
+                                                          : vouch
+                                                    ),
+                                                };
+                                              });
+                                            },
+                                            () => {
+                                              setWorkorder((prev) => {
+                                                if (!prev) return null;
+
+                                                return {
+                                                  ...prev,
+                                                  return_vouchers:
+                                                    prev.return_vouchers?.map(
+                                                      (vouch) =>
+                                                        vouch.id === voucher.id
+                                                          ? {
+                                                              ...vouch,
+                                                              downloadProgress: `0`,
+                                                            }
+                                                          : vouch
+                                                    ),
+                                                };
+                                              });
+                                            }
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      <div className="flex items-center gap-[9px] w-full">
+                                        {voucher.downloadProgress &&
+                                          voucher.downloadProgress !== "0" && (
+                                            <CircularProgress
+                                              progress={parseFloat(
+                                                voucher.downloadProgress || "0"
+                                              )}
+                                            />
+                                          )}
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="22"
+                                          height="26"
+                                          viewBox="0 0 22 26"
+                                          fill="none"
+                                        >
+                                          <path
+                                            opacity="0.2"
+                                            d="M20.375 6.33984V19.4648C20.375 19.7135 20.2762 19.9519 20.1004 20.1278C19.9246 20.3036 19.6861 20.4023 19.4375 20.4023H16.625V10.0898L11.9375 5.40234H5.375V2.58984C5.375 2.3412 5.47377 2.10275 5.64959 1.92693C5.8254 1.75112 6.06386 1.65234 6.3125 1.65234H15.6875L20.375 6.33984Z"
+                                            fill="#6F6C8F"
+                                          />
+                                          <path
+                                            d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
+                                            fill={
+                                              voucher.is_completed
+                                                ? "#6F6C8F"
+                                                : voucher.uploaded_by ===
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                ? "#DB2C2C"
+                                                : " #FFB84D"
+                                            }
+                                          />
+                                        </svg>
+                                        <div className="flex flex-col items-start w-full relative">
+                                          <span
+                                            className={`text-[13px] font-medium leading-[20px] mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap ${
+                                              voucher.is_completed
+                                                ? "text-n600"
+                                                : voucher.uploaded_by ===
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                ? "text-[#DB2C2C]"
+                                                : "text-[#FFB84D]"
+                                            }`}
+                                          >
+                                            {voucher.file_name}
+                                          </span>
+                                          <span
+                                            className={`text-[12px] leading-[20px] ${
+                                              voucher.is_completed
+                                                ? "text-n600"
+                                                : voucher.uploaded_by ===
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                ? "text-[#DB2C2C]"
+                                                : "text-[#FFB84D]"
+                                            }`}
+                                          >
+                                            {formatDate(
+                                              `${voucher.uploaded_at}`
+                                            )}
+                                          </span>
+
+                                          {!voucher.is_completed &&
+                                            voucher.uploaded_by ===
+                                              Number(
+                                                localStorage.getItem("user_id")!
+                                              ) &&
+                                            !isLoadingCancelUpload && (
+                                              <>
+                                                <label
+                                                  className=" absolute right-0 top-[20%] translate-y-[-50%] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                                  htmlFor="reupload"
+                                                  onClick={async (e) => {
+                                                    e.stopPropagation();
+
+                                                    const fileFromIndexedDB =
+                                                      await getFilesByIdFromIndexedDB(
+                                                        voucher.id
+                                                      );
+                                                    if (fileFromIndexedDB[0]) {
+                                                      handleFileInputChangeOfResumeUpload(
+                                                        fileFromIndexedDB[0]
+                                                      );
+                                                    } else {
+                                                      handleLabelClick(
+                                                        voucher.id,
+                                                        "certificate"
+                                                      );
+                                                    }
+                                                  }}
+                                                >
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="14"
+                                                    height="14"
+                                                    viewBox="0 0 14 14"
+                                                    fill="none"
+                                                  >
+                                                    <g clipPath="url(#clip0_968_6186)">
+                                                      <path
+                                                        d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                        fill="#C70000"
+                                                      />
+                                                    </g>
+                                                    <defs>
+                                                      <clipPath id="clip0_968_6186">
+                                                        <rect
+                                                          width="14"
+                                                          height="14"
+                                                          fill="white"
+                                                        />
+                                                      </clipPath>
+                                                    </defs>
+                                                  </svg>
+                                                </label>
+                                                <span
+                                                  className=" absolute right-0 bottom-[6%] px-[3px] rounded-[50%] text-white bg-[#f33e3e] text-[12px] cursor-pointer hover:scale-105"
+                                                  onClick={() => {
+                                                    handleCancelUpload(
+                                                      voucher.id,
+                                                      undefined,
+                                                      undefined,
+                                                      setIsLoadingCancelUpload,
+                                                      fetchOneWorkOrder
+                                                    );
+                                                  }}
+                                                >
+                                                  🗙
+                                                </span>
+                                              </>
+                                            )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+
+                            {uploadingFiles.voucherFiles?.length > 0 &&
+                              uploadingFiles.voucherFiles.map(
+                                (voucher, index) => {
+                                  return (
+                                    <div
+                                      className="w-full sm:w-[48%] lg:w-[24%]"
+                                      key={index}
+                                    >
+                                      <UploadingFile
+                                        key={index}
+                                        fetchFunc={fetchOneWorkOrder}
+                                        id={voucher.id}
+                                        progress={voucher.progress}
+                                        file={voucher.file}
+                                        fileType="voucher"
+                                      />
+                                    </div>
+                                  );
+                                }
+                              )}
+                            {workorder.workorder.status < 3 &&
+                              workorder.return_vouchers !== undefined &&
+                              (workorder.return_vouchers === null ||
+                                (workorder.return_vouchers.length > 0 &&
+                                  !workorder.return_vouchers[
+                                    workorder.return_vouchers.length - 1
+                                  ].is_last)) &&
+                              (localStorage.getItem("role") !== "2" ? (
+                                <div
+                                  className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
+                                  onClick={() => {
+                                    handleOpenDialog(addVoucherDialogRef);
+                                  }}
+                                >
+                                  <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
+                                    Add new vouchers
+                                  </span>
+                                </div>
+                              ) : (
+                                !workorder.return_vouchers && (
+                                  <div className="w-full flex items-center justify-center font-medium py-4 text-n600">
+                                    Still there is no return voucher uploaded
+                                  </div>
+                                )
+                              ))}
+                          </div>
+                        </div>
+                        {localStorage.getItem("role") !== "2" && (
+                          <button
+                            className={`py-[10px] px-[45px] rounded-[30px] border-[2px] border-primary text-[14px] font-semibold ${
+                              workorder.return_vouchers &&
+                              workorder.return_vouchers[
+                                workorder.return_vouchers.length - 1
+                              ].is_last
+                                ? "text-primary"
+                                : "bg-primary text-white"
+                            }`}
+                            onClick={() => {
+                              workorder.return_vouchers &&
+                              workorder.return_vouchers[
+                                workorder.return_vouchers.length - 1
+                              ].is_last
+                                ? handle_open_or_close_returnVoucher(
+                                    workorder.workorder.id,
+                                    "open",
+                                    fetchOneWorkOrder,
+                                    setIsLoadingVoucher
+                                  )
+                                : handle_open_or_close_returnVoucher(
+                                    workorder.workorder.id,
+                                    "close",
+                                    fetchOneWorkOrder,
+                                    setIsLoadingVoucher
+                                  );
+                            }}
+                          >
+                            {" "}
+                            {!isLoadingVoucher ? (
+                              workorder.return_vouchers &&
+                              workorder.return_vouchers[
+                                workorder.return_vouchers.length - 1
+                              ].is_last ? (
+                                "Update"
+                              ) : (
+                                "Submit"
+                              )
+                            ) : (
+                              <RotatingLines
+                                visible={true}
+                                width="20"
+                                strokeWidth="3"
+                                strokeColor="#111111"
+                              />
+                            )}
+                          </button>
+                        )}
                       </div>
                     )}
                   </>
@@ -2784,24 +3251,11 @@ const MissionDetails = () => {
             {workorder.workorder.status === 0 ? (
               <div
                 className={`w-full flex items-center ${
-                  undoMessageVisible || undo_req_acc_MessageVisible
+                  undoMessageVisible
                     ? "justify-between lg:flex-row flex-col "
                     : "justify-end"
                 } `}
               >
-                {undo_req_acc_MessageVisible && (
-                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex sm:flex-row flex-col items-center text-center lg:pb-4">
-                    Require acceptance is going to be{" "}
-                    {reqAcc ? "False" : "True"} now!
-                    <span
-                      className="text-primary font-semibold cursor-pointer"
-                      onClick={handleUndo}
-                    >
-                      {"  "}
-                      Undo This action before {timeLeft} seconds
-                    </span>
-                  </span>
-                )}
                 <button
                   className={`py-[12px] px-[48px] rounded-[30px] ${
                     selectedEng
@@ -2816,7 +3270,7 @@ const MissionDetails = () => {
                       "PUT",
                       setIsLoading,
                       fetchOneWorkOrder,
-                      selectedEng!
+                      selectedEng!.id
                     );
                   }}
                 >
@@ -2835,7 +3289,7 @@ const MissionDetails = () => {
             ) : workorder.workorder.status > 0 ? (
               <div
                 className={`w-full flex items-center ${
-                  undoMessageVisible || undo_req_acc_MessageVisible
+                  undoMessageVisible
                     ? "justify-between lg:flex-row flex-col "
                     : "justify-end"
                 } `}
@@ -2852,27 +3306,10 @@ const MissionDetails = () => {
                     </span>
                   </span>
                 )}
-                {undo_req_acc_MessageVisible && (
-                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex sm:flex-row flex-col items-center text-center lg:pb-4">
-                    Require acceptance is going to be{" "}
-                    {reqAcc ? "False" : "True"} now!
-                    <span
-                      className="text-primary font-semibold cursor-pointer"
-                      onClick={handleUndo}
-                    >
-                      {"  "}
-                      Undo This action before {timeLeft} seconds
-                    </span>
-                  </span>
-                )}
 
                 <button
                   className={`py-[12px] px-[48px] w-full md:w-auto rounded-[30px] bg-primary text-white  border-[2px] leading-[20px] font-semibold text-[14px]
-                   ${
-                    
-                     (workorder.workorder.status !== 1)
-                       && "hidden"
-                   }  `}
+                   ${workorder.workorder.status !== 1 && "hidden"}  `}
                   disabled={isLoading ? true : false}
                   onClick={() => {
                     workorder.workorder.status === 1
@@ -2889,8 +3326,8 @@ const MissionDetails = () => {
                         strokeColor="white"
                       />
                     </div>
-                  ) : workorder.workorder.status === 1 && (
-                    "Execution Finished"
+                  ) : (
+                    workorder.workorder.status === 1 && "Execution Finished"
                   )}
                 </button>
               </div>
@@ -2902,7 +3339,7 @@ const MissionDetails = () => {
       </div>
 
       <input
-        ref={fileInputOnReuploadRef} // Attach the ref to the file input
+        ref={fileInputOnReuploadRef}
         type="file"
         className="hidden"
         name="reupload"
@@ -2927,6 +3364,11 @@ const MissionDetails = () => {
       />
       <RequestUpdatePopup
         ref={requestUpdateDialogRef}
+        workorderId={workorder?.workorder.id}
+        fetchOneWorkOrder={fetchOneWorkOrder}
+      />
+      <AddVoucherPopup
+        ref={addVoucherDialogRef}
         workorderId={workorder?.workorder.id}
         fetchOneWorkOrder={fetchOneWorkOrder}
       />

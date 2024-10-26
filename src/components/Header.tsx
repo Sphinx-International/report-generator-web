@@ -224,7 +224,7 @@ const Header: React.FC<headerProps> = (props) => {
                                         : notif.action >= 200 &&
                                           notif.action < 300
                                         ? "mails/groups"
-                                        : `missions/${notif.on}`
+                                        : `workorders/${notif.on}`
                                     }`
                                   );
                                   setOffset(0);
@@ -402,7 +402,7 @@ const Header: React.FC<headerProps> = (props) => {
                           {uploadingFiles.acceptenceFiles.length > 0 && (
                             <div className="flex items-start flex-col gap-[10px] w-full">
                               <span className="text-[15px] font-semibold text-n600 ">
-                                Acceptance certificat:
+                                Acceptance certificate:
                               </span>
                               <div className="flex flex-col gap-[8px] w-full">
                                 {uploadingFiles.acceptenceFiles.map(
@@ -624,29 +624,36 @@ const Header: React.FC<headerProps> = (props) => {
                 <div className="flex items-center justify-center w-full">
                   <RotatingLines strokeColor="#4A3AFF" width="20" />
                 </div>
-              ) : searchResult!== null && ( searchResult.length > 0 ?
-                searchResult.map((user: User, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center justify-start w-full px-3 gap-2 cursor-pointer hover:bg-slate-200"
-                      onClick={() => {
-                        navigate(`/edit-user/${user.email}`);
-                      }}
-                    >
-                      <img
-                        src="/avatar.png"
-                        alt="avatar"
-                        className="rounded-[50%] w-[32px]"
-                      />
-                      <span className="text-n700 font-medium">
-                        {" "}
-                        {user.email} ({user.first_name} {user.last_name})
-                      </span>
-                    </div>
-                  );
-                })
-            :   <div className="w-full py-1 flex items-center justify-center text-n700 font-medium">no users founded . . .</div>  )}
+              ) : (
+                searchResult !== null &&
+                (searchResult.length > 0 ? (
+                  searchResult.map((user: User, index) => {
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center justify-start w-full px-3 gap-2 cursor-pointer hover:bg-slate-200"
+                        onClick={() => {
+                          navigate(`/edit-user/${user.email}`);
+                        }}
+                      >
+                        <img
+                          src="/avatar.png"
+                          alt="avatar"
+                          className="rounded-[50%] w-[32px]"
+                        />
+                        <span className="text-n700 font-medium">
+                          {" "}
+                          {user.email} ({user.first_name} {user.last_name})
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="w-full py-1 flex items-center justify-center text-n700 font-medium">
+                    no users founded . . .
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>

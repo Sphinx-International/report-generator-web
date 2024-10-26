@@ -69,7 +69,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ openDialogRef, page, wsUrl, setSe
           handleOpenDialog(openDialogRef);
         }}
       >
-        {page === "groups" ?"Create group" : page === "mails" ?"Add email":null}
+        {page === "groups" ?"Create group" : page === "mails" ?"Add email": page === "Sites"? "Add Site" : page === "Los"? "New CMD LOS" :null}
         
       </button>
     </div>

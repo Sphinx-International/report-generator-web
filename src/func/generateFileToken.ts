@@ -19,7 +19,7 @@ export async function generateFileToken(file: File): Promise<string> {
 export async function storeFileInIndexedDB(
   file: File,
   fileId: number,
-  fileType: "attachements" | "report" | "certificate",
+  fileType: "attachements" | "report" | "certificate" | "voucher",
   workorderId?: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -86,7 +86,7 @@ export async function storeFileInIndexedDB(
   
  export interface IndexedDBFile {
     fileId: number;
-    fileType: "attachements" |"report" |"certificate"; 
+    fileType: "attachements" | "report" | "certificate" | "voucher"; 
     fileContent: File; // This will be a `File` object
   }
 
@@ -228,10 +228,8 @@ export async function storeFileInIndexedDB(
           if (cursor) {
             results.push(cursor.value);
             cursor.continue();
-            console.log("if")
           } else {
             resolve(results);
-            
           }
         };
   

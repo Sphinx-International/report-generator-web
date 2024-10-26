@@ -104,7 +104,13 @@ const Groups = () => {
           searchBar={false}
           wsUrl="search-group"
         />
-        <SearchBar openDialogRef={createGroupDialogRef} page="groups" wsUrl="search-group" setSearchResult={setWsGroups} setLoaderSearch={setIsLoading}/>
+        <SearchBar
+          openDialogRef={createGroupDialogRef}
+          page="groups"
+          wsUrl="search-group"
+          setSearchResult={setWsGroups}
+          setLoaderSearch={setIsLoading}
+        />
 
         <main className="w-full flex flex-col gap-[20px] rounded-[20px] border-n300 border-[1px] p-[25px]">
           <div className="w-full flex items-center justify-between py-[6px]">
@@ -140,119 +146,118 @@ const Groups = () => {
             <div className="flex w-full items-center justify-center">
               <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60" />
             </div>
-          ) : wsGroups !== null ? 
+          ) : wsGroups !== null ? (
+            wsGroups.length > 0 ? (
+              <div className="flex items-center gap-[10px] flex-wrap w-full">
+                {wsGroups.map((group, index) => {
+                  return (
+                    <div
+                      key={index}
+                      className={`md:w-[32%] cursor-pointer flex items-center justify-between flex-grow rounded-[15px] p-[12px] ${
+                        selectedGroups === group.id
+                          ? "border-primary border-[2px]"
+                          : "border-[#E6EDFF] border-[1px]"
+                      }`}
+                      onClick={() => {
+                        if (selectedGroups === group.id) {
+                          setSelectedGroups(null);
+                        } else {
+                          setSelectedGroups(group.id);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-[11px]">
+                        <span className="rounded-[50%] p-[3px] bg-n300">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                          >
+                            <path
+                              d="M17.5 16.457C17.5 14.7154 16.1083 12.2337 14.1667 11.6845M12.5 16.457C12.5 14.2479 10.2617 11.457 7.5 11.457C4.73833 11.457 2.5 14.2479 2.5 16.457"
+                              stroke="#514F6E"
+                              strokeWidth="1.25"
+                              fillOpacity="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M7.5 8.54102C8.88071 8.54102 10 7.42173 10 6.04102C10 4.6603 8.88071 3.54102 7.5 3.54102C6.11929 3.54102 5 4.6603 5 6.04102C5 7.42173 6.11929 8.54102 7.5 8.54102Z"
+                              stroke="#514F6E"
+                              strokeWidth="1.25"
+                              fillOpacity="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12.5 8.54102C13.163 8.54102 13.7989 8.27762 14.2678 7.80878C14.7366 7.33994 15 6.70406 15 6.04102C15 5.37797 14.7366 4.74209 14.2678 4.27325C13.7989 3.80441 13.163 3.54102 12.5 3.54102"
+                              stroke="#514F6E"
+                              strokeWidth="1.25"
+                              fillOpacity="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
+                        <span className="text-[12px] leading-[18px] text-n800 font-medium">
+                          {group.name}
+                        </span>
+                      </div>
 
-          ( wsGroups.length > 0   ? 
-            <div className="flex items-center gap-[10px] flex-wrap w-full">
-            {wsGroups.map((group, index) => {
-              return (
-                <div
-                  key={index}
-                  className={`md:w-[32%] cursor-pointer flex items-center justify-between flex-grow rounded-[15px] p-[12px] ${
-                    selectedGroups === group.id
-                      ? "border-primary border-[2px]"
-                      : "border-[#E6EDFF] border-[1px]"
-                  }`}
-                  onClick={() => {
-                    if (selectedGroups === group.id) {
-                      setSelectedGroups(null);
-                    } else {
-                      setSelectedGroups(group.id);
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-[11px]">
-                    <span className="rounded-[50%] p-[3px] bg-n300">
                       <svg
+                        className="hover:scale-[1.15] transition-all duration-150"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // setEditMail(mail);
+                          setOpenedGroup(group);
+                          handleOpenDialog(view_edit_GroupDialogRef);
+                        }}
                         xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
+                        width="17"
+                        height="17"
+                        viewBox="0 0 24 24"
                         fill="none"
                       >
                         <path
-                          d="M17.5 16.457C17.5 14.7154 16.1083 12.2337 14.1667 11.6845M12.5 16.457C12.5 14.2479 10.2617 11.457 7.5 11.457C4.73833 11.457 2.5 14.2479 2.5 16.457"
-                          stroke="#514F6E"
-                          strokeWidth="1.25"
+                          d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
+                          stroke="#A0A3BD"
+                          strokeWidth="2"
                           fillOpacity="round"
                           strokeLinejoin="round"
                         />
                         <path
-                          d="M7.5 8.54102C8.88071 8.54102 10 7.42173 10 6.04102C10 4.6603 8.88071 3.54102 7.5 3.54102C6.11929 3.54102 5 4.6603 5 6.04102C5 7.42173 6.11929 8.54102 7.5 8.54102Z"
-                          stroke="#514F6E"
-                          strokeWidth="1.25"
+                          d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
+                          stroke="#A0A3BD"
+                          strokeWidth="2"
                           fillOpacity="round"
                           strokeLinejoin="round"
                         />
-                        <path
-                          d="M12.5 8.54102C13.163 8.54102 13.7989 8.27762 14.2678 7.80878C14.7366 7.33994 15 6.70406 15 6.04102C15 5.37797 14.7366 4.74209 14.2678 4.27325C13.7989 3.80441 13.163 3.54102 12.5 3.54102"
-                          stroke="#514F6E"
-                          strokeWidth="1.25"
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="3"
+                          stroke="#A0A3BD"
+                          strokeWidth="2"
                           fillOpacity="round"
                           strokeLinejoin="round"
                         />
                       </svg>
-                    </span>
-                    <span className="text-[12px] leading-[18px] text-n800 font-medium">
-                      {group.name}
-                    </span>
-                  </div>
-
-                  <svg
-                    className="hover:scale-[1.15] transition-all duration-150"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // setEditMail(mail);
-                      setOpenedGroup(group);
-                      handleOpenDialog(view_edit_GroupDialogRef);
-                    }}
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <path
-                      d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
-                      stroke="#A0A3BD"
-                      strokeWidth="2"
-                      fillOpacity="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
-                      stroke="#A0A3BD"
-                      strokeWidth="2"
-                      fillOpacity="round"
-                      strokeLinejoin="round"
-                    />
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="3"
-                      stroke="#A0A3BD"
-                      strokeWidth="2"
-                      fillOpacity="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              );
-            })}
-          </div>
-          : <div className="flex flex-col gap-6 items-center justify-center">
-          <img
-            src="/astronaut/astro2.png"
-            alt="astro"
-            className="w-[230px]"
-          />
-          <h3 className="sm:text-[30px] text-[25px] font-bold text-n800">
-            No result founded
-          </h3>
-        </div>)
-          
-          : 
-          groups.length > 0 ? (
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6 items-center justify-center">
+                <img
+                  src="/astronaut/astronaut.png"
+                  alt="astro"
+                  className="w-[230px]"
+                />
+                <h3 className="text-[30px] font-bold text-n800">
+                  No result founded
+                </h3>
+              </div>
+            )
+          ) : groups.length > 0 ? (
             <div className="flex items-center gap-[10px] flex-wrap w-full">
               {groups.map((group, index) => {
                 return (

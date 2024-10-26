@@ -16,6 +16,13 @@ interface HeaderProps {
   page: "workorders" | "accounts";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
+  subFilterFunc?: (
+    offset: number,
+    limit: number,
+    report: boolean | null,
+    certificate: boolean | null,
+    voucher: boolean | null
+  ) => void;
   functionalties?: Functionalities;
   children: ReactNode;
   handleAddPrimaryButtonClick?: () => void;
@@ -23,6 +30,29 @@ interface HeaderProps {
   setCurrentPage: (page: number) => void;
 }
 
+type ExcutedFilter = {
+  title: string;
+  report: boolean | null;
+  certificate: boolean | null;
+  voucher: boolean | null;
+};
+
+const excutedFilter: ExcutedFilter[] = [
+  { title: "All", report: null, certificate: null, voucher: null },
+  { title: "Missing reports", report: false, certificate: null, voucher: null },
+  {
+    title: "Missing acceptance certificate",
+    report: null,
+    certificate: false,
+    voucher: null,
+  },
+  {
+    title: "Missing return voucher",
+    report: null,
+    certificate: null,
+    voucher: false,
+  },
+];
 const Main: React.FC<HeaderProps> = (props) => {
   const getDefaultFilter = () => {
     const storedFilter =
@@ -42,40 +72,140 @@ const Main: React.FC<HeaderProps> = (props) => {
     useState<string>(getDefaultFilter);
   const [isOpen, setIsOpen] = useState(false);
 
+  const [visibleExcutedPopup, setVisibleExcutedPopup] =
+    useState<boolean>(false);
+
+  const [selectedExcutedFilter, setSelectedExcutedFilter] = useState(
+    localStorage.getItem("selectedSubExecutedFilter") &&
+      localStorage.getItem("selectedFilterForWorkorders") === "executed"
+      ? `${localStorage.getItem("selectedSubExecutedFilter")}`
+      : ""
+  );
+
   const handleFilterClick = (item: string) => {
-    setSelectedFilter(item);
+    if (
+      item === "Missing reports" ||
+      item === "Missing acceptance certificate" ||
+      item === "Missing return voucher"
+    ) {
+      setSelectedFilter("executed");
+    } else {
+      setSelectedFilter(item);
+      localStorage.removeItem("selectedSubExecutedFilter");
+    }
     props.page === "accounts"
       ? localStorage.setItem("selectedFilterForUsers", item.toLowerCase())
+      : item === "Missing reports" ||
+        item === "Missing acceptance certificate" ||
+        item === "Missing return voucher"
+      ? localStorage.setItem("selectedFilterForWorkorders", "executed")
       : localStorage.setItem("selectedFilterForWorkorders", item.toLowerCase());
 
     props.setCurrentPage(1);
     const limit = props.page === "accounts" ? 4 : 6;
 
-    if (item === "all") {
-      props.FiltrationFunc!(0, limit);
-    } else if (item === "to do") {
-      props.FiltrationFunc!(0, limit, "assigned");
-    } else {
-      props.FiltrationFunc!(0, limit, item.toLowerCase());
+    switch (item) {
+      case "all":
+        props.FiltrationFunc!(0, limit);
+        break;
+      case "to do":
+        props.FiltrationFunc!(0, limit, "assigned");
+        break;
+      case "all-executed":
+        props.FiltrationFunc!(0, limit, "executed");
+        break;
+
+      case "Missing reports":
+        props.subFilterFunc!(0, limit, false, null, null);
+        break;
+
+      case "Missing acceptance certificate":
+        props.subFilterFunc!(0, limit, null, false, null);
+        break;
+
+      case "Missing return voucher":
+        props.subFilterFunc!(0, limit, null, null, false);
+        break;
+
+      default:
+        props.FiltrationFunc!(0, limit, item.toLowerCase());
+
+        break;
     }
   };
 
   return (
     <main className="flex items-center flex-col  gap-[10px] lg:pr-[16px] w-full h-fit">
-      <div className="pl-[24px] xl:flex items-center justify-between w-full hidden">
+      <div className="pl-[24px] lg:flex items-center justify-between w-full hidden">
         <div className="flex items-center xl:gap-[21px] gap-[15px]">
           {props.flitration.map((item, index) => (
-            <span
-              key={index}
-              className={`${
-                selectedFilter === item.toLowerCase()
-                  ? "text-primary border-b-[2px] border-primary"
-                  : "text-n600"
-              } leading-[36px] cursor-pointer text-[15px]`}
-              onClick={() => handleFilterClick(item.toLowerCase())}
-            >
-              {item}
-            </span>
+            <div key={index} className="relative">
+              <span
+                className={`${
+                  selectedFilter === item.toLowerCase()
+                    ? "text-primary border-b-[2px] border-primary"
+                    : "text-n600"
+                } leading-[36px] cursor-pointer text-[15px] flex items-center gap-[6px] relative`}
+                onClick={() => {
+                  if (item === "Executed") {
+                    setVisibleExcutedPopup(!visibleExcutedPopup);
+                  } else {
+                    handleFilterClick(item.toLowerCase());
+                    setSelectedExcutedFilter("");
+                    setVisibleExcutedPopup(false);
+                  }
+                }}
+              >
+                {item}
+                {item === "Executed" && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="11"
+                    height="7"
+                    viewBox="0 0 11 7"
+                    fill="none"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M9.00212 0L5.09068 4.10187L1.211 0L0.0205562 1.24839L5.08101 6.59865L10.1829 1.24839L9.00212 0Z"
+                      fill="#6E7191"
+                    />
+                  </svg>
+                )}
+              </span>
+              {item === "Executed" && visibleExcutedPopup && (
+                <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
+                  {excutedFilter.map((filter, index) => {
+                    return (
+                      <span
+                        key={index}
+                        className={`text-[14px] text-nowrap cursor-pointer ${
+                          selectedExcutedFilter === filter.title
+                            ? "text-primary"
+                            : "text-n600"
+                        }`}
+                        onClick={() => {
+                          if (filter.title === "All") {
+                            handleFilterClick("executed");
+                          } else {
+                            handleFilterClick(filter.title);
+                          }
+                          setSelectedExcutedFilter(filter.title);
+                          setVisibleExcutedPopup(false);
+                          localStorage.setItem(
+                            "selectedSubExecutedFilter",
+                            filter.title
+                          );
+                        }}
+                      >
+                        {filter.title}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           ))}
         </div>
         {["0", "1"].includes(localStorage.getItem("role")!) && (
@@ -123,7 +253,7 @@ const Main: React.FC<HeaderProps> = (props) => {
       </div>
 
       <div className="flex items-center justify-between w-full">
-        <div className="relative xl:hidden">
+        <div className="relative lg:hidden">
           <h3
             className="text-[20px] font-medium leading-[30px] text-primary flex items-center gap-[5px]"
             onClick={() => {
@@ -147,51 +277,108 @@ const Main: React.FC<HeaderProps> = (props) => {
           </h3>
 
           {isOpen && (
-            <ul className="absolute sm:w-[300px] w-[190px] bg-white rounded-[30px] shadow-lg mt-2 z-30">
+            <ul className="absolute sm:w-[300px] w-[270px] bg-white rounded-[30px] shadow-lg mt-2 z-30">
               {props.flitration.map((option) => (
-                <li
-                  key={option}
-                  className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
-                    option === selectedFilter ? "bg-gray-100" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedFilter(option);
-                    setIsOpen(false);
-                    handleFilterClick(option.toLowerCase());
-                  }}
-                >
-                  {option}
-                </li>
+                <div className="relative" key={option}>
+                  <li
+                    className={`px-[18px] py-[10px] flex items-center gap-3 text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
+                      option === selectedFilter ? "bg-gray-100" : ""
+                    }`}
+                    onClick={() => {
+                      if (option !== "Executed") {
+                        setSelectedFilter(option);
+                        setIsOpen(false);
+                        handleFilterClick(option.toLowerCase());
+                        setSelectedExcutedFilter("")
+                      } else {
+                        setVisibleExcutedPopup(!visibleExcutedPopup);
+                      }
+                    }}
+                  >
+                    {option}
+                    {option === "Executed" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="9"
+                        height="6"
+                        viewBox="0 0 9 6"
+                        fill="none"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M7.6591 0.0488281L4.33048 3.24385L1.03362 0.0488281L0.0205562 1.02123L4.32081 5.18865L8.66249 1.02123L7.6591 0.0488281Z"
+                          fill="#6F6C8F"
+                        />
+                      </svg>
+                    )}
+                  </li>
+                  {option === "Executed" && (
+                    <div
+                      className={`flex flex-col items-start gap-2 transition-all duration-1000 overflow-hidden ${
+                        visibleExcutedPopup ? "h-[145px]" : "h-0"
+                      }`}
+                    >
+                      {excutedFilter.map((filter, index) => {
+                        return (
+                          <sub
+                            key={`sub-${index}`}
+                            className={`w-full px-[28px] py-[14px] ${selectedExcutedFilter === filter.title ? "text-primary":"text-n600"}  sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
+                            onClick={() => {
+                              if (filter.title === "All") {
+                                handleFilterClick("executed");
+                              } else {
+                                handleFilterClick(filter.title);
+                              }
+                              setSelectedExcutedFilter(filter.title);
+                              setIsOpen(false);
+                              localStorage.setItem(
+                                "selectedSubExecutedFilter",
+                                filter.title
+                              );
+                            }}
+                         >
+                            {filter.title}
+                          </sub>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               ))}
             </ul>
           )}
         </div>
+        
+        
         <div className="flex items-center gap-3 flex-row-reverse">
         {props.functionalties && (
           <button
-          className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-          onClick={props.handleAddPrimaryButtonClick}
-        >
-          {props.functionalties && props.functionalties.primaryFunc.name}
-        </button>
+            className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+            onClick={props.handleAddPrimaryButtonClick}
+          >
+            {props.functionalties && props.functionalties.primaryFunc.name}
+          </button>
         )}
 
-          {props.functionalties &&
-            props.functionalties.secondaryFuncs?.some(
-              (func) => func.name === "Delete"
-            ) && (
-              <button
-                className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
-                  selectedWorkorders.length === 0
-                    ? "text-n600 border-n400"
-                    : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
-                }`}
-                onClick={props.handleSecondaryButtonClick}
-              >
-                Delete
-              </button>
-            )}
-        </div>
+        {props.functionalties &&
+          props.functionalties.secondaryFuncs?.some(
+            (func) => func.name === "Delete"
+          ) && localStorage.getItem("role") === "0" && (
+            <button
+              className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                selectedWorkorders.length === 0
+                  ? "text-n600 border-n400"
+                  : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
+              }`}
+              onClick={props.handleSecondaryButtonClick}
+            >
+              Delete
+            </button>
+          )}
+      </div>
+        
+
       </div>
 
       {props.children}

@@ -2,14 +2,19 @@ import SideBar from "../components/SideBar";
 import Header from "../components/Header";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/CustomDatePicker.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { ThreeDots, RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
+import { handle_active_or_deactivate_user } from "../func/editUseraApis";
+import CustomDeletePopup from "../components/CustomDeletePopup";
+import { handleOpenDialog } from "../func/openDialog";
 const baseUrl = import.meta.env.VITE_BASE_URL;
+import { useSnackbar } from "notistack";
 
 const EditUsers = () => {
   const { id } = useParams();
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleCancelGeneral = () => {
     setIsEditingGeneral(false);
@@ -21,10 +26,13 @@ const EditUsers = () => {
     setIsEditingRole(false);
     setSelectedOption(User?.role === 1 ? "Coordinator" : "Engineer");
   };
+  const deletePopupRef = useRef<HTMLDialogElement>(null);
+  const deactivatePopupRef = useRef<HTMLDialogElement>(null);
+
 
   const [isEditingGeneral, setIsEditingGeneral] = useState<boolean>(false);
   const [isEditingRole, setIsEditingRole] = useState<boolean>(false);
-  const [isPgaeLoading, setIsPageLoading] = useState<boolean>(true);
+  const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
 
   const [isLoadingGeneral, setIsLoadingGeneral] = useState<boolean>(false);
   const [isLoadingRole, setIsLoadingRole] = useState<boolean>(false);
@@ -48,14 +56,14 @@ const EditUsers = () => {
   };
 
   const fetchUser = async () => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
     }
 
     const url = `${baseUrl}/account/get-account/${id}`;
-
 
     setIsPageLoading(true);
     try {
@@ -90,7 +98,8 @@ const EditUsers = () => {
   const handleSaveGeneralEdit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -98,19 +107,21 @@ const EditUsers = () => {
     setIsLoadingGeneral(true);
     setErrGeneral("");
     try {
-      const response = await fetch(`${baseUrl}/account/update-account/generals`, {
-
-        // Added a leading slash
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({
-          account_id: User!.email,
-          new_data: { first_name: firstName, last_name: lastName },
-        }),
-      });
+      const response = await fetch(
+        `${baseUrl}/account/update-account/generals`,
+        {
+          // Added a leading slash
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+          body: JSON.stringify({
+            account_id: User!.email,
+            new_data: { first_name: firstName, last_name: lastName },
+          }),
+        }
+      );
 
       if (response) {
         switch (response.status) {
@@ -141,7 +152,8 @@ const EditUsers = () => {
   const handleSaveRolelEdit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
@@ -150,7 +162,6 @@ const EditUsers = () => {
     setErrRole("");
     try {
       const response = await fetch(`${baseUrl}/account/update-account/role`, {
-
         // Added a leading slash
         method: "PUT",
         headers: {
@@ -198,7 +209,7 @@ const EditUsers = () => {
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header pageSentence="User profile" searchBar={false} />
-        {isPgaeLoading ? (
+        {isPageLoading ? (
           <div className="flex w-full items-center justify-center py-[60px]">
             {" "}
             <RotatingLines strokeWidth="4" strokeColor="#4A3AFF" width="60" />
@@ -207,7 +218,11 @@ const EditUsers = () => {
           <div className="w-full flex flex-col gap-[12px]">
             <div className="rounded-[20px] border-n400 border-[1px] py-[20px] px-[21px]">
               <div className="flex items-center md:gap-[34px] gap-[15px] ">
-                <img src="/avatar2.jpg" alt="avatar" className="md:w-[100px] rounded-[50%] w-[70px]" />
+                <img
+                  src="/avatar2.jpg"
+                  alt="avatar"
+                  className="md:w-[100px] rounded-[50%] w-[70px]"
+                />
                 <div className="flex items-start flex-col gap-[6px]">
                   <h2 className="md:text-[18px] text-[15px] leading-[28.08px] text-n800 font-medium">
                     {firstName} {lastName}
@@ -487,9 +502,78 @@ const EditUsers = () => {
                 )}
               </div>
             </div>
+
+            <div className="rounded-[20px] border-n400 border-[1px] p-[21px] w-full flex items-start flex-col gap-[23px]">
+              <h3 className="text-n800 md:text-[17px] text-[15px] leading-[25.5px] font-medium">
+                Account control
+              </h3>
+              <div className="flex flex-col w-full gap-[10px]">
+                <div
+                  className={`w-full rounded-[15px] border-[2px] border-n300 px-5 py-3 flex flex-col items-start gap-[10px] cursor-pointer hover:shadow-lg ${
+                    User?.is_active
+                      ? "hover:shadow-gray-400"
+                      : "hover:shadow-green-200"
+                  }  transition-all duration-300`}
+                  onClick={() => {
+                    User?.is_active
+                      ? handleOpenDialog(deactivatePopupRef)
+                      : handle_active_or_deactivate_user(
+                          "active",
+                          `${User?.id}`,
+                          fetchUser,
+                          (message, options) =>
+                            enqueueSnackbar(message, { ...options })
+                        );
+                  }}
+                >
+                  <h6 className="text-n800 md:text-[16px] text-[14px] leading-[25px] font-medium">
+                    {User?.is_active
+                      ? "Deactivate Account"
+                      : "Activate Account"}
+                  </h6>
+                  <p className="text-n600 text-[14px] leading-[21px]">
+                    {User?.is_active
+                      ? `Deactivating a user account is temporary, meaning the user's
+                    profile will be hidden from the platform until it's
+                    reactivated by the admin through the Account Management
+                    section`
+                      : `This account is already deactivated, click to activate it again`}
+                  </p>
+                </div>
+                <div
+                  className="w-full rounded-[15px] border-[2px] border-n300 px-5 py-3 flex flex-col items-start gap-[10px] cursor-pointer hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
+                  onClick={() => {
+                    handleOpenDialog(deletePopupRef);
+                  }}
+                >
+                  <h6 className="text-n800 md:text-[16px] text-[14px] leading-[25px] font-medium">
+                    Delete Account
+                  </h6>
+                  <p className="text-n600 text-[14px] leading-[21px]">
+                    Deleting a user account is permanent. If you delete the
+                    account, all related data will be permanently removed. If
+                    you simply want to pause the user's activity, you can
+                    temporarily deactivate the account instead
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
+      <CustomDeletePopup
+        page="delete-user"
+        ref={deletePopupRef}
+        sentence="delete this user"
+        itemId={User?.id}
+      />
+      <CustomDeletePopup
+        page="deactivate-user"
+        ref={deactivatePopupRef}
+        sentence="deactivate this user"
+        itemId={User?.id}
+        fecthFunc={fetchUser}
+      />
     </div>
   );
 };

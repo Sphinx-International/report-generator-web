@@ -5,6 +5,7 @@ const baseUrl = import.meta.env.VITE_BASE_WS_URL;
 interface UseWebSocketSearchProps {
   searchQuery: string | null;
   endpointPath: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setResults: React.Dispatch<React.SetStateAction<any>>;
   setLoader: React.Dispatch<React.SetStateAction<boolean>>;
 }

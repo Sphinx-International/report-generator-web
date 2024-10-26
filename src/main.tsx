@@ -13,6 +13,9 @@ import EditUsers from "./pages/EditUsers.tsx";
 import Groups from "./pages/Groups.tsx";
 import Individuals from "./pages/Individuals.tsx";
 import WorkorderByUser from "./pages/WorkordersByUser.tsx";
+import Sites from "./pages/Sites.tsx";
+import LosCommands from "./pages/LosCommands.tsx";
+import UsersPerformance from "./pages/usersPerformance.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -51,33 +54,57 @@ const router = createBrowserRouter([
     element: <ProtectedRoute element={<Dashboard />} allowedRoles={[0]} />,
   },
   {
+    path: "/dashboard/overview",
+    element: <ProtectedRoute element={<Dashboard />} allowedRoles={[0]} />,
+  },
+  {
+    path: "/dashboard/users-performance",
+    element: (
+      <ProtectedRoute element={<UsersPerformance />} allowedRoles={[0]} />
+    ),
+  },
+  {
     path: "/workorders",
     element: <ProtectedRoute element={<Missions />} allowedRoles={[0, 1, 2]} />,
   },
   {
     path: "/workorders/:id",
     element: (
-      <ProtectedRoute element={<MissionDetails/>} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]} />
     ),
   },
   {
-    path: "/workorders-by-user/:id",
+    path: "/workorders-by-user/:userInfo",
     element: (
-      <ProtectedRoute element={<WorkorderByUser/>} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute element={<WorkorderByUser />} allowedRoles={[0, 1, 2]} />
     ),
   },
   {
     path: "/mails",
-    element: <ProtectedRoute element={<Groups />} allowedRoles={[0,1]} />,
+    element: <ProtectedRoute element={<Groups />} allowedRoles={[0, 1]} />,
   },
   {
     path: "/mails/groups",
-    element: <ProtectedRoute element={<Groups />} allowedRoles={[0,1]} />,
+    element: <ProtectedRoute element={<Groups />} allowedRoles={[0, 1]} />,
   },
   {
     path: "/mails/individuals",
-    element: <ProtectedRoute element={<Individuals />} allowedRoles={[0,1]} />,
+    element: <ProtectedRoute element={<Individuals />} allowedRoles={[0, 1]} />,
   },
+
+  {
+    path: "/los",
+    element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1]} />,
+  },
+  {
+    path: "/los/site-management",
+    element: <ProtectedRoute element={<Sites />} allowedRoles={[0, 1]} />,
+  },
+  {
+    path: "/los/commands",
+    element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1]} />,
+  },
+
   {
     path: "*",
     element: <Page404 />,
@@ -88,7 +115,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
     <React.StrictMode>
       <GlobalBeforeUnload>
-        <SnackbarProvider maxSnack={3}> {/* Wrap your app with SnackbarProvider */}
+        <SnackbarProvider maxSnack={3}>
+          {" "}
+          {/* Wrap your app with SnackbarProvider */}
           <RouterProvider router={router} />
         </SnackbarProvider>
       </GlobalBeforeUnload>
