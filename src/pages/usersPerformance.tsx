@@ -92,10 +92,15 @@ const UsersPerformance = () => {
                           alt="avatar"
                           className="rounded-[50%] w-[32px]"
                         />
+                        <div className="flex flex-col items-start">
                         <span className="text-n700 font-medium">
                           {" "}
                           {user.email} ({user.first_name} {user.last_name})
                         </span>
+                        <span className={`text-[12px] font-medium leading-[18px] ${user.is_active ? "text-[#23B4A6]" :"text-[#DB2C2C]"}`}>{user.is_active ? "active" : "banned"}</span>
+
+                        </div>
+                       
                       </div>
                     );
                   })

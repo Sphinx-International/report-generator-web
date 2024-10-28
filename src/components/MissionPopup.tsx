@@ -709,9 +709,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                     alt="avatar"
                                     className="w-[35px]"
                                   />
+                                  <div className="flex flex-col items-start">
                                   <span className="text-n700 text-[14px]">
                                     {eng.email}
                                   </span>
+                                  <span className={`text-[12px] font-medium leading-[18px] ${eng.is_active ? "text-[#23B4A6]" :"text-[#DB2C2C]"}`}>{eng.is_active ? "active" : "banned"}</span>
+
+                                  </div>
+
                                 </div>
                               );
                             })
