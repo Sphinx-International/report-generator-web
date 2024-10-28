@@ -65,6 +65,8 @@ const MissionDetails = () => {
   const { id } = useParams();
   // const decodedId = decodeURIComponent(id || "");
 
+  console.log(id);
+
   const dispatch = useDispatch<AppDispatch>();
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
@@ -304,7 +306,9 @@ const MissionDetails = () => {
       console.error("No token found");
       return;
     }
-    const url = `${baseUrl}/workorder/get-workorder/${id}`;
+    const url = `${baseUrl}/workorder/get-workorder/${encodeURIComponent(id!)}`;
+
+    console.log(url);
 
     try {
       const response = await fetch(url, {
@@ -624,7 +628,10 @@ const MissionDetails = () => {
                       <div
                         className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
-                          if (getRole() !== 2 && workorder.workorder.status < 2) {
+                          if (
+                            getRole() !== 2 &&
+                            workorder.workorder.status < 2
+                          ) {
                             setVisibleEngPopup(!visibleEngPopup);
                           }
                         }}
@@ -739,9 +746,20 @@ const MissionDetails = () => {
                                         alt="avatar"
                                         className="w-[31px] rounded-[50%]"
                                       />
-                                      <span className="text-[14px] text-n600">
-                                        {user.first_name} {user.last_name}
-                                      </span>
+                                      <div className="flex flex-col items-start">
+                                        <span className="text-[14px] text-n600">
+                                          {user.first_name} {user.last_name}
+                                        </span>
+                                        <span
+                                          className={`text-[12px] font-medium leading-[18px] ${
+                                            user.is_active
+                                              ? "text-[#23B4A6]"
+                                              : "text-[#DB2C2C]"
+                                          }`}
+                                        >
+                                          {user.is_active ? "active" : "banned"}
+                                        </span>
+                                      </div>
                                     </div>
                                   );
                                 })
@@ -844,9 +862,20 @@ const MissionDetails = () => {
                                         alt="avatar"
                                         className="w-[31px] rounded-[50%]"
                                       />
-                                      <span className="text-[14px] text-n600">
-                                        {user.first_name} {user.last_name}
-                                      </span>
+                                      <div className="flex flex-col items-start">
+                                        <span className="text-[14px] text-n600">
+                                          {user.first_name} {user.last_name}
+                                        </span>
+                                        <span
+                                          className={`text-[12px] font-medium leading-[18px] ${
+                                            user.is_active
+                                              ? "text-[#23B4A6]"
+                                              : "text-[#DB2C2C]"
+                                          }`}
+                                        >
+                                          {user.is_active ? "active" : "banned"}
+                                        </span>
+                                      </div>
                                     </div>
                                   );
                                 })
@@ -960,9 +989,20 @@ const MissionDetails = () => {
                                         alt="avatar"
                                         className="w-[31px] rounded-[50%]"
                                       />
-                                      <span className="text-[14px] text-n600">
-                                        {user.first_name} {user.last_name}
-                                      </span>
+                                      <div className="flex flex-col items-start">
+                                        <span className="text-[14px] text-n600">
+                                          {user.first_name} {user.last_name}
+                                        </span>
+                                        <span
+                                          className={`text-[12px] font-medium leading-[18px] ${
+                                            user.is_active
+                                              ? "text-[#23B4A6]"
+                                              : "text-[#DB2C2C]"
+                                          }`}
+                                        >
+                                          {user.is_active ? "active" : "banned"}
+                                        </span>
+                                      </div>
                                     </div>
                                   );
                                 })
@@ -1430,7 +1470,8 @@ const MissionDetails = () => {
                           setState={setVisibleReqAccPopup}
                         />
                         {visibleReqAccPopup &&
-                          workorder.workorder.status < 2 && (
+                          workorder.workorder.status < 2 &&
+                          getRole() !== 2 && (
                             <RequirementPopup
                               woId={workorder.workorder.id}
                               RequirementType="acceptance"
@@ -1442,14 +1483,14 @@ const MissionDetails = () => {
                             />
                           )}
                       </div>
-                    ) : workorder.workorder.status < 2 ? (
+                    ) : workorder.workorder.status < 2 && getRole() !== 2 ? (
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededAcc"}
                           styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqAccPopup}
                         />
-                        {visibleReqAccPopup && (
+                        {visibleReqAccPopup && getRole() !== 2 && (
                           <RequirementPopup
                             woId={workorder.workorder.id}
                             RequirementType="acceptance"
@@ -1482,7 +1523,8 @@ const MissionDetails = () => {
                           setState={setVisibleReqVoucherPopup}
                         />
                         {visibleReqVoucherPopup &&
-                          workorder.workorder.status < 2 && (
+                          workorder.workorder.status < 2 &&
+                          getRole() !== 2 && (
                             <RequirementPopup
                               woId={workorder.workorder.id}
                               RequirementType="return voucher"
@@ -1494,14 +1536,14 @@ const MissionDetails = () => {
                             />
                           )}
                       </div>
-                    ) : workorder.workorder.status < 2 ? (
+                    ) : workorder.workorder.status < 2 && getRole() !== 2 ? (
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededVo"}
                           styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqVoucherPopup}
                         />
-                        {visibleReqVoucherPopup && (
+                        {visibleReqVoucherPopup && getRole() !== 2 && (
                           <RequirementPopup
                             woId={workorder.workorder.id}
                             RequirementType="return voucher"
