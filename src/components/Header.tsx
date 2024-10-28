@@ -619,7 +619,7 @@ const Header: React.FC<headerProps> = (props) => {
             />
           </svg>
           {searchQuery !== "" && (
-            <div className="bg-white rounded-[20px] flex flex-col items-start gap-2 shadow-xl shadow-slate-300 py-3 w-full absolute ">
+            <div className="bg-white z-50 rounded-[20px] flex flex-col items-start shadow-xl shadow-slate-300 py-3 w-full absolute ">
               {loaderSearch ? (
                 <div className="flex items-center justify-center w-full">
                   <RotatingLines strokeColor="#4A3AFF" width="20" />
@@ -631,7 +631,7 @@ const Header: React.FC<headerProps> = (props) => {
                     return (
                       <div
                         key={index}
-                        className="flex items-center justify-start w-full px-3 gap-2 cursor-pointer hover:bg-slate-200"
+                        className="flex items-center justify-start w-full py-1 px-3 bg-white gap-2 cursor-pointer hover:bg-slate-200"
                         onClick={() => {
                           navigate(`/edit-user/${user.email}`);
                         }}
@@ -641,10 +641,13 @@ const Header: React.FC<headerProps> = (props) => {
                           alt="avatar"
                           className="rounded-[50%] w-[32px]"
                         />
-                        <span className="text-n700 font-medium">
-                          {" "}
-                          {user.email} ({user.first_name} {user.last_name})
-                        </span>
+                        <div className="flex flex-col items-start">
+                          <span className="text-n700 font-medium">
+                            {" "}
+                            {user.email} ({user.first_name} {user.last_name})
+                          </span>
+                          <span className={`text-[12px] font-medium leading-[18px] ${user.is_active ? "text-[#23B4A6]" :"text-[#DB2C2C]"}`}>{user.is_active ? "active" : "banned"}</span>
+                        </div>
                       </div>
                     );
                   })
