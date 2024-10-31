@@ -7,12 +7,13 @@ interface AddVoucherProps {
   woId: string;
   RequirementType: "acceptance" | "return voucher";
   Requirement: boolean;
+  extantionType: "modernisation"| "workorder",
   setState: React.Dispatch<React.SetStateAction<boolean>>;
   fetchOneWorkOrder: () => void;
 }
 
 const RequirementPopup = forwardRef<HTMLDialogElement, AddVoucherProps>(
-  ({ woId, RequirementType, Requirement, setState, fetchOneWorkOrder }) => {
+  ({ woId, RequirementType, Requirement, setState, fetchOneWorkOrder,extantionType }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [CheckBoxStatus, setCheckBoxStatus] = useState<boolean>(Requirement);
 
@@ -55,6 +56,7 @@ const RequirementPopup = forwardRef<HTMLDialogElement, AddVoucherProps>(
                   woId,
                   CheckBoxStatus,
                   RequirementType,
+                  extantionType,
                   fetchOneWorkOrder,
                   setIsLoading
                 );

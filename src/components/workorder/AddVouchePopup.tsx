@@ -12,6 +12,7 @@ import { handleFileChange } from "../../func/otherworkorderApis";
 
 interface AddVoucherProps {
   workorderId: string | undefined;
+  extantionType: "workorder" | "modernisation";
   fetchOneWorkOrder: () => void;
 }
 
@@ -63,6 +64,7 @@ const AddVoucherPopup = forwardRef<HTMLDialogElement, AddVoucherProps>(
                     dispatch,
                     props.workorderId!,
                     "voucher",
+                    props.extantionType , 
                     file,
                     setIsLoading,
                     props.fetchOneWorkOrder,
@@ -86,6 +88,7 @@ const AddVoucherPopup = forwardRef<HTMLDialogElement, AddVoucherProps>(
                     dispatch,
                     props.workorderId!,
                     "voucher",
+                    props.extantionType , 
                     file,
                     setIsLoading,
                     props.fetchOneWorkOrder,

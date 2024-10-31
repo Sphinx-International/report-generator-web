@@ -16,6 +16,7 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   workorder_id: string,
   file_id: number,
   method: "add" | "delete",
+  extantionType: "workorder" | "modernisation",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder?: () => void
 ) => {
@@ -27,14 +28,18 @@ export const upload_or_delete_workorder_files_for_attachements = async (
   }
 
   const formData = new FormData();
-  formData.append("workorder_id", workorder_id.toString());
-  formData.append(`${method}`, file_id.toString());
+  extantionType === "workorder"
+    ? formData.append("workorder_id", workorder_id.toString())
+    : extantionType === "modernisation"
+    ? formData.append("modernisation_id", workorder_id.toString())
+    : null;
 
+  formData.append(`${method}`, file_id.toString());
 
   setIsLoading(true);
   try {
     const response = await fetch(
-      `${baseUrl}/workorder/update-workorder-attachments`,
+      `${baseUrl}/${extantionType}/update-${extantionType}-attachments`,
       {
         method: "PUT",
         headers: {
@@ -71,6 +76,7 @@ export const upload_workorder_files = async (
   workorder: string,
   file: number,
   fileType: "report" | "certificate" | "voucher",
+  extantionType: "workorder" | "modernisation",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
   fileStatus?: 0 | 1 | 2 | 3
@@ -86,18 +92,30 @@ export const upload_workorder_files = async (
   try {
     const body =
       fileType === "certificate" || fileType === "report"
-        ? JSON.stringify({
-            workorder,
-            file,
-            type: fileStatus,
-          })
-        : JSON.stringify({ workorder, file });
+        ? JSON.stringify(
+            extantionType === "workorder"
+              ? {
+                  workorder,
+                  file,
+                  type: fileStatus,
+                }
+              : {
+                  modernisation: workorder,
+                  file,
+                  type: fileStatus,
+                }
+          )
+        : JSON.stringify(
+            extantionType === "workorder"
+              ? { workorder, file }
+              : { modernisation: workorder, file }
+          );
 
     console.log(body);
     const response = await fetch(
       fileType === "voucher"
-        ? `${baseUrl}/workorder/upload-workorder-return-${fileType}`
-        : `${baseUrl}/workorder/upload-workorder-${fileType}`,
+        ? `${baseUrl}/${extantionType}/upload-${extantionType}-return-${fileType}`
+        : `${baseUrl}/${extantionType}/upload-${extantionType}-${fileType}`,
       {
         method: "POST",
         headers: {
@@ -190,11 +208,11 @@ const uploadRemainingChunks = async (
   }
 };
 
-
 export const handle_chunck = async (
   dispatch: AppDispatch,
   workorder_id: string,
   fileType: "attachements" | "report" | "certificate" | "voucher",
+  extantionType: "workorder" | "modernisation",
   file: File,
   file_token: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
@@ -260,6 +278,7 @@ export const handle_chunck = async (
           workorder_id,
           fileId,
           "add",
+          extantionType,
           setIsLoading,
           fetchOneWorkOrder
         );
@@ -268,6 +287,7 @@ export const handle_chunck = async (
           workorder_id,
           fileId,
           fileType,
+          extantionType,
           setIsLoading,
           fetchOneWorkOrder,
           fileStatus
@@ -298,7 +318,6 @@ export const handle_chunck = async (
     setIsLoading(false);
   }
 };
-
 
 export const handle_resuming_upload = async (
   dispatch: AppDispatch,
@@ -402,6 +421,7 @@ export const handle_files_with_one_chunk = async (
   dispatch: AppDispatch, // Add dispatch as a parameter
   workorder_id: string,
   fileType: "attachements" | "report" | "certificate" | "voucher",
+  extantionType: "workorder" | "modernisation",
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
@@ -419,11 +439,6 @@ export const handle_files_with_one_chunk = async (
   formData.append("name", file.name);
   formData.append("type", "1");
   formData.append("file", file);
-
-  /* console.log("FormData contents:");
-  for (const pair of formData.entries()) {
-    console.log(pair[0] + ':', pair[1]);
-  }*/
 
   setIsLoading(true);
 
@@ -453,6 +468,7 @@ export const handle_files_with_one_chunk = async (
           workorder_id,
           fileId,
           "add",
+          extantionType,
           setIsLoading,
           fetchOneWorkOrder
         );
@@ -461,6 +477,7 @@ export const handle_files_with_one_chunk = async (
           workorder_id,
           fileId,
           fileType,
+          extantionType,
           setIsLoading,
           fetchOneWorkOrder,
           fileStatus

@@ -2,7 +2,7 @@ import { ResOfOneMission } from "../assets/types/Mission";
 
 export async function generateFileToken(file: File): Promise<string> {
     const crypto = window.crypto; // For compatibility with older browsers
-
+    console.log(file)
     // Read the file content as an ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
 

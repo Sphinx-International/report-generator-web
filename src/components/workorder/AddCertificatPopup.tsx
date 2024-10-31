@@ -13,6 +13,7 @@ import { handleFileChange } from "../../func/otherworkorderApis";
 
 interface AddCertificatProps {
   workorderId: string | undefined;
+  extantionType: "workorder" | "modernisation";
   fetchOneWorkOrder: () => void;
 }
 
@@ -44,7 +45,9 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
               return (
                 <span
                   key={index}
-                  className={`px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold ${file ? "cursor-not-allowed":"cursor-pointer"}`}
+                  className={`px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold ${
+                    file ? "cursor-not-allowed" : "cursor-pointer"
+                  }`}
                   style={{
                     backgroundColor:
                       type.type === certType ? `${type.color}` : "white",
@@ -96,13 +99,14 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                     dispatch,
                     props.workorderId!,
                     "certificate",
+                    props.extantionType,
                     file,
                     setIsLoading,
                     props.fetchOneWorkOrder,
                     undefined,
                     certType
                   );
-                  setFile({file:file, progress:0})
+                  setFile({ file: file, progress: 0 });
                 });
               }
             }}
@@ -120,13 +124,14 @@ const AddCertificatPopup = forwardRef<HTMLDialogElement, AddCertificatProps>(
                     dispatch,
                     props.workorderId!,
                     "certificate",
+                    props.extantionType,
                     file,
                     setIsLoading,
                     props.fetchOneWorkOrder,
                     undefined,
                     certType
                   );
-                  setFile({file:file, progress:0})
+                  setFile({ file: file, progress: 0 });
                 }
               }}
             />

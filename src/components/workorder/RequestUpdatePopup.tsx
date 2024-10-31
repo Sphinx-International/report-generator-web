@@ -5,6 +5,7 @@ import { handleCloseDialog } from "../../func/openDialog";
 
 interface RequestUpdateProps {
   workorderId: string | undefined;
+  extantionType: "workorder" | "modernisation";
   fetchOneWorkOrder: () => void;
 }
 
@@ -45,6 +46,7 @@ const RequestUpdatePopup = forwardRef<HTMLDialogElement, RequestUpdateProps>(
               await handle_edit_or_reqUpdate_report(
                 props.workorderId!,
                 true,
+                props.extantionType,
                 setIsLoading,
                 props.fetchOneWorkOrder,
                 message

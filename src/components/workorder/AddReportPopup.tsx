@@ -13,6 +13,7 @@ import { handleFileChange } from "../../func/otherworkorderApis";
 
 interface AddReportProps {
   workorderId: string | undefined;
+  extantionType: "workorder" | "modernisation";
   fetchOneWorkOrder: () => void;
 }
 
@@ -148,6 +149,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                     dispatch,
                     props.workorderId!,
                     "report",
+                    props.extantionType,
                     file,
                     setIsLoading,
                     props.fetchOneWorkOrder,
@@ -172,6 +174,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                     dispatch,
                     props.workorderId!,
                     "report",
+                    props.extantionType,
                     file,
                     setIsLoading,
                     props.fetchOneWorkOrder,

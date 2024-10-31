@@ -6,43 +6,43 @@ import {
   MouseEvent,
 } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import "../styles/PrioritySelector.css";
-import { ReqMission } from "../assets/types/Mission";
+import "../../styles/PrioritySelector.css";
+import { ReqModernisation } from "../../assets/types/Modernisation";
 import {
-  validateForm1,
-  validateForm2,
-  MissionFormErrors,
-} from "../func/missionsValidation";
+  validateModernisationForm1,
+  validateModernisationForm2,
+  ModernisationFormErrors,
+} from "../../func/missionsValidation";
 // import { formatFileSize } from "../func/formatFileSize";
-import UploadingFile from "./uploadingFile";
+import UploadingFile from "./../uploadingFile";
 import { RotatingLines } from "react-loader-spinner";
-import { User } from "../assets/types/User";
-import useWebSocketSearch from "../hooks/useWebSocketSearch";
-import handleChange from "../func/handleChangeFormsInput";
+import { User } from "../../assets/types/User";
+import useWebSocketSearch from "../../hooks/useWebSocketSearch";
+import handleChange from "../../func/handleChangeFormsInput";
 import {
   addUploadingFile,
   updateFileProgress,
   removeUploadingFile,
-} from "../Redux/slices/uploadingFilesSlice";
-import { addUploadedAttachOnCreation } from "../Redux/slices/uploadAttachOnCreation";
+} from "../../Redux/slices/uploadingFilesSlice";
+import { addUploadedAttachOnCreation } from "../../Redux/slices/uploadAttachOnCreation";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../Redux/store";
+import { AppDispatch } from "../../Redux/store";
 import {
   generateFileToken,
   storeFileInIndexedDB,
   deleteFileFromIndexedDB,
-} from "../func/generateFileToken";
-import { fetchGroupMembers } from "../func/groupsApi";
+} from "../../func/generateFileToken";
+import { fetchGroupMembers } from "../../func/groupsApi";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface MissionPopupProps {
-  fetchWorkOrders?: () => void;
+  fetchModernisations?: () => void;
 }
 
 type PriorityIndex = 0 | 1 | 2 | 3;
 
-const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
+const ModernisationPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
   (props, ref) => {
     const dispatch = useDispatch<AppDispatch>();
 
@@ -78,12 +78,10 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     const [currentPriorityIndex, setCurrentPriorityIndex] = useState<
       0 | 1 | 2 | 3
     >(1);
-    const [formValues, setformValues] = useState<ReqMission>({
+    const [formValues, setformValues] = useState<ReqModernisation>({
       title: "",
       priority: 0,
       description: "",
-      id: undefined,
-      require_acceptence: false,
       require_return_voucher: false,
       emails: [],
       attachments: [],
@@ -91,7 +89,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const [formErrs, setFormErrs] = useState<MissionFormErrors>({});
+    const [formErrs, setFormErrs] = useState<ModernisationFormErrors>({});
 
     const closeDialog = (
       eo: MouseEvent<HTMLButtonElement> | React.FormEvent
@@ -101,9 +99,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         title: "",
         priority: currentPriorityIndex,
         description: "",
-        id: undefined,
         require_return_voucher: false,
-        require_acceptence: false,
         emails: [],
         attachments: [],
       });
@@ -198,13 +194,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     ) => {
       e.preventDefault();
       setFormErrs({});
-      const MissionFormErrors = validateForm1(formValues);
-      if (Object.keys(MissionFormErrors).length === 0) {
+      const formErrors = validateModernisationForm1(formValues);
+      if (Object.keys(formErrors).length === 0) {
         setCurrentSliderIndex(2);
         setFormErrs({});
         // Handle form submission logic here
       } else {
-        setFormErrs(MissionFormErrors);
+        setFormErrs(formErrors);
       }
     };
 
@@ -220,13 +216,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
       const formData = new FormData();
       formData.append("title", formValues.title);
-      formData.append("id", formValues.id?.toString() || "");
       formData.append("priority", formValues.priority.toString());
       formData.append("description", formValues.description);
-      formData.append(
-        "require_acceptence",
-        formValues.require_acceptence.toString()
-      );
       formData.append(
         "require_return_voucher",
         formValues.require_return_voucher.toString()
@@ -248,13 +239,16 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       setIsLoading(true);
 
       try {
-        const response = await fetch(`${baseUrl}/workorder/create-workorder`, {
-          method: "POST",
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-          body: formData,
-        });
+        const response = await fetch(
+          `${baseUrl}/modernisation/create-modernisation`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+            body: formData,
+          }
+        );
         if (response.ok) {
           const data = await response.json();
           console.log("Form submitted successfully", data);
@@ -270,7 +264,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         console.error("Error submitting form", err);
       } finally {
         setIsLoading(false);
-        props.fetchWorkOrders!();
+        props.fetchModernisations!();
         localStorage.setItem("selectedFilterForWorkorders", "all");
       }
     };
@@ -280,14 +274,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     ) => {
       e.preventDefault();
       setFormErrs({});
-      const MissionFormErrors = validateForm2(formValues);
+      const formErrors = validateModernisationForm2(formValues);
 
-      if (Object.keys(MissionFormErrors).length === 0) {
+      if (Object.keys(formErrors).length === 0) {
         handleCreateWorkorder(e);
         setFormErrs({});
         // Handle form submission logic here
       } else {
-        setFormErrs(MissionFormErrors);
+        setFormErrs(formErrors);
       }
     };
 
@@ -317,19 +311,19 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         console.error("No token found");
         return;
       }
-    
+
       const chunkSize = 512 * 1024; // 512 KB
       const startOffset = 32 * 1024; // Start uploading from 32KB onwards
-    
+
       for (let index = 1; index < totalChunks; index++) {
         const start = startOffset + (index - 1) * chunkSize; // Adjust to skip first chunk
         const end = Math.min(start + chunkSize, file.size);
         const chunk = file.slice(start, end);
-    
+
         const formData = new FormData();
         formData.append("index", index.toString());
         formData.append("file", chunk, `${file.name}.part`);
-    
+
         try {
           const response = await fetch(
             `${baseUrl}/file/upload-rest-chunks/${fileId}`,
@@ -341,7 +335,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
               body: formData,
             }
           );
-    
+
           switch (response.status) {
             case 200: {
               const progress = ((index + 1) / totalChunks) * 100;
@@ -362,7 +356,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
               deleteFileFromIndexedDB(fileId);
               updateAttachmentProgress(fileId, 100.0);
               break;
-    
+
             case 404:
               setformValues((prevValues) => ({
                 ...prevValues,
@@ -371,7 +365,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 ),
               }));
               return;
-    
+
             default:
               console.error("Failed to upload chunk");
               break;
@@ -382,7 +376,6 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         }
       }
     };
-    
 
     const handle_chunck = async (file: File, file_token: string) => {
       const token =
@@ -391,11 +384,11 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         console.error("No token found");
         return;
       }
-    
+
       const firstChunkSize = 32 * 1024; // 32 KB
       const chunkSize = 512 * 1024; // 512 KB for subsequent chunks
       const fileSize = file.size;
-    
+
       // Calculate total number of chunks, ensuring we handle small files correctly
       const chunks =
         fileSize <= firstChunkSize
@@ -403,19 +396,19 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           : fileSize <= chunkSize
           ? 2 // If file is between 32 KB and 512 KB, there will be 2 chunks: the first 32 KB and the remainder
           : Math.ceil((fileSize - firstChunkSize) / chunkSize) + 1; // For larger files, more chunks
-    
+
       // Extract the first 32KB chunk
       const firstChunk = file.slice(0, firstChunkSize);
-    
+
       const formData = new FormData();
       formData.append("name", file.name);
       formData.append("type", "1");
       formData.append("total_chunks", chunks.toString());
       formData.append("file", firstChunk, `${file.name}.part`);
       formData.append("file_token", file_token);
-    
+
       setIsLoading(true);
-    
+
       try {
         const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
           method: "POST",
@@ -424,11 +417,11 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           },
           body: formData,
         });
-    
+
         if (response.ok) {
           const data = await response.json();
           const fileId = data.id;
-          storeFileInIndexedDB(file, fileId, "attachements", formValues.id);
+          // storeFileInIndexedDB(file, fileId, "attachements", formValues.id);
           setformValues((prevFormValues) => ({
             ...prevFormValues,
             attachments: [
@@ -443,20 +436,20 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             })
           );
           setIsLoading(false);
-    
+
           // Upload remaining chunks if the file has more than 32 KB
           if (chunks > 1) {
             await uploadRemainingChunks(file, fileId, chunks);
           }
-    
+
           dispatch(removeUploadingFile({ type: "attachements", fileId }));
-          dispatch(
+          /* dispatch(
             addUploadedAttachOnCreation({
               id: fileId,
               file_name: file.name,
               workorder: formValues.id!,
-            })
-          );
+            })  
+          ); */
         } else {
           console.error("Failed to upload first chunk");
         }
@@ -466,9 +459,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         setIsLoading(false);
       }
     };
-    
-    
-    
+
     const handle_files_with_one_chunk = async (file: File) => {
       const token =
         localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -534,32 +525,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           <form className="w-full flex flex-col gap-[30px]">
             <div className="flex items-center flex-col gap-[17.5px] w-full">
               <div className="flex flex-col sm:flex-row items-start gap-[17px] w-full">
-                <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
-                  <label
-                    htmlFor="id"
-                    className="leading-[21px] font-medium ml-[9px] text-n700"
-                  >
-                    ID
-                  </label>
-                  <input
-                    type="text"
-                    name="id"
-                    id="id"
-                    value={formValues.id}
-                    placeholder="Enter id"
-                    className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
-                    onChange={(e) => {
-                      handleChange(e, setformValues);
-                    }}
-                  />
-                  {formErrs.id !== "" && formErrs.title !== undefined && (
-                    <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                      {formErrs.id}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
+                <div className="flex flex-col items-start gap-[8px] w-full">
                   <label
                     htmlFor="title"
                     className="leading-[21px] font-medium ml-[9px] text-n700"
@@ -710,13 +676,19 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                                     className="w-[35px]"
                                   />
                                   <div className="flex flex-col items-start">
-                                  <span className="text-n700 text-[14px]">
-                                    {eng.email}
-                                  </span>
-                                  <span className={`text-[12px] font-medium leading-[18px] ${eng.is_active ? "text-[#23B4A6]" :"text-[#DB2C2C]"}`}>{eng.is_active ? "active" : "banned"}</span>
-
+                                    <span className="text-n700 text-[14px]">
+                                      {eng.email}
+                                    </span>
+                                    <span
+                                      className={`text-[12px] font-medium leading-[18px] ${
+                                        eng.is_active
+                                          ? "text-[#23B4A6]"
+                                          : "text-[#DB2C2C]"
+                                      }`}
+                                    >
+                                      {eng.is_active ? "active" : "banned"}
+                                    </span>
                                   </div>
-
                                 </div>
                               );
                             })
@@ -732,7 +704,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                 </div>
                 <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                   <label
-                    htmlFor="title"
+                    htmlFor="priority"
                     className="leading-[21px] font-medium ml-[9px] text-n700"
                   >
                     Priority
@@ -849,44 +821,45 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   Next
                 </button>
               </div>
-              <div className="items-center gap-[7px] hidden sm:flex">
-                <input
-                  type="checkbox"
-                  id="acceptance"
-                  className="hidden peer"
-                  checked={formValues.require_acceptence ? true : false}
-                  onChange={(e) => {
-                    setformValues((prev) => ({
-                      ...prev,
-                      require_acceptence: e.target.checked,
-                    }));
-                  }}
-                />
-                <label
-                  htmlFor="acceptance"
-                  className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
-                >
-                  <svg
-                    className="text-white hidden"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="10"
-                    viewBox="0 0 12 10"
-                    fill="none"
+
+              <div className="items-center gap-[7px] hidden md:flex">
+                  <input
+                    type="checkbox"
+                    id="return-voucher"
+                    className="hidden peer"
+                    checked={formValues.require_return_voucher ? true : false}
+                    onChange={(e) => {
+                      setformValues((prev) => ({
+                        ...prev,
+                        require_return_voucher: e.target.checked,
+                      }));
+                    }}
+                  />
+                  <label
+                    htmlFor="return-voucher"
+                    className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
                   >
-                    <path
-                      d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
-                      fill="white"
-                    />
-                  </svg>
-                </label>
-                <label
-                  htmlFor="acceptance"
-                  className="text-550 text-[14px] leading-[20px] font-medium"
-                >
-                  Require acceptance
-                </label>
-              </div>
+                    <svg
+                      className="text-white hidden"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="10"
+                      viewBox="0 0 12 10"
+                      fill="none"
+                    >
+                      <path
+                        d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
+                        fill="white"
+                      />
+                    </svg>
+                  </label>
+                  <label
+                    htmlFor="return-voucher"
+                    className="text-550 text-[14px] leading-[20px] font-medium"
+                  >
+                    Require Return voucher
+                  </label>
+                </div>
             </div>
           </form>
         ) : (
@@ -1188,44 +1161,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                   )
                 : null}
               <div className="flex flex-col items-start gap-3 sm:hidden">
-                <div className="items-center gap-[7px] flex">
-                  <input
-                    type="checkbox"
-                    id="acceptance"
-                    className="hidden peer"
-                    checked={formValues.require_acceptence ? true : false}
-                    onChange={(e) => {
-                      setformValues((prev) => ({
-                        ...prev,
-                        require_acceptence: e.target.checked,
-                      }));
-                    }}
-                  />
-                  <label
-                    htmlFor="acceptance"
-                    className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
-                  >
-                    <svg
-                      className="text-white hidden"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="10"
-                      viewBox="0 0 12 10"
-                      fill="none"
-                    >
-                      <path
-                        d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
-                        fill="white"
-                      />
-                    </svg>
-                  </label>
-                  <label
-                    htmlFor="acceptance"
-                    className="text-550 text-[14px] leading-[20px] font-medium"
-                  >
-                    Require acceptance
-                  </label>
-                </div>
+                {/*   Heeeere   */}
+
                 <div className="items-center gap-[7px] flex">
                   <input
                     type="checkbox"
@@ -1268,46 +1205,8 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
             </div>
 
             <div className="flex items-center justify-end  sm:justify-between w-full">
-              <div className="items-center gap-[7px] hidden sm:flex">
-                <input
-                  type="checkbox"
-                  id="return-voucher"
-                  className="hidden peer"
-                  checked={formValues.require_return_voucher ? true : false}
-                  onChange={(e) => {
-                    setformValues((prev) => ({
-                      ...prev,
-                      require_return_voucher: e.target.checked,
-                    }));
-                  }}
-                />
-                <label
-                  htmlFor="return-voucher"
-                  className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
-                >
-                  <svg
-                    className="text-white hidden"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="10"
-                    viewBox="0 0 12 10"
-                    fill="none"
-                  >
-                    <path
-                      d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
-                      fill="white"
-                    />
-                  </svg>
-                </label>
-                <label
-                  htmlFor="return-voucher"
-                  className="text-550 text-[14px] leading-[20px] font-medium"
-                >
-                  Require Return voucher
-                </label>
-              </div>
 
-              <div className="flex items-center gap-[6px]">
+              <div className="flex items-center gap-[6px] justify-end w-full">
                 <button
                   className="text-n600 sm:px-[42px] px-[36px] sm:py-[10px] py-[7px] font-semibold rounded-[86px] border-[1px] border-n400 bg-n300 sm:text-[15px] text-[13px]"
                   onClick={() => {
@@ -1340,4 +1239,4 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
   }
 );
 
-export default MissionPopup;
+export default ModernisationPopup;

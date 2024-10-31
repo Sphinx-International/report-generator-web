@@ -16,6 +16,8 @@ import WorkorderByUser from "./pages/WorkordersByUser.tsx";
 import Sites from "./pages/Sites.tsx";
 import LosCommands from "./pages/LosCommands.tsx";
 import UsersPerformance from "./pages/usersPerformance.tsx";
+import Modernisation from "./pages/Modernisation.tsx";
+import ModernisationDetails from "./pages/ModernisationDetails.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -104,7 +106,16 @@ const router = createBrowserRouter([
     path: "/los/commands",
     element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1]} />,
   },
-
+  {
+    path: "/modernisations",
+    element: <ProtectedRoute element={<Modernisation />} allowedRoles={[0, 1, 2]} />,
+  },
+  {
+    path: "/modernisations/:id",
+    element: (
+      <ProtectedRoute element={<ModernisationDetails />} allowedRoles={[0, 1, 2]} />
+    ),
+  },
   {
     path: "*",
     element: <Page404 />,

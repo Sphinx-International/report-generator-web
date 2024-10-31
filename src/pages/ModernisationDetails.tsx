@@ -3,13 +3,12 @@ import { useParams } from "react-router-dom";
 import WorkOrderStatus from "../components/workorder/WorkOrderStatus";
 import SideBar from "../components/SideBar";
 import Header from "../components/Header";
-import { ResOfOneMission } from "../assets/types/Mission";
+import { ResOfOneModernisation } from "../assets/types/Modernisation";
 import { User } from "../assets/types/User";
 import { RotatingLines } from "react-loader-spinner";
 import { getRole } from "../func/getUserRole";
 import Page404 from "./Page404";
 const baseUrl = import.meta.env.VITE_BASE_URL;
-
 import { downloadFile } from "../func/donwloadFile";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
 import handleChange from "../func/handleChangeFormsInput";
@@ -60,11 +59,9 @@ type WorkorderProperties = {
   description?: string;
 };
 
-const MissionDetails = () => {
+const ModernisationDetails = () => {
   const { id } = useParams();
   // const decodedId = decodeURIComponent(id || "");
-
-  console.log(id);
 
   const dispatch = useDispatch<AppDispatch>();
   const uploadingFiles = useSelector(
@@ -79,7 +76,8 @@ const MissionDetails = () => {
   ]);
   const [visibleEngPopup, setVisibleEngPopup] = useState<boolean>(false);
   const [visibleCoordPopup, setVisibleCoordPopup] = useState<boolean>(false);
-  const [workorder, setWorkorder] = useState<ResOfOneMission | null>(null);
+  const [modernisation, setModernisation] =
+    useState<ResOfOneModernisation | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingAttach, setIsLoadingAttach] = useState(false);
   const [isLoadingFinalize, setisLoadingFinalize] = useState(false);
@@ -128,7 +126,7 @@ const MissionDetails = () => {
   const [timeLeft, setTimeLeft] = useState(5); // Countdown starts at 5 seconds
   const intervalRef = useRef<number | null>(null); // Ref for countdown interval
 
-  const [basicDataWorkorder, setBasicDataWorkorder] = useState<{
+  const [basicDataModernisation, setbasicDataModernisation] = useState<{
     title: string;
     id: string;
     priority: 0 | 1 | 2 | 3 | number;
@@ -156,8 +154,6 @@ const MissionDetails = () => {
     useState<"attachements" | "report" | "certificate" | "voucher">();
 
   const [visibleHistory, setVisibleHistory] = useState<boolean>(false);
-
-  const [visibleReqAccPopup, setVisibleReqAccPopup] = useState(false);
   const [visibleReqVoucherPopup, setVisibleReqVoucherPopup] = useState(false);
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -190,7 +186,7 @@ const MissionDetails = () => {
             onClick={async () => {
               // Custom delete logic here, e.g., deleting from IndexedDB
               await handleCancelUpload(file.fileId, dispatch, file.fileType);
-              fetchOneWorkOrder();
+              fetchOneModernisation();
               closeSnackbar(key);
             }}
           >
@@ -204,9 +200,9 @@ const MissionDetails = () => {
           file.fileContent,
           file.fileType,
           file_token,
-          workorder!.workorder.id,
+          modernisation!.modernisation.id,
           setIsLoading,
-          fetchOneWorkOrder,
+          fetchOneModernisation,
           (message, options) =>
             enqueueSnackbar(message, { ...options, action: snackbarAction }) // Pass the action with the JSX button
         );
@@ -241,9 +237,9 @@ const MissionDetails = () => {
 
     // Optionally check for fonts and recalculate
     document.fonts?.ready.then(calculateWidth);
-  }, [spanRef, basicDataWorkorder.title]);
+  }, [spanRef, basicDataModernisation.title]);
 
-  const handleExecute = (workorder_id: string) => {
+  const handleExecute = (modernisation_id: string) => {
     setUndoMessageVisible(true);
     setTimeLeft(5); // Set countdown to 5 seconds
     setIsLoading(true);
@@ -272,12 +268,12 @@ const MissionDetails = () => {
     undoTimeoutRef.current = window.setTimeout(async () => {
       if (!undoActionTriggeredRef.current) {
         await handle_Assignment_and_execute(
-          workorder_id,
-          "execute-workorder",
+          modernisation_id,
+          "execute-modernisation",
           "PUT",
-          "workorder",
+          "modernisation",
           setIsLoading,
-          fetchOneWorkOrder
+          fetchOneModernisation
         );
       }
       setUndoMessageVisible(false);
@@ -299,16 +295,16 @@ const MissionDetails = () => {
     setLoader: setLoaderCoordSearch,
   });
 
-  const fetchOneWorkOrder = useCallback(async () => {
+  const fetchOneModernisation = useCallback(async () => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
     }
-    const url = `${baseUrl}/workorder/get-workorder/${encodeURIComponent(id!)}`;
-
-    console.log(url);
+    const url = `${baseUrl}/modernisation/get-modernisation/${encodeURIComponent(
+      id!
+    )}`;
 
     try {
       const response = await fetch(url, {
@@ -322,16 +318,15 @@ const MissionDetails = () => {
         case 200:
           {
             const data = await response.json();
-            setWorkorder(data);
-            console.log(data);
-            setBasicDataWorkorder({
-              title: data.workorder.title,
-              id: data.workorder.id,
-              priority: data.workorder.priority,
-              description: data.workorder.description,
+            setModernisation(data);
+            setbasicDataModernisation({
+              title: data.modernisation.title,
+              id: data.modernisation.id,
+              priority: data.modernisation.priority,
+              description: data.modernisation.description,
             });
             setSelectedMembersFromGroup(() => {
-              // Extract emails from data.workorder.mail_to
+              // Extract emails from data.modernisation.mail_to
               const newEmails = data.mail_to.map(
                 (mail: { id: number; workorder: number; email: string }) =>
                   mail.email
@@ -342,7 +337,7 @@ const MissionDetails = () => {
               setInputWidth(spanRef.current.offsetWidth + 45);
             }
             // Sync files with IndexedDB
-            await syncIndexedDBWithFetchedFiles(data.workorder.id, data);
+            await syncIndexedDBWithFetchedFiles(data.modernisation.id, data);
           }
           break;
 
@@ -385,25 +380,27 @@ const MissionDetails = () => {
     if (id !== undefined) body.id = id;
     if (priority !== undefined) body.priority = priority;
     if (description !== undefined) body.description = description;
-    console.log(JSON.stringify(body));
     setIsLoading(true);
     try {
-      const response = await fetch(`${baseUrl}/workorder/update-workorder`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body), // No need to wrap body in another object
-      });
+      const response = await fetch(
+        `${baseUrl}/modernisation/update-modernisation`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body), // No need to wrap body in another object
+        }
+      );
 
       if (response) {
         switch (response.status) {
           case 200:
-            setWorkorder((prevState) => ({
+            setModernisation((prevState) => ({
               ...prevState!,
               workorder: {
-                ...prevState!.workorder,
+                ...prevState!.modernisation,
                 priority: properties.priority!,
               },
             }));
@@ -431,8 +428,8 @@ const MissionDetails = () => {
     }
   };
   useEffect(() => {
-    fetchOneWorkOrder();
-  }, [fetchOneWorkOrder]);
+    fetchOneModernisation();
+  }, [fetchOneModernisation]);
 
   const handleUndo = () => {
     if (undoTimeoutRef.current !== null) {
@@ -469,7 +466,7 @@ const MissionDetails = () => {
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header pageSentence="Here is workorder details" searchBar={false} />
-        {workorder && (
+        {modernisation && (
           <div className="flex flex-col items-end gap-[40px] w-full sm:px-[25px] px-[14px]">
             <div className="flex flex-col w-full gap-[31px] ">
               <div className="flex flex-col gap-[31px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
@@ -486,7 +483,7 @@ const MissionDetails = () => {
                         }}
                         className={`text-primary font-semibold md:text-[24px] text-[16px] max-w-[90%] overflow-hidden`}
                       >
-                        {`${basicDataWorkorder.title} | ${basicDataWorkorder.id}`}
+                        {`${basicDataModernisation.title} | ${basicDataModernisation.id}`}
                       </span>
 
                       <input
@@ -501,11 +498,11 @@ const MissionDetails = () => {
                         disabled={!isEditing_Title_tic}
                         value={
                           isEditing_Title_tic
-                            ? `${basicDataWorkorder.title}`
-                            : `${basicDataWorkorder.title}    ${basicDataWorkorder.id}`
+                            ? `${basicDataModernisation.title}`
+                            : `${basicDataModernisation.title}    ${basicDataModernisation.id}`
                         }
                         onChange={(e) => {
-                          handleChange(e, setBasicDataWorkorder);
+                          handleChange(e, setbasicDataModernisation);
                         }}
                       />
                     </>
@@ -513,7 +510,7 @@ const MissionDetails = () => {
                       <span
                         className={`text-primary font-semibold md:text-[24px] text-[16px] rounded-[20px] py-[7px] sm:px-[20px] px-[8px]`}
                       >
-                        {basicDataWorkorder.id}
+                        {basicDataModernisation.id}
                       </span>
                     )}
                     {!isEditing_Title_tic && getRole() !== 2 && (
@@ -543,8 +540,8 @@ const MissionDetails = () => {
                       </svg>
                     )}
                   </div>
-                  {workorder.history !== null &&
-                    workorder.history.length !== 0 && (
+                  {modernisation.history !== null &&
+                    modernisation.history.length !== 0 && (
                       <div className="relative">
                         <svg
                           className="cursor-pointer hover:scale-105"
@@ -574,37 +571,37 @@ const MissionDetails = () => {
                         </svg>
                         {visibleHistory && (
                           <div className="bg-white py-[19px] px-[26px] rounded-[20px] shadow-xl shadow-slate-300 absolute right-0 flex flex-col items-start z-50 max-h-[60vh] overflow-auto">
-                            {workorder.history.map((action, index) => {
+                            {modernisation.history.map((action, index) => {
                               return (
                                 <div
                                   key={index}
                                   className={`flex flex-col items-start gap-1 py-[10px] ${
-                                    ++index !== workorder.history.length &&
+                                    ++index !== modernisation.history.length &&
                                     " border-b-[1px] border-b-n300"
                                   }`}
                                 >
                                   <h6 className="text-[13px] leading-5 font-medium text-n800 text-nowrap">
                                     {action.action === 0
-                                      ? "workorder has been created"
+                                      ? "modernisation has been created"
                                       : action.action === 1
-                                      ? "workorder has been updated"
+                                      ? "modernisation has been updated"
                                       : action.action === 2
-                                      ? "workorder has been assigned"
+                                      ? "modernisation has been assigned"
                                       : action.action === 3
-                                      ? "workorder has been reassigned"
+                                      ? "modernisation has been reassigned"
                                       : action.action === 4
-                                      ? "workorder has been executed"
+                                      ? "modernisation has been executed"
                                       : action.action === 5
-                                      ? "workorder report uploaded"
+                                      ? "modernisation report uploaded"
                                       : action.action === 6
-                                      ? "workorder has been reported"
+                                      ? "modernisation has been reported"
                                       : action.action === 7
-                                      ? "workorder update requested"
+                                      ? "modernisation update requested"
                                       : action.action === 8
-                                      ? "workorder certificate uploaded"
+                                      ? "modernisation certificate uploaded"
                                       : action.action === 9
-                                      ? "workorder has been accepted"
-                                      : "workorder closed"}
+                                      ? "modernisation has been accepted"
+                                      : "modernisation closed"}
                                   </h6>
                                   <span className="text-[12px] leading-[18px] font-medium text-550 text-nowrap">
                                     {formatDate(action.at)}
@@ -623,14 +620,14 @@ const MissionDetails = () => {
                 </div>
 
                 <div className="w-full flex flex-col items-start gap-[15px]">
-                  {workorder.workorder.assigned_to !== null ? (
+                  {modernisation.modernisation.assigned_to !== null ? (
                     <div className="flex items-center gap-[12px] relative">
                       <div
                         className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
                           if (
                             getRole() !== 2 &&
-                            workorder.workorder.status < 2
+                            modernisation.modernisation.status < 2
                           ) {
                             setVisibleEngPopup(!visibleEngPopup);
                           }
@@ -658,7 +655,7 @@ const MissionDetails = () => {
                         )}
                       </div>
                       <span className="sm:text-[18px] text-[15px] text-n600 font-medium leading-[27px]">
-                        {workorder.workorder.assigned_to.email}
+                        {modernisation.modernisation.assigned_to.email}
                       </span>
                       {visibleEngPopup && (
                         <div className="sm:w-[400px] w-[280px] absolute z-30 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
@@ -724,18 +721,18 @@ const MissionDetails = () => {
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                       onClick={() => {
                                         handle_Assignment_and_execute(
-                                          workorder.workorder.id,
-                                          "reassign-workorder",
+                                          modernisation.modernisation.id,
+                                          "reassign-modernisation",
                                           "PATCH",
-                                          "workorder",
+                                          "modernisation",
                                           setIsLoading,
                                           undefined,
                                           user.id
                                         );
-                                        setWorkorder((prevState) => ({
+                                        setModernisation((prevState) => ({
                                           ...prevState!,
-                                          workorder: {
-                                            ...prevState!.workorder,
+                                          modernisation: {
+                                            ...prevState!.modernisation,
                                             assigned_to: user,
                                           },
                                         }));
@@ -1060,10 +1057,10 @@ const MissionDetails = () => {
                       }`}
                       name="description"
                       disabled={isEditing_desc ? false : true}
-                      value={basicDataWorkorder.description}
+                      value={basicDataModernisation.description}
                       rows={isEditing_desc ? 4 : 2}
                       onChange={(e) => {
-                        handleChange(e, setBasicDataWorkorder);
+                        handleChange(e, setbasicDataModernisation);
                       }}
                     />
                   </div>
@@ -1193,22 +1190,22 @@ const MissionDetails = () => {
                                       key={index}
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                       onClick={() => {
-                                        // Check if the email exists in workorder.mail_to
+                                        // Check if the email exists in modernisation.mail_to
                                         const emailExists =
-                                          workorder.mail_to.some(
+                                          modernisation.mail_to.some(
                                             (mailTo) =>
                                               mailTo.email === user.email
                                           );
 
                                         if (!emailExists) {
                                           handle_add_or_delete_mailedPerson(
-                                            workorder.workorder.id,
+                                            modernisation.modernisation.id,
                                             user.email,
                                             "add",
-                                            "workorder",
+                                            "modernisation",
                                             setIsLoadingMaildPersons,
                                             setVisibleCoordPopup,
-                                            fetchOneWorkOrder
+                                            fetchOneModernisation
                                           );
                                         }
                                         setVisibleCoordPopup(false);
@@ -1235,11 +1232,11 @@ const MissionDetails = () => {
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
                                       onClick={async () => {
                                         await fetchGroupMembersThenAddThemToWorkorder(
-                                          workorder.workorder.id,
+                                          modernisation.modernisation.id,
                                           user.id,
                                           selectedMembersFromGroup,
                                           setLoaderGettingGroupMembers,
-                                          fetchOneWorkOrder
+                                          fetchOneModernisation
                                         );
                                         setVisibleCoordPopup(false);
                                       }}
@@ -1270,8 +1267,8 @@ const MissionDetails = () => {
                       )}
                     </div>
 
-                    {workorder.mail_to &&
-                      workorder.mail_to.map((mail, index) => {
+                    {modernisation.mail_to &&
+                      modernisation.mail_to.map((mail, index) => {
                         return (
                           <div className="relative group" key={index}>
                             <img
@@ -1284,13 +1281,13 @@ const MissionDetails = () => {
                                 className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
                                 onClick={() => {
                                   handle_add_or_delete_mailedPerson(
-                                    workorder.workorder.id,
+                                    modernisation.modernisation.id,
                                     mail.id,
                                     "delete",
-                                    "workorder",
+                                    "modernisation",
                                     setIsLoadingMaildPersons,
                                     setVisibleCoordPopup,
-                                    fetchOneWorkOrder
+                                    fetchOneModernisation
                                   );
                                 }}
                               >
@@ -1320,14 +1317,15 @@ const MissionDetails = () => {
                   <div className="flex items-center gap-[8px] relative">
                     <WorkOrderStatus
                       status={
-                        workorder.workorder.report_status === 1 &&
-                        workorder.workorder.certificate_status === 1 &&
-                        workorder.workorder.voucher_status &&
-                        workorder.workorder.is_certificate_file_uploaded &&
-                        workorder.workorder.is_report_file_uploaded &&
-                        workorder.workorder.is_voucher_file_uploaded
+                        modernisation.modernisation.report_status === 1 &&
+                        modernisation.modernisation.certificate_status === 1 &&
+                        modernisation.modernisation.voucher_status &&
+                        modernisation.modernisation
+                          .is_certificate_file_uploaded &&
+                        modernisation.modernisation.is_report_file_uploaded &&
+                        modernisation.modernisation.is_voucher_file_uploaded
                           ? 3
-                          : workorder.workorder.status
+                          : modernisation.modernisation.status
                       }
                       styles={{ fontSize: 13, px: 22, py: 8.5 }}
                     />
@@ -1336,11 +1334,11 @@ const MissionDetails = () => {
                       {" "}
                       <span
                         className={`cursor-pointer rounded-[100px] text-[13px] font-medium leading-[15px] bg-[#FEF6FF] py-[9.5px] px-[28px] ${
-                          basicDataWorkorder.priority === 0
+                          basicDataModernisation.priority === 0
                             ? "text-primary"
-                            : basicDataWorkorder.priority === 1
+                            : basicDataModernisation.priority === 1
                             ? "text-[#DB2C9F]"
-                            : basicDataWorkorder.priority === 2
+                            : basicDataModernisation.priority === 2
                             ? "text-[#FFAA29]"
                             : "text-[#DB2C2C]"
                         }`}
@@ -1350,11 +1348,11 @@ const MissionDetails = () => {
                           }
                         }}
                       >
-                        {basicDataWorkorder.priority === 0
+                        {basicDataModernisation.priority === 0
                           ? "Low"
-                          : basicDataWorkorder.priority === 1
+                          : basicDataModernisation.priority === 1
                           ? "Medium"
-                          : basicDataWorkorder.priority === 2
+                          : basicDataModernisation.priority === 2
                           ? "High"
                           : "Urgent"}
                       </span>
@@ -1371,23 +1369,27 @@ const MissionDetails = () => {
                                     key={index}
                                     className={`cursor-pointer rounded-[100px] py-[4.5px] sm:px-[20px] px-[15px] leading-[15px] sm:text-[10px] text-[9px] font-medium ${
                                       index === 0
-                                        ? index === basicDataWorkorder.priority
+                                        ? index ===
+                                          basicDataModernisation.priority
                                           ? "text-primary bg-[#FFF5F3] border-[1px] border-primary"
                                           : "text-primary bg-[#FFF5F3]"
                                         : index === 1
-                                        ? index === basicDataWorkorder.priority
+                                        ? index ===
+                                          basicDataModernisation.priority
                                           ? "text-[#DB2C9F] bg-[#FEF6FF] border-[1px] border-[#DB2C9F]"
                                           : "text-[#DB2C9F] bg-[#FEF6FF]"
                                         : index === 2
-                                        ? index === basicDataWorkorder.priority
+                                        ? index ===
+                                          basicDataModernisation.priority
                                           ? "text-[#FFAA29] bg-[#FFF8EC] border-[1px] border-[#FFAA29]"
                                           : "text-[#FFAA29] bg-[#FFF8EC]"
-                                        : index === basicDataWorkorder.priority
+                                        : index ===
+                                          basicDataModernisation.priority
                                         ? "text-[#DB2C2C] bg-[#FEF6FF] border-[1px] border-[#DB2C2C]"
                                         : "text-[#DB2C2C] bg-[#FEF6FF]"
                                     }`}
                                     onClick={() => {
-                                      setBasicDataWorkorder((prev) => ({
+                                      setbasicDataModernisation((prev) => ({
                                         ...prev,
                                         priority: index,
                                       }));
@@ -1405,15 +1407,16 @@ const MissionDetails = () => {
                               })}
                             </div>
                           </div>
-                          {workorder.workorder.priority !==
-                            basicDataWorkorder.priority && (
+                          {modernisation.modernisation.priority !==
+                            basicDataModernisation.priority && (
                             <div className="flex items-center gap-[6px] w-full">
                               <button
                                 className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
                                 onClick={() => {
-                                  setBasicDataWorkorder((prev) => ({
+                                  setbasicDataModernisation((prev) => ({
                                     ...prev,
-                                    priority: workorder.workorder.priority,
+                                    priority:
+                                      modernisation.modernisation.priority,
                                   }));
                                   setShowPriority(false);
                                 }}
@@ -1424,8 +1427,8 @@ const MissionDetails = () => {
                                 className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
                                 onClick={() => {
                                   handleEditWorkorder({
-                                    id: workorder.workorder.id,
-                                    priority: basicDataWorkorder.priority,
+                                    id: modernisation.modernisation.id,
+                                    priority: basicDataModernisation.priority,
                                   });
                                 }}
                               >
@@ -1436,13 +1439,16 @@ const MissionDetails = () => {
                         </div>
                       )}
                     </div>
-                    {workorder.reports && workorder.reports?.length > 0 ? (
+                    {modernisation.reports &&
+                    modernisation.reports?.length > 0 ? (
                       <WorkOrderStatus
                         status={
-                          workorder.workorder.is_report_file_uploaded === false
+                          modernisation.modernisation
+                            .is_report_file_uploaded === false
                             ? "onUpRep"
-                            : workorder.reports[workorder.reports.length - 1]
-                                .type === 1
+                            : modernisation.reports[
+                                modernisation.reports.length - 1
+                              ].type === 1
                             ? "rep"
                             : "noRep"
                         }
@@ -1454,72 +1460,37 @@ const MissionDetails = () => {
                         styles={{ fontSize: 13, px: 22, py: 8.5 }}
                       />
                     )}
-                    {workorder.workorder.require_acceptence ? (
-                      <div className="relative">
-                        <WorkOrderStatus
-                          status={
-                            workorder.workorder.is_certificate_file_uploaded ===
-                            false
-                              ? "onUpAcc"
-                              : workorder.acceptance_certificates &&
-                                workorder.acceptance_certificates?.length > 0 &&
-                                workorder.acceptance_certificates[
-                                  workorder.acceptance_certificates.length - 1
-                                ].type === 1
-                              ? "acc"
-                              : "noAcc"
-                          }
-                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
-                          setState={setVisibleReqAccPopup}
-                        />
-                        {visibleReqAccPopup &&
-                          workorder.workorder.status < 2 &&
-                          getRole() !== 2 && (
-                            <RequirementPopup
-                              woId={workorder.workorder.id}
-                              RequirementType="acceptance"
-                              Requirement={
-                                workorder.workorder.require_acceptence
-                              }
-                              extantionType="workorder"
-                              setState={setVisibleReqAccPopup}
-                              fetchOneWorkOrder={fetchOneWorkOrder}
-                            />
-                          )}
-                      </div>
-                    ) : workorder.workorder.status < 2 && getRole() !== 2 ? (
-                      <div className="relative">
-                        <WorkOrderStatus
-                          status={"unneededAcc"}
-                          styles={{ fontSize: 13, px: 22, py: 8.5 }}
-                          setState={setVisibleReqAccPopup}
-                        />
-                        {visibleReqAccPopup && getRole() !== 2 && (
-                          <RequirementPopup
-                            woId={workorder.workorder.id}
-                            RequirementType="acceptance"
-                            Requirement={
-                              workorder.workorder.require_acceptence!
-                            }
-                            extantionType="workorder"
-                            setState={setVisibleReqAccPopup}
-                            fetchOneWorkOrder={fetchOneWorkOrder}
-                          />
-                        )}
-                      </div>
-                    ) : null}
 
-                    {workorder.workorder.require_return_voucher ? (
+                    <div className="relative">
+                      <WorkOrderStatus
+                        status={
+                          modernisation.modernisation
+                            .is_certificate_file_uploaded === false
+                            ? "onUpAcc"
+                            : modernisation.acceptance_certificates &&
+                              modernisation.acceptance_certificates?.length >
+                                0 &&
+                              modernisation.acceptance_certificates[
+                                modernisation.acceptance_certificates.length - 1
+                              ].type === 1
+                            ? "acc"
+                            : "noAcc"
+                        }
+                        styles={{ fontSize: 13, px: 22, py: 8.5 }}
+                      />
+                    </div>
+
+                    {modernisation.modernisation.require_return_voucher ? (
                       <div className="relative">
                         <WorkOrderStatus
                           status={
-                            workorder.workorder.is_voucher_file_uploaded ===
-                            false
+                            modernisation.modernisation
+                              .is_voucher_file_uploaded === false
                               ? "onUpVo"
-                              : workorder.return_vouchers &&
-                                workorder.return_vouchers?.length > 0 &&
-                                workorder.return_vouchers[
-                                  workorder.return_vouchers.length - 1
+                              : modernisation.return_vouchers &&
+                                modernisation.return_vouchers?.length > 0 &&
+                                modernisation.return_vouchers[
+                                  modernisation.return_vouchers.length - 1
                                 ].is_last
                               ? "vo"
                               : "noVo"
@@ -1528,21 +1499,23 @@ const MissionDetails = () => {
                           setState={setVisibleReqVoucherPopup}
                         />
                         {visibleReqVoucherPopup &&
-                          workorder.workorder.status < 2 &&
+                          modernisation.modernisation.status < 2 &&
                           getRole() !== 2 && (
                             <RequirementPopup
-                              woId={workorder.workorder.id}
+                              woId={modernisation.modernisation.id}
                               RequirementType="return voucher"
                               Requirement={
-                                workorder.workorder.require_return_voucher
+                                modernisation.modernisation
+                                  .require_return_voucher
                               }
-                              extantionType="workorder"
+                              extantionType="modernisation"
                               setState={setVisibleReqVoucherPopup}
-                              fetchOneWorkOrder={fetchOneWorkOrder}
+                              fetchOneWorkOrder={fetchOneModernisation}
                             />
                           )}
                       </div>
-                    ) : workorder.workorder.status < 2 && getRole() !== 2 ? (
+                    ) : modernisation.modernisation.status < 2 &&
+                      getRole() !== 2 ? (
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededVo"}
@@ -1551,14 +1524,15 @@ const MissionDetails = () => {
                         />
                         {visibleReqVoucherPopup && getRole() !== 2 && (
                           <RequirementPopup
-                            woId={workorder.workorder.id}
+                            woId={modernisation.modernisation.id}
                             RequirementType="return voucher"
                             Requirement={
-                              workorder.workorder.require_return_voucher!
+                              modernisation.modernisation
+                                .require_return_voucher!
                             }
-                            extantionType="workorder"
+                            extantionType="modernisation"
                             setState={setVisibleReqVoucherPopup}
-                            fetchOneWorkOrder={fetchOneWorkOrder}
+                            fetchOneWorkOrder={fetchOneModernisation}
                           />
                         )}
                       </div>
@@ -1578,7 +1552,7 @@ const MissionDetails = () => {
                             Attachements
                           </label>
                         ) : (
-                          workorder.attachments.length !== 0 && (
+                          modernisation.attachments.length !== 0 && (
                             <label
                               htmlFor="attachements"
                               className="text-[17px] text-n700 leading-[30px] font-medium"
@@ -1589,8 +1563,8 @@ const MissionDetails = () => {
                         )}
 
                         <div className="flex gap-[20px] flex-wrap">
-                          {workorder.attachments.length > 0 &&
-                            workorder.attachments
+                          {modernisation.attachments.length > 0 &&
+                            modernisation.attachments
                               .filter(
                                 (attachment) => !combinedIds.has(attachment.id)
                               )
@@ -1625,7 +1599,7 @@ const MissionDetails = () => {
                                           "download-workorder-attachment",
                                           attach.file_name,
                                           (progress) => {
-                                            setWorkorder((prev) => {
+                                            setModernisation((prev) => {
                                               if (!prev) return null;
 
                                               return {
@@ -1646,7 +1620,7 @@ const MissionDetails = () => {
                                           },
                                           () => {
                                             // Reset progress to 0% after download is complete
-                                            setWorkorder((prev) => {
+                                            setModernisation((prev) => {
                                               if (!prev) return null;
 
                                               return {
@@ -1746,12 +1720,12 @@ const MissionDetails = () => {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             upload_or_delete_workorder_files_for_attachements(
-                                              workorder.workorder.id,
+                                              modernisation.modernisation.id,
                                               attach.id,
                                               "delete",
-                                              "workorder",
+                                              "modernisation",
                                               setIsLoadingDeleteFile,
-                                              fetchOneWorkOrder
+                                              fetchOneModernisation
                                             );
                                           }}
                                         >
@@ -1850,7 +1824,7 @@ const MissionDetails = () => {
                                                   undefined,
                                                   undefined,
                                                   setIsLoadingCancelUpload,
-                                                  fetchOneWorkOrder
+                                                  fetchOneModernisation
                                                 );
                                               }}
                                             >
@@ -1867,7 +1841,8 @@ const MissionDetails = () => {
                             uploadedAttachOnCreation
                               .filter(
                                 (attach) =>
-                                  attach.workorder === workorder.workorder.id
+                                  attach.workorder ===
+                                  modernisation.modernisation.id
                               )
                               .map((attach, index) => {
                                 return (
@@ -1947,14 +1922,14 @@ const MissionDetails = () => {
                                           e.stopPropagation();
 
                                           await upload_or_delete_workorder_files_for_attachements(
-                                            workorder.workorder.id,
+                                            modernisation.modernisation.id,
                                             attach.id,
                                             "delete",
-                                            "workorder",
+                                            "modernisation",
                                             setIsLoadingDeleteFile,
-                                            fetchOneWorkOrder
+                                            fetchOneModernisation
                                           );
-                                          //await fetchOneWorkOrder ();
+                                          //await fetchOneModernisation ();
                                           dispatch(
                                             removeAttachOnCreationArray(
                                               attach.id
@@ -1994,7 +1969,7 @@ const MissionDetails = () => {
                           {uploadingFiles.attachFiles.length !== 0 &&
                             uploadingFiles.attachFiles
                               .filter((attach) =>
-                                workorder.attachments.some(
+                                modernisation.attachments.some(
                                   (attachment) => attachment.id === attach.id
                                 )
                               )
@@ -2006,7 +1981,7 @@ const MissionDetails = () => {
                                   >
                                     <UploadingFile
                                       key={index}
-                                      fetchFunc={fetchOneWorkOrder}
+                                      fetchFunc={fetchOneModernisation}
                                       id={attach.id}
                                       progress={attach.progress}
                                       file={attach.file}
@@ -2032,12 +2007,12 @@ const MissionDetails = () => {
                                   Array.from(files).forEach(async (file) => {
                                     await handleFileChange(
                                       dispatch,
-                                      workorder.workorder.id,
+                                      modernisation.modernisation.id,
                                       "attachements",
-                                      "workorder",
+                                      "modernisation",
                                       file,
                                       setIsLoadingAttach,
-                                      fetchOneWorkOrder,
+                                      fetchOneModernisation,
                                       fileInputRef
                                     );
                                   });
@@ -2057,12 +2032,12 @@ const MissionDetails = () => {
                                   if (file) {
                                     await handleFileChange(
                                       dispatch,
-                                      workorder.workorder.id,
+                                      modernisation.modernisation.id,
                                       "attachements",
-                                      "workorder",
+                                      "modernisation",
                                       file,
                                       setIsLoadingAttach,
-                                      fetchOneWorkOrder,
+                                      fetchOneModernisation,
                                       fileInputRef
                                     );
                                   }
@@ -2124,11 +2099,11 @@ const MissionDetails = () => {
                       onClick={() => {
                         setIsEditing_Title_tic(false);
                         setIsEditing_desc(false);
-                        setBasicDataWorkorder((prev) => ({
+                        setbasicDataModernisation((prev) => ({
                           ...prev,
-                          title: workorder.workorder.title,
-                          description: workorder.workorder.description,
-                          id: workorder.workorder.id,
+                          title: modernisation.modernisation.title,
+                          description: modernisation.modernisation.description,
+                          id: modernisation.modernisation.id,
                         }));
                       }}
                     >
@@ -2138,9 +2113,9 @@ const MissionDetails = () => {
                       className="px-[25px] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
                       onClick={() => {
                         handleEditWorkorder({
-                          title: basicDataWorkorder.title,
-                          id: basicDataWorkorder.id,
-                          description: basicDataWorkorder.description,
+                          title: basicDataModernisation.title,
+                          id: basicDataModernisation.id,
+                          description: basicDataModernisation.description,
                         });
                       }}
                     >
@@ -2151,7 +2126,7 @@ const MissionDetails = () => {
               </div>
 
               <div className="w-full flex flex-col items-start gap-[23px]">
-                {workorder.workorder.status > 1 && (
+                {modernisation.modernisation.status > 1 && (
                   <>
                     <div
                       className={`w-full flex flex-col gap-[15px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]`}
@@ -2163,9 +2138,9 @@ const MissionDetails = () => {
                         Report
                       </label>
                       <div className="flex w-full items-center flex-wrap gap-[16px]">
-                        {workorder.reports &&
-                          workorder.reports.length > 0 &&
-                          workorder.reports
+                        {modernisation.reports &&
+                          modernisation.reports.length > 0 &&
+                          modernisation.reports
                             .filter((report) =>
                               uploadingFiles.reportFiles.every(
                                 (rf) => rf.id !== report.id
@@ -2200,7 +2175,7 @@ const MissionDetails = () => {
                                         report.file_name,
                                         (progress) => {
                                           // You can update the progress in the state to show it in the UI
-                                          setWorkorder((prev) => {
+                                          setModernisation((prev) => {
                                             if (!prev) return null;
 
                                             return {
@@ -2221,7 +2196,7 @@ const MissionDetails = () => {
                                         },
                                         () => {
                                           // Reset progress to 0% after download is complete
-                                          setWorkorder((prev) => {
+                                          setModernisation((prev) => {
                                             if (!prev) return null;
 
                                             return {
@@ -2443,7 +2418,7 @@ const MissionDetails = () => {
                                                 undefined,
                                                 undefined,
                                                 setIsLoadingCancelUpload,
-                                                fetchOneWorkOrder
+                                                fetchOneModernisation
                                               );
                                             }}
                                           >
@@ -2465,7 +2440,7 @@ const MissionDetails = () => {
                               >
                                 <UploadingFile
                                   id={report.id}
-                                  fetchFunc={fetchOneWorkOrder}
+                                  fetchFunc={fetchOneModernisation}
                                   progress={report.progress}
                                   file={report.file}
                                   fileType="report"
@@ -2474,10 +2449,11 @@ const MissionDetails = () => {
                             );
                           })}
 
-                        {(workorder.reports === null ||
-                          (workorder.reports &&
-                            workorder.reports[workorder.reports?.length - 1]
-                              .type !== 1)) && (
+                        {(modernisation.reports === null ||
+                          (modernisation.reports &&
+                            modernisation.reports[
+                              modernisation.reports?.length - 1
+                            ].type !== 1)) && (
                           <div
                             className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
                             onClick={() => {
@@ -2491,20 +2467,21 @@ const MissionDetails = () => {
                         )}
                       </div>
                       <div className="flex justify-end w-full">
-                        {workorder.reports &&
-                          workorder.reports[workorder.reports?.length - 1]
-                            .type === 1 &&
+                        {modernisation.reports &&
+                          modernisation.reports[
+                            modernisation.reports?.length - 1
+                          ].type === 1 &&
                           getRole() !== 2 && (
                             <div className="flex items-center gap-[12px]">
                               <button
                                 className="sm:px-[26px] px-[16px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
                                 onClick={() => {
                                   handle_edit_or_reqUpdate_report(
-                                    workorder.workorder.id,
+                                    modernisation.modernisation.id,
                                     false,
-                                    "workorder",
+                                    "modernisation",
                                     setisLoadingFinalize,
-                                    fetchOneWorkOrder
+                                    fetchOneModernisation
                                   );
                                 }}
                               >
@@ -2542,427 +2519,415 @@ const MissionDetails = () => {
                       </div>
                     </div>
 
-                    {workorder.workorder.require_acceptence && (
-                      <div className="w-full flex flex-col gap-[15px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
-                        <label
-                          htmlFor="acceptence-label"
-                          className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
-                        >
-                          Acceptance certificate
-                        </label>
-                        <div className="flex w-full items-center flex-wrap gap-[16px]">
-                          {workorder.acceptance_certificates &&
-                            workorder.acceptance_certificates.length > 0 &&
-                            workorder.acceptance_certificates
-                              .filter((certificate) =>
-                                uploadingFiles.acceptenceFiles.every(
-                                  (af) => af.id !== certificate.id
-                                )
+                    <div className="w-full flex flex-col gap-[15px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
+                      <label
+                        htmlFor="acceptence-label"
+                        className="leading-[36px] text-primary text-[24px] font-semibold w-fit"
+                      >
+                        Acceptance certificate
+                      </label>
+                      <div className="flex w-full items-center flex-wrap gap-[16px]">
+                        {modernisation.acceptance_certificates &&
+                          modernisation.acceptance_certificates.length > 0 &&
+                          modernisation.acceptance_certificates
+                            .filter((certificate) =>
+                              uploadingFiles.acceptenceFiles.every(
+                                (af) => af.id !== certificate.id
                               )
-                              .map((certificate, index) => {
-                                return (
-                                  <div
-                                    key={index}
-                                    className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
-                                      !certificate.is_completed &&
-                                      (certificate.uploaded_by ===
-                                      Number(localStorage.getItem("user_id")!)
-                                        ? "border-[2px] border-[#db2c2c]"
-                                        : "border-[2px] border-[#FFB84D]")
-                                    }`}
-                                    onClick={() => {
-                                      if (certificate.is_completed) {
-                                        downloadFile(
-                                          certificate.id,
-                                          "download-workorder-acceptance-certificate",
-                                          certificate.file_name,
-                                          (progress) => {
-                                            setWorkorder((prev) => {
-                                              if (!prev) return null;
+                            )
+                            .map((certificate, index) => {
+                              return (
+                                <div
+                                  key={index}
+                                  className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between px-[12px] py-[14px] bg-white shadow-lg rounded-[15px] ${
+                                    !certificate.is_completed &&
+                                    (certificate.uploaded_by ===
+                                    Number(localStorage.getItem("user_id")!)
+                                      ? "border-[2px] border-[#db2c2c]"
+                                      : "border-[2px] border-[#FFB84D]")
+                                  }`}
+                                  onClick={() => {
+                                    if (certificate.is_completed) {
+                                      downloadFile(
+                                        certificate.id,
+                                        "download-workorder-acceptance-certificate",
+                                        certificate.file_name,
+                                        (progress) => {
+                                          setModernisation((prev) => {
+                                            if (!prev) return null;
 
-                                              return {
-                                                ...prev,
-                                                acceptance_certificates:
-                                                  prev.acceptance_certificates?.map(
-                                                    (cert) =>
-                                                      cert.id === certificate.id
-                                                        ? {
-                                                            ...cert,
-                                                            downloadProgress: `${progress.toFixed(
-                                                              0
-                                                            )}`,
-                                                          }
-                                                        : cert
-                                                  ),
-                                              };
-                                            });
-                                          },
-                                          () => {
-                                            setWorkorder((prev) => {
-                                              if (!prev) return null;
+                                            return {
+                                              ...prev,
+                                              acceptance_certificates:
+                                                prev.acceptance_certificates?.map(
+                                                  (cert) =>
+                                                    cert.id === certificate.id
+                                                      ? {
+                                                          ...cert,
+                                                          downloadProgress: `${progress.toFixed(
+                                                            0
+                                                          )}`,
+                                                        }
+                                                      : cert
+                                                ),
+                                            };
+                                          });
+                                        },
+                                        () => {
+                                          setModernisation((prev) => {
+                                            if (!prev) return null;
 
-                                              return {
-                                                ...prev,
-                                                acceptance_certificates:
-                                                  prev.acceptance_certificates?.map(
-                                                    (cert) =>
-                                                      cert.id === certificate.id
-                                                        ? {
-                                                            ...cert,
-                                                            downloadProgress: `0`,
-                                                          }
-                                                        : cert
-                                                  ),
-                                              };
-                                            });
-                                          }
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <div className="flex items-center gap-[9px] w-full">
-                                      {certificate.downloadProgress &&
-                                        certificate.downloadProgress !==
-                                          "0" && (
-                                          <CircularProgress
-                                            progress={parseFloat(
-                                              certificate.downloadProgress ||
-                                                "0"
-                                            )}
-                                          />
-                                        )}
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="22"
-                                        height="26"
-                                        viewBox="0 0 22 26"
-                                        fill="none"
-                                      >
-                                        <path
-                                          opacity="0.2"
-                                          d="M20.375 6.33984V19.4648C20.375 19.7135 20.2762 19.9519 20.1004 20.1278C19.9246 20.3036 19.6861 20.4023 19.4375 20.4023H16.625V10.0898L11.9375 5.40234H5.375V2.58984C5.375 2.3412 5.47377 2.10275 5.64959 1.92693C5.8254 1.75112 6.06386 1.65234 6.3125 1.65234H15.6875L20.375 6.33984Z"
-                                          fill="#6F6C8F"
-                                        />
-                                        <path
-                                          d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
-                                          fill={
-                                            certificate.is_completed
-                                              ? "#6F6C8F"
-                                              : certificate.uploaded_by ===
-                                                Number(
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
-                                                )
-                                              ? "#DB2C2C"
-                                              : " #FFB84D"
-                                          }
-                                        />
-                                      </svg>
-                                      <div className="flex flex-col items-start w-full relative">
-                                        <span
-                                          className={`text-[13px] font-medium leading-[20px] mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap ${
-                                            certificate.is_completed
-                                              ? "text-n600"
-                                              : certificate.uploaded_by ===
-                                                Number(
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
-                                                )
-                                              ? "text-[#DB2C2C]"
-                                              : "text-[#FFB84D]"
-                                          }`}
-                                        >
-                                          {certificate.file_name}
-                                        </span>
-                                        <span
-                                          className={`text-[13px] font-medium leading-[20px]  ${
-                                            certificate.is_completed
-                                              ? certificate.type === 1
-                                                ? "text-[#48C1B5]"
-                                                : certificate.type === 2
-                                                ? "text-[#FFAA29]"
-                                                : "text-[#DB2C2C]"
-                                              : certificate.uploaded_by ===
-                                                Number(
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
-                                                )
-                                              ? "text-[#DB2C2C]"
-                                              : "text-[#FFB84D]"
-                                          }`}
-                                        >
-                                          {certificate.type === 1
-                                            ? "Accepted"
-                                            : certificate.type === 2
-                                            ? "Accepted with reserve"
-                                            : "Rejected"}
-                                        </span>
-                                        <span
-                                          className={`text-[12px] leading-[20px] ${
-                                            certificate.is_completed
-                                              ? "text-n600"
-                                              : certificate.uploaded_by ===
-                                                Number(
-                                                  localStorage.getItem(
-                                                    "user_id"
-                                                  )!
-                                                )
-                                              ? "text-[#DB2C2C]"
-                                              : "text-[#FFB84D]"
-                                          }`}
-                                        >
-                                          {formatDate(
-                                            `${certificate.uploaded_at}`
+                                            return {
+                                              ...prev,
+                                              acceptance_certificates:
+                                                prev.acceptance_certificates?.map(
+                                                  (cert) =>
+                                                    cert.id === certificate.id
+                                                      ? {
+                                                          ...cert,
+                                                          downloadProgress: `0`,
+                                                        }
+                                                      : cert
+                                                ),
+                                            };
+                                          });
+                                        }
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <div className="flex items-center gap-[9px] w-full">
+                                    {certificate.downloadProgress &&
+                                      certificate.downloadProgress !== "0" && (
+                                        <CircularProgress
+                                          progress={parseFloat(
+                                            certificate.downloadProgress || "0"
                                           )}
-                                        </span>
-                                        {workorder.acceptance_certificates
-                                          ?.length === ++index &&
-                                          workorder.acceptance_certificates[
-                                            workorder.acceptance_certificates
-                                              .length - 1
-                                          ].is_completed &&
-                                          localStorage.getItem("role") !==
-                                            "2" && (
-                                            <div
-                                              className="absolute right-2 top-[80%] translate-y-[-50%]"
-                                              onClick={(e) => {
+                                        />
+                                      )}
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="22"
+                                      height="26"
+                                      viewBox="0 0 22 26"
+                                      fill="none"
+                                    >
+                                      <path
+                                        opacity="0.2"
+                                        d="M20.375 6.33984V19.4648C20.375 19.7135 20.2762 19.9519 20.1004 20.1278C19.9246 20.3036 19.6861 20.4023 19.4375 20.4023H16.625V10.0898L11.9375 5.40234H5.375V2.58984C5.375 2.3412 5.47377 2.10275 5.64959 1.92693C5.8254 1.75112 6.06386 1.65234 6.3125 1.65234H15.6875L20.375 6.33984Z"
+                                        fill="#6F6C8F"
+                                      />
+                                      <path
+                                        d="M21.0383 5.67656L16.3508 0.989063C16.2637 0.902031 16.1602 0.833017 16.0464 0.785966C15.9326 0.738915 15.8107 0.714747 15.6875 0.714844H6.3125C5.81522 0.714844 5.33831 0.912388 4.98668 1.26402C4.63504 1.61565 4.4375 2.09256 4.4375 2.58984V4.46484H2.5625C2.06522 4.46484 1.58831 4.66239 1.23667 5.01402C0.885044 5.36565 0.6875 5.84256 0.6875 6.33984V23.2148C0.6875 23.7121 0.885044 24.189 1.23667 24.5407C1.58831 24.8923 2.06522 25.0898 2.5625 25.0898H15.6875C16.1848 25.0898 16.6617 24.8923 17.0133 24.5407C17.365 24.189 17.5625 23.7121 17.5625 23.2148V21.3398H19.4375C19.9348 21.3398 20.4117 21.1423 20.7633 20.7907C21.115 20.439 21.3125 19.9621 21.3125 19.4648V6.33984C21.3126 6.21669 21.2884 6.09473 21.2414 5.98092C21.1943 5.86711 21.1253 5.76369 21.0383 5.67656ZM15.6875 23.2148H2.5625V6.33984H11.5496L15.6875 10.4777V23.2148ZM19.4375 19.4648H17.5625V10.0898C17.5626 9.96669 17.5384 9.84473 17.4914 9.73092C17.4443 9.61711 17.3753 9.51369 17.2883 9.42656L12.6008 4.73906C12.5137 4.65203 12.4102 4.58302 12.2964 4.53597C12.1826 4.48891 12.0607 4.46475 11.9375 4.46484H6.3125V2.58984H15.2996L19.4375 6.72773V19.4648ZM12.875 15.7148C12.875 15.9635 12.7762 16.2019 12.6004 16.3778C12.4246 16.5536 12.1861 16.6523 11.9375 16.6523H6.3125C6.06386 16.6523 5.8254 16.5536 5.64959 16.3778C5.47377 16.2019 5.375 15.9635 5.375 15.7148C5.375 15.4662 5.47377 15.2277 5.64959 15.0519C5.8254 14.8761 6.06386 14.7773 6.3125 14.7773H11.9375C12.1861 14.7773 12.4246 14.8761 12.6004 15.0519C12.7762 15.2277 12.875 15.4662 12.875 15.7148ZM12.875 19.4648C12.875 19.7135 12.7762 19.9519 12.6004 20.1278C12.4246 20.3036 12.1861 20.4023 11.9375 20.4023H6.3125C6.06386 20.4023 5.8254 20.3036 5.64959 20.1278C5.47377 19.9519 5.375 19.7135 5.375 19.4648C5.375 19.2162 5.47377 18.9777 5.64959 18.8019C5.8254 18.6261 6.06386 18.5273 6.3125 18.5273H11.9375C12.1861 18.5273 12.4246 18.6261 12.6004 18.8019C12.7762 18.9777 12.875 19.2162 12.875 19.4648Z"
+                                        fill={
+                                          certificate.is_completed
+                                            ? "#6F6C8F"
+                                            : certificate.uploaded_by ===
+                                              Number(
+                                                localStorage.getItem("user_id")!
+                                              )
+                                            ? "#DB2C2C"
+                                            : " #FFB84D"
+                                        }
+                                      />
+                                    </svg>
+                                    <div className="flex flex-col items-start w-full relative">
+                                      <span
+                                        className={`text-[13px] font-medium leading-[20px] mb-2 overflow-hidden w-[90%] text-ellipsis text-nowrap ${
+                                          certificate.is_completed
+                                            ? "text-n600"
+                                            : certificate.uploaded_by ===
+                                              Number(
+                                                localStorage.getItem("user_id")!
+                                              )
+                                            ? "text-[#DB2C2C]"
+                                            : "text-[#FFB84D]"
+                                        }`}
+                                      >
+                                        {certificate.file_name}
+                                      </span>
+                                      <span
+                                        className={`text-[13px] font-medium leading-[20px]  ${
+                                          certificate.is_completed
+                                            ? certificate.type === 1
+                                              ? "text-[#48C1B5]"
+                                              : certificate.type === 2
+                                              ? "text-[#FFAA29]"
+                                              : "text-[#DB2C2C]"
+                                            : certificate.uploaded_by ===
+                                              Number(
+                                                localStorage.getItem("user_id")!
+                                              )
+                                            ? "text-[#DB2C2C]"
+                                            : "text-[#FFB84D]"
+                                        }`}
+                                      >
+                                        {certificate.type === 1
+                                          ? "Accepted"
+                                          : certificate.type === 2
+                                          ? "Accepted with reserve"
+                                          : "Rejected"}
+                                      </span>
+                                      <span
+                                        className={`text-[12px] leading-[20px] ${
+                                          certificate.is_completed
+                                            ? "text-n600"
+                                            : certificate.uploaded_by ===
+                                              Number(
+                                                localStorage.getItem("user_id")!
+                                              )
+                                            ? "text-[#DB2C2C]"
+                                            : "text-[#FFB84D]"
+                                        }`}
+                                      >
+                                        {formatDate(
+                                          `${certificate.uploaded_at}`
+                                        )}
+                                      </span>
+                                      {modernisation.acceptance_certificates
+                                        ?.length === ++index &&
+                                        modernisation.acceptance_certificates[
+                                          modernisation.acceptance_certificates
+                                            .length - 1
+                                        ].is_completed &&
+                                        localStorage.getItem("role") !==
+                                          "2" && (
+                                          <div
+                                            className="absolute right-2 top-[80%] translate-y-[-50%]"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                            }}
+                                          >
+                                            <svg
+                                              className="hover:scale-115 transition-all duration-100"
+                                              onClick={() => {
+                                                setShowEditCertificatType(
+                                                  !showEditCertificatType
+                                                );
+                                              }}
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="14"
+                                              height="14"
+                                              viewBox="0 0 14 14"
+                                              fill="none"
+                                            >
+                                              <path
+                                                d="M8.87471 2.55459L11.0224 4.70224M7.44294 12.5769H13.17M1.71588 9.71341L1 12.5769L3.86353 11.8611L12.1577 3.56685C12.4262 3.29835 12.5769 2.93424 12.5769 2.55459C12.5769 2.17494 12.4262 1.81083 12.1577 1.54233L12.0346 1.4192C11.7661 1.15079 11.402 1 11.0224 1C10.6427 1 10.2786 1.15079 10.0101 1.4192L1.71588 9.71341Z"
+                                                stroke="#797C93"
+                                                strokeWidth="1.2"
+                                                fillOpacity="round"
+                                                strokeLinejoin="round"
+                                              />
+                                            </svg>
+                                            {showEditCertificatType && (
+                                              <div className="flex flex-col gap-[18px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
+                                                <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
+                                                  {certeficatTypes.map(
+                                                    (type, index) => {
+                                                      return (
+                                                        <span
+                                                          key={index}
+                                                          className={`cursor-pointer text-nowrap px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
+                                                          style={{
+                                                            backgroundColor:
+                                                              type.type ===
+                                                              certType
+                                                                ? `${type.color}`
+                                                                : "white",
+                                                            color:
+                                                              type.type ===
+                                                              certType
+                                                                ? "white"
+                                                                : `${type.color}`,
+                                                            border: `solid 1px ${type.color}`,
+                                                          }}
+                                                          onClick={() => {
+                                                            setCertType(
+                                                              type.type
+                                                            );
+                                                          }}
+                                                        >
+                                                          {type.name}
+                                                        </span>
+                                                      );
+                                                    }
+                                                  )}
+                                                </div>
+
+                                                {modernisation
+                                                  .acceptance_certificates[
+                                                  modernisation
+                                                    .acceptance_certificates
+                                                    .length - 1
+                                                ].type !== certType && (
+                                                  <div className="flex items-center gap-[6px] w-full">
+                                                    <button
+                                                      className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
+                                                      onClick={() => {
+                                                        setCertType(
+                                                          modernisation.acceptance_certificates![
+                                                            modernisation.acceptance_certificates!
+                                                              .length - 1
+                                                          ].type
+                                                        );
+                                                        setShowEditCertificatType(
+                                                          false
+                                                        );
+                                                      }}
+                                                    >
+                                                      Cancel
+                                                    </button>
+                                                    <button
+                                                      className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
+                                                      onClick={async () => {
+                                                        await handle_update_cert_type(
+                                                          modernisation
+                                                            .modernisation.id,
+                                                          certType,
+                                                          "modernisation",
+                                                          fetchOneModernisation
+                                                        );
+                                                        setShowEditCertificatType(
+                                                          false
+                                                        );
+                                                      }}
+                                                    >
+                                                      Save
+                                                    </button>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+
+                                      {!certificate.is_completed &&
+                                        certificate.uploaded_by ===
+                                          Number(
+                                            Number(
+                                              Number(
+                                                Number(
+                                                  Number(
+                                                    localStorage.getItem(
+                                                      "user_id"
+                                                    )!
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          ) &&
+                                        !isLoadingCancelUpload && (
+                                          <>
+                                            <label
+                                              className=" absolute right-0 top-[20%] translate-y-[-50%] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
+                                              htmlFor="reupload"
+                                              onClick={async (e) => {
                                                 e.stopPropagation();
+
+                                                const fileFromIndexedDB =
+                                                  await getFilesByIdFromIndexedDB(
+                                                    certificate.id
+                                                  );
+                                                if (fileFromIndexedDB[0]) {
+                                                  handleFileInputChangeOfResumeUpload(
+                                                    fileFromIndexedDB[0]
+                                                  );
+                                                } else {
+                                                  handleLabelClick(
+                                                    certificate.id,
+                                                    "certificate"
+                                                  );
+                                                }
                                               }}
                                             >
                                               <svg
-                                                className="hover:scale-115 transition-all duration-100"
-                                                onClick={() => {
-                                                  setShowEditCertificatType(
-                                                    !showEditCertificatType
-                                                  );
-                                                }}
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="14"
                                                 height="14"
                                                 viewBox="0 0 14 14"
                                                 fill="none"
                                               >
-                                                <path
-                                                  d="M8.87471 2.55459L11.0224 4.70224M7.44294 12.5769H13.17M1.71588 9.71341L1 12.5769L3.86353 11.8611L12.1577 3.56685C12.4262 3.29835 12.5769 2.93424 12.5769 2.55459C12.5769 2.17494 12.4262 1.81083 12.1577 1.54233L12.0346 1.4192C11.7661 1.15079 11.402 1 11.0224 1C10.6427 1 10.2786 1.15079 10.0101 1.4192L1.71588 9.71341Z"
-                                                  stroke="#797C93"
-                                                  strokeWidth="1.2"
-                                                  fillOpacity="round"
-                                                  strokeLinejoin="round"
-                                                />
-                                              </svg>
-                                              {showEditCertificatType && (
-                                                <div className="flex flex-col gap-[18px] items-center w-fit bg-white p-[15px] rounded-[20px] shadow-xl absolute left-1/2 top-6 transform -translate-x-[67%]">
-                                                  <div className="flex items-center flex-col md:flex-row gap-[6px] w-full">
-                                                    {certeficatTypes.map(
-                                                      (type, index) => {
-                                                        return (
-                                                          <span
-                                                            key={index}
-                                                            className={`cursor-pointer text-nowrap px-[16px] py-[10px] rounded-[20px] text-[13px] leading-[13px] font-semibold}`}
-                                                            style={{
-                                                              backgroundColor:
-                                                                type.type ===
-                                                                certType
-                                                                  ? `${type.color}`
-                                                                  : "white",
-                                                              color:
-                                                                type.type ===
-                                                                certType
-                                                                  ? "white"
-                                                                  : `${type.color}`,
-                                                              border: `solid 1px ${type.color}`,
-                                                            }}
-                                                            onClick={() => {
-                                                              setCertType(
-                                                                type.type
-                                                              );
-                                                            }}
-                                                          >
-                                                            {type.name}
-                                                          </span>
-                                                        );
-                                                      }
-                                                    )}
-                                                  </div>
-
-                                                  {workorder
-                                                    .acceptance_certificates[
-                                                    workorder
-                                                      .acceptance_certificates
-                                                      .length - 1
-                                                  ].type !== certType && (
-                                                    <div className="flex items-center gap-[6px] w-full">
-                                                      <button
-                                                        className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
-                                                        onClick={() => {
-                                                          setCertType(
-                                                            workorder.acceptance_certificates![
-                                                              workorder.acceptance_certificates!
-                                                                .length - 1
-                                                            ].type
-                                                          );
-                                                          setShowEditCertificatType(
-                                                            false
-                                                          );
-                                                        }}
-                                                      >
-                                                        Cancel
-                                                      </button>
-                                                      <button
-                                                        className="w-[50%] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
-                                                        onClick={async () => {
-                                                          await handle_update_cert_type(
-                                                            workorder.workorder
-                                                              .id,
-                                                            certType,
-                                                            "workorder",
-                                                            fetchOneWorkOrder
-                                                          );
-                                                          setShowEditCertificatType(
-                                                            false
-                                                          );
-                                                        }}
-                                                      >
-                                                        Save
-                                                      </button>
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </div>
-                                          )}
-
-                                        {!certificate.is_completed &&
-                                          certificate.uploaded_by ===
-                                            Number(
-                                              Number(
-                                                Number(
-                                                  Number(
-                                                    Number(
-                                                      localStorage.getItem(
-                                                        "user_id"
-                                                      )!
-                                                    )
-                                                  )
-                                                )
-                                              )
-                                            ) &&
-                                          !isLoadingCancelUpload && (
-                                            <>
-                                              <label
-                                                className=" absolute right-0 top-[20%] translate-y-[-50%] text-[12px] flex items-center justify-center hover:scale-110 cursor-pointer"
-                                                htmlFor="reupload"
-                                                onClick={async (e) => {
-                                                  e.stopPropagation();
-
-                                                  const fileFromIndexedDB =
-                                                    await getFilesByIdFromIndexedDB(
-                                                      certificate.id
-                                                    );
-                                                  if (fileFromIndexedDB[0]) {
-                                                    handleFileInputChangeOfResumeUpload(
-                                                      fileFromIndexedDB[0]
-                                                    );
-                                                  } else {
-                                                    handleLabelClick(
-                                                      certificate.id,
-                                                      "certificate"
-                                                    );
-                                                  }
-                                                }}
-                                              >
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  width="14"
-                                                  height="14"
-                                                  viewBox="0 0 14 14"
-                                                  fill="none"
-                                                >
-                                                  <g clipPath="url(#clip0_968_6186)">
-                                                    <path
-                                                      d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
-                                                      fill="#C70000"
+                                                <g clipPath="url(#clip0_968_6186)">
+                                                  <path
+                                                    d="M2.63742 4.08301H4.08301C4.40518 4.08301 4.66634 4.34418 4.66634 4.66634C4.66634 4.98851 4.40517 5.24967 4.08301 5.24967H1.74967C1.10534 5.24967 0.583008 4.72734 0.583008 4.08301V1.74967C0.583008 1.42751 0.844178 1.16634 1.16634 1.16634C1.4885 1.16634 1.74967 1.42751 1.74967 1.74967V3.31032C2.49023 2.25647 3.53504 1.44445 4.75298 0.989188C6.21993 0.440844 7.83676 0.447918 9.29888 1.00908C10.761 1.57023 11.9674 2.64674 12.6908 4.03574C13.4142 5.42475 13.6046 7.03036 13.2262 8.55006C12.8478 10.0698 11.9267 11.3986 10.6365 12.2862C9.34619 13.1738 7.77586 13.5589 6.22133 13.369C4.66683 13.179 3.23544 12.4271 2.19688 11.2549C1.28778 10.2288 0.734634 8.9427 0.609987 7.58756C0.580474 7.26678 0.846768 7.00481 1.16894 7.00457C1.4911 7.00428 1.75172 7.26602 1.78774 7.58622C1.90798 8.65482 2.35466 9.66586 3.074 10.4778C3.92288 11.4359 5.09286 12.0505 6.36349 12.2058C7.63411 12.361 8.91768 12.0463 9.97228 11.3207C11.0269 10.5952 11.7798 9.50906 12.0891 8.26691C12.3984 7.02476 12.2427 5.71237 11.6515 4.57703C11.0601 3.4417 10.0741 2.56179 8.879 2.10312C7.68392 1.64444 6.36232 1.63865 5.16328 2.08686C4.14722 2.46665 3.27859 3.15022 2.6713 4.03768C2.66058 4.05334 2.64927 4.06845 2.63742 4.08301Z"
+                                                    fill="#C70000"
+                                                  />
+                                                </g>
+                                                <defs>
+                                                  <clipPath id="clip0_968_6186">
+                                                    <rect
+                                                      width="14"
+                                                      height="14"
+                                                      fill="white"
                                                     />
-                                                  </g>
-                                                  <defs>
-                                                    <clipPath id="clip0_968_6186">
-                                                      <rect
-                                                        width="14"
-                                                        height="14"
-                                                        fill="white"
-                                                      />
-                                                    </clipPath>
-                                                  </defs>
-                                                </svg>
-                                              </label>
-                                              <span
-                                                className=" absolute right-0 bottom-[6%] px-[3px] rounded-[50%] text-white bg-[#f33e3e] text-[12px] cursor-pointer hover:scale-105"
-                                                onClick={() => {
-                                                  handleCancelUpload(
-                                                    certificate.id,
-                                                    undefined,
-                                                    undefined,
-                                                    setIsLoadingCancelUpload,
-                                                    fetchOneWorkOrder
-                                                  );
-                                                }}
-                                              >
-                                                🗙
-                                              </span>
-                                            </>
-                                          )}
-                                      </div>
+                                                  </clipPath>
+                                                </defs>
+                                              </svg>
+                                            </label>
+                                            <span
+                                              className=" absolute right-0 bottom-[6%] px-[3px] rounded-[50%] text-white bg-[#f33e3e] text-[12px] cursor-pointer hover:scale-105"
+                                              onClick={() => {
+                                                handleCancelUpload(
+                                                  certificate.id,
+                                                  undefined,
+                                                  undefined,
+                                                  setIsLoadingCancelUpload,
+                                                  fetchOneModernisation
+                                                );
+                                              }}
+                                            >
+                                              🗙
+                                            </span>
+                                          </>
+                                        )}
                                     </div>
                                   </div>
-                                );
-                              })}
+                                </div>
+                              );
+                            })}
 
-                          {uploadingFiles.acceptenceFiles?.length > 0 &&
-                            uploadingFiles.acceptenceFiles.map(
-                              (acceptence, index) => {
-                                return (
-                                  <div
-                                    className="w-full sm:w-[48%] lg:w-[24%]"
+                        {uploadingFiles.acceptenceFiles?.length > 0 &&
+                          uploadingFiles.acceptenceFiles.map(
+                            (acceptence, index) => {
+                              return (
+                                <div
+                                  className="w-full sm:w-[48%] lg:w-[24%]"
+                                  key={index}
+                                >
+                                  <UploadingFile
                                     key={index}
-                                  >
-                                    <UploadingFile
-                                      key={index}
-                                      fetchFunc={fetchOneWorkOrder}
-                                      id={acceptence.id}
-                                      progress={acceptence.progress}
-                                      file={acceptence.file}
-                                      fileType="certificate"
-                                    />
-                                  </div>
-                                );
-                              }
-                            )}
-                          {workorder.workorder.status < 3 &&
-                            workorder.acceptance_certificates !== undefined &&
-                            (workorder.acceptance_certificates === null ||
-                              (workorder.acceptance_certificates.length > 0 &&
-                                workorder.acceptance_certificates[
-                                  workorder.acceptance_certificates.length - 1
-                                ].type !== 1)) && (
-                              <div
-                                className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
-                                onClick={() => {
-                                  handleOpenDialog(addCertificatDialogRef);
-                                }}
-                              >
-                                <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
-                                  Add new certificate
-                                </span>
-                              </div>
-                            )}
-                        </div>
+                                    fetchFunc={fetchOneModernisation}
+                                    id={acceptence.id}
+                                    progress={acceptence.progress}
+                                    file={acceptence.file}
+                                    fileType="certificate"
+                                  />
+                                </div>
+                              );
+                            }
+                          )}
+                        {modernisation.modernisation.status < 3 &&
+                          modernisation.acceptance_certificates !== undefined &&
+                          (modernisation.acceptance_certificates === null ||
+                            (modernisation.acceptance_certificates.length > 0 &&
+                              modernisation.acceptance_certificates[
+                                modernisation.acceptance_certificates.length - 1
+                              ].type !== 1)) && (
+                            <div
+                              className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
+                              onClick={() => {
+                                handleOpenDialog(addCertificatDialogRef);
+                              }}
+                            >
+                              <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
+                                Add new certificate
+                              </span>
+                            </div>
+                          )}
                       </div>
-                    )}
+                    </div>
 
-                    {workorder.workorder.require_return_voucher && (
+                    {modernisation.modernisation.require_return_voucher && (
                       <div className="flex flex-col items-end w-full gap-[30px] md:border-[1px] md:border-n400 rounded-[20px] md:px-[25px] md:py-[32px]">
                         <div className="w-full flex flex-col gap-[15px]">
                           <label
@@ -2972,9 +2937,9 @@ const MissionDetails = () => {
                             Return Voucher
                           </label>
                           <div className="flex w-full items-center flex-wrap gap-[16px]">
-                            {workorder.return_vouchers &&
-                              workorder.return_vouchers.length > 0 &&
-                              workorder.return_vouchers
+                            {modernisation.return_vouchers &&
+                              modernisation.return_vouchers.length > 0 &&
+                              modernisation.return_vouchers
                                 .filter((voucher) =>
                                   uploadingFiles.voucherFiles.every(
                                     (af) => af.id !== voucher.id
@@ -3010,7 +2975,7 @@ const MissionDetails = () => {
                                             "download-workorder-return-voucher",
                                             voucher.file_name,
                                             (progress) => {
-                                              setWorkorder((prev) => {
+                                              setModernisation((prev) => {
                                                 if (!prev) return null;
 
                                                 return {
@@ -3031,7 +2996,7 @@ const MissionDetails = () => {
                                               });
                                             },
                                             () => {
-                                              setWorkorder((prev) => {
+                                              setModernisation((prev) => {
                                                 if (!prev) return null;
 
                                                 return {
@@ -3187,7 +3152,7 @@ const MissionDetails = () => {
                                                       undefined,
                                                       undefined,
                                                       setIsLoadingCancelUpload,
-                                                      fetchOneWorkOrder
+                                                      fetchOneModernisation
                                                     );
                                                   }}
                                                 >
@@ -3211,7 +3176,7 @@ const MissionDetails = () => {
                                     >
                                       <UploadingFile
                                         key={index}
-                                        fetchFunc={fetchOneWorkOrder}
+                                        fetchFunc={fetchOneModernisation}
                                         id={voucher.id}
                                         progress={voucher.progress}
                                         file={voucher.file}
@@ -3221,12 +3186,12 @@ const MissionDetails = () => {
                                   );
                                 }
                               )}
-                            {workorder.workorder.status < 3 &&
-                              workorder.return_vouchers !== undefined &&
-                              (workorder.return_vouchers === null ||
-                                (workorder.return_vouchers.length > 0 &&
-                                  !workorder.return_vouchers[
-                                    workorder.return_vouchers.length - 1
+                            {modernisation.modernisation.status < 3 &&
+                              modernisation.return_vouchers !== undefined &&
+                              (modernisation.return_vouchers === null ||
+                                (modernisation.return_vouchers.length > 0 &&
+                                  !modernisation.return_vouchers[
+                                    modernisation.return_vouchers.length - 1
                                   ].is_last)) &&
                               (localStorage.getItem("role") !== "2" ? (
                                 <div
@@ -3240,7 +3205,7 @@ const MissionDetails = () => {
                                   </span>
                                 </div>
                               ) : (
-                                !workorder.return_vouchers && (
+                                !modernisation.return_vouchers && (
                                   <div className="w-full flex items-center justify-center font-medium py-4 text-n600">
                                     Still there is no return voucher uploaded
                                   </div>
@@ -3251,39 +3216,39 @@ const MissionDetails = () => {
                         {localStorage.getItem("role") !== "2" && (
                           <button
                             className={`py-[10px] px-[45px] rounded-[30px] border-[2px] border-primary text-[14px] font-semibold ${
-                              workorder.return_vouchers &&
-                              workorder.return_vouchers[
-                                workorder.return_vouchers.length - 1
+                              modernisation.return_vouchers &&
+                              modernisation.return_vouchers[
+                                modernisation.return_vouchers.length - 1
                               ].is_last
                                 ? "text-primary"
                                 : "bg-primary text-white"
                             }`}
                             onClick={() => {
-                              workorder.return_vouchers &&
-                              workorder.return_vouchers[
-                                workorder.return_vouchers.length - 1
+                              modernisation.return_vouchers &&
+                              modernisation.return_vouchers[
+                                modernisation.return_vouchers.length - 1
                               ].is_last
                                 ? handle_open_or_close_returnVoucher(
-                                    workorder.workorder.id,
+                                    modernisation.modernisation.id,
                                     "open",
-                                    "workorder",
-                                    fetchOneWorkOrder,
+                                    "modernisation",
+                                    fetchOneModernisation,
                                     setIsLoadingVoucher
                                   )
                                 : handle_open_or_close_returnVoucher(
-                                    workorder.workorder.id,
+                                    modernisation.modernisation.id,
                                     "close",
-                                    "workorder",
-                                    fetchOneWorkOrder,
+                                    "modernisation",
+                                    fetchOneModernisation,
                                     setIsLoadingVoucher
                                   );
                             }}
                           >
                             {" "}
                             {!isLoadingVoucher ? (
-                              workorder.return_vouchers &&
-                              workorder.return_vouchers[
-                                workorder.return_vouchers.length - 1
+                              modernisation.return_vouchers &&
+                              modernisation.return_vouchers[
+                                modernisation.return_vouchers.length - 1
                               ].is_last ? (
                                 "Update"
                               ) : (
@@ -3305,7 +3270,7 @@ const MissionDetails = () => {
                 )}
               </div>
             </div>
-            {workorder.workorder.status === 0 ? (
+            {modernisation.modernisation.status === 0 ? (
               <div
                 className={`w-full flex items-center ${
                   undoMessageVisible
@@ -3322,12 +3287,12 @@ const MissionDetails = () => {
                   disabled={selectedEng ? false : true}
                   onClick={() => {
                     handle_Assignment_and_execute(
-                      workorder.workorder.id,
-                      "assign-workorder",
+                      modernisation.modernisation.id,
+                      "assign-modernisation",
                       "PUT",
-                      "workorder",
+                      "modernisation",
                       setIsLoading,
-                      fetchOneWorkOrder,
+                      fetchOneModernisation,
                       selectedEng!.id
                     );
                   }}
@@ -3344,7 +3309,7 @@ const MissionDetails = () => {
                   )}
                 </button>
               </div>
-            ) : workorder.workorder.status > 0 ? (
+            ) : modernisation.modernisation.status > 0 ? (
               <div
                 className={`w-full flex items-center ${
                   undoMessageVisible
@@ -3354,7 +3319,7 @@ const MissionDetails = () => {
               >
                 {undoMessageVisible && (
                   <span className="text-[13px] font-medium leading-[30px] text-n700 flex sm:flex-row flex-col items-center text-center lg:pb-4">
-                    This workorder is set to be Executed!{" "}
+                    This modernisation is set to be Executed!{" "}
                     <span
                       className="text-primary font-semibold cursor-pointer"
                       onClick={handleUndo}
@@ -3367,11 +3332,11 @@ const MissionDetails = () => {
 
                 <button
                   className={`py-[12px] px-[48px] w-full md:w-auto rounded-[30px] bg-primary text-white  border-[2px] leading-[20px] font-semibold text-[14px]
-                   ${workorder.workorder.status !== 1 && "hidden"}  `}
+                   ${modernisation.modernisation.status !== 1 && "hidden"}  `}
                   disabled={isLoading ? true : false}
                   onClick={() => {
-                    workorder.workorder.status === 1
-                      ? handleExecute(workorder.workorder.id)
+                    modernisation.modernisation.status === 1
+                      ? handleExecute(modernisation.modernisation.id)
                       : null;
                   }}
                 >
@@ -3385,7 +3350,8 @@ const MissionDetails = () => {
                       />
                     </div>
                   ) : (
-                    workorder.workorder.status === 1 && "Execution Finished"
+                    modernisation.modernisation.status === 1 &&
+                    "Execution Finished"
                   )}
                 </button>
               </div>
@@ -3412,29 +3378,29 @@ const MissionDetails = () => {
 
       <AddCertificatPopup
         ref={addCertificatDialogRef}
-        workorderId={workorder?.workorder.id}
-        extantionType="workorder"
-        fetchOneWorkOrder={fetchOneWorkOrder}
+        workorderId={modernisation?.modernisation.id}
+        extantionType="modernisation"
+        fetchOneWorkOrder={fetchOneModernisation}
       />
       <AddReportPopup
         ref={addReportDialogRef}
-        workorderId={workorder?.workorder.id}
-        extantionType="workorder"
-        fetchOneWorkOrder={fetchOneWorkOrder}
+        workorderId={modernisation?.modernisation.id}
+        extantionType="modernisation"
+        fetchOneWorkOrder={fetchOneModernisation}
       />
       <RequestUpdatePopup
         ref={requestUpdateDialogRef}
-        workorderId={workorder?.workorder.id}
-        updateEndPointPath="workorder/request-update"
-        fetchOneWorkOrder={fetchOneWorkOrder}
+        workorderId={modernisation?.modernisation.id}
+        extantionType="modernisation"
+        fetchOneWorkOrder={fetchOneModernisation}
       />
       <AddVoucherPopup
         ref={addVoucherDialogRef}
-        workorderId={workorder?.workorder.id}
-        extantionType="workorder"
-        fetchOneWorkOrder={fetchOneWorkOrder}
+        workorderId={modernisation?.modernisation.id}
+        extantionType="modernisation"
+        fetchOneWorkOrder={fetchOneModernisation}
       />
     </div>
   );
 };
-export default MissionDetails;
+export default ModernisationDetails;
