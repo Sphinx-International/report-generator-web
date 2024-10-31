@@ -3425,7 +3425,7 @@ const MissionDetails = () => {
       <RequestUpdatePopup
         ref={requestUpdateDialogRef}
         workorderId={workorder?.workorder.id}
-        updateEndPointPath="workorder/request-update"
+        extantionType="workorder"
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
       <AddVoucherPopup

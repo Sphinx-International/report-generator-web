@@ -24,12 +24,12 @@ import {
   updateFileProgress,
   removeUploadingFile,
 } from "../../Redux/slices/uploadingFilesSlice";
-import { addUploadedAttachOnCreation } from "../../Redux/slices/uploadAttachOnCreation";
+// import { addUploadedAttachOnCreation } from "../../Redux/slices/uploadAttachOnCreation";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../Redux/store";
 import {
   generateFileToken,
-  storeFileInIndexedDB,
+ // storeFileInIndexedDB,
   deleteFileFromIndexedDB,
 } from "../../func/generateFileToken";
 import { fetchGroupMembers } from "../../func/groupsApi";
