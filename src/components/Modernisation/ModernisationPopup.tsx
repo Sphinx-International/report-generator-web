@@ -87,6 +87,7 @@ const ModernisationPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       attachments: [],
     });
 
+
     const [isLoading, setIsLoading] = useState(false);
 
     const [formErrs, setFormErrs] = useState<ModernisationFormErrors>({});
@@ -250,12 +251,9 @@ const ModernisationPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           }
         );
         if (response.ok) {
-          const data = await response.json();
-          console.log("Form submitted successfully", data);
-
-          if (response.status === 200) {
+         // const data = await response.json();
             closeDialog(e);
-          }
+          
         } else {
           const errorData = await response.json();
           console.error("Error submitting form", errorData);
@@ -389,7 +387,6 @@ const ModernisationPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       const chunkSize = 512 * 1024; // 512 KB for subsequent chunks
       const fileSize = file.size;
 
-      // Calculate total number of chunks, ensuring we handle small files correctly
       const chunks =
         fileSize <= firstChunkSize
           ? 1 // If file is smaller than or equal to 32 KB, it's just 1 chunk
@@ -421,7 +418,7 @@ const ModernisationPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
         if (response.ok) {
           const data = await response.json();
           const fileId = data.id;
-          // storeFileInIndexedDB(file, fileId, "attachements", formValues.id);
+          // storeFileInIndexedDB(file, fileId, "attachements", moderIdAfterRes!);
           setformValues((prevFormValues) => ({
             ...prevFormValues,
             attachments: [
@@ -443,12 +440,12 @@ const ModernisationPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
           }
 
           dispatch(removeUploadingFile({ type: "attachements", fileId }));
-          /* dispatch(
+        /*   dispatch(
             addUploadedAttachOnCreation({
               id: fileId,
               file_name: file.name,
-              workorder: formValues.id!,
-            })  
+              workorder: moderIdAfterRes!,
+            })   
           ); */
         } else {
           console.error("Failed to upload first chunk");

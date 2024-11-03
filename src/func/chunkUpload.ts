@@ -27,14 +27,33 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     return;
   }
 
-  const formData = new FormData();
-  extantionType === "workorder"
-    ? formData.append("workorder_id", workorder_id.toString())
-    : extantionType === "modernisation"
-    ? formData.append("modernisation_id", workorder_id.toString())
-    : null;
+  let body: FormData | string;
+  const headers: HeadersInit = {
+    Authorization: `Token ${token}`,
+  };
 
-  formData.append(`${method}`, file_id.toString());
+  if (extantionType === "workorder") {
+    // Use FormData for "workorder" extension type
+    const formData = new FormData();
+    formData.append("workorder_id", workorder_id.toString());
+    formData.append(method, file_id.toString());
+    body = formData;
+
+    console.log("FormData contents:");
+    for (const pair of formData.entries()) {
+      console.log(pair[0] + ":", pair[1]);
+    }
+  } else {
+    // Use JSON for "modernisation" extension type
+    const jsonBody = {
+      modernisation_id: workorder_id.toString(),
+      [method]: [file_id.toString()],
+    };
+    body = JSON.stringify(jsonBody);
+    headers["Content-Type"] = "application/json"; // Set JSON content type
+
+    console.log("Request JSON body:", jsonBody);
+  }
 
   setIsLoading(true);
   try {
@@ -42,10 +61,8 @@ export const upload_or_delete_workorder_files_for_attachements = async (
       `${baseUrl}/${extantionType}/update-${extantionType}-attachments`,
       {
         method: "PUT",
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-        body: formData,
+        headers: headers,
+        body: body,
       }
     );
 
@@ -57,10 +74,10 @@ export const upload_or_delete_workorder_files_for_attachements = async (
           }
           break;
         case 400:
-          console.log("verify your data");
+          console.log("Verify your data");
           break;
         default:
-          console.log("error");
+          console.log("Error");
           break;
       }
     }
@@ -68,9 +85,10 @@ export const upload_or_delete_workorder_files_for_attachements = async (
     console.error("Error submitting form", err);
   } finally {
     setIsLoading(false);
-    console.log("finaly");
+    console.log("Finally");
   }
 };
+
 
 export const upload_workorder_files = async (
   workorder: string,

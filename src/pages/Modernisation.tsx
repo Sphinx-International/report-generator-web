@@ -12,7 +12,7 @@ import { RootState } from "../Redux/store";
 import { ResModernisation } from "../assets/types/Modernisation";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
+import { toggleExtantionInTab } from "../Redux/slices/selectedExtantionsSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
@@ -24,8 +24,8 @@ const Modernisation = () => {
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
-  const selectedWorkorders = useSelector(
-    (state: RootState) => state.selectedWorkorders.workOrdersTab
+  const selectedModernisation = useSelector(
+    (state: RootState) => state.selectedExtantions.modernisationsTab
   );
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
@@ -63,11 +63,11 @@ const Modernisation = () => {
   };
 
   const handleCheckboxChange = (userId: string) => {
-    dispatch(toggleWorkorderInTab(userId));
+    dispatch(toggleExtantionInTab({ tab: "modernisationsTab", id: userId }));
   };
 
   const handleDeleteButtonClick = () => {
-    if (selectedWorkorders.length === 0) {
+    if (selectedModernisation.length === 0) {
       return;
     }
     // Perform the action when users are selected
@@ -222,7 +222,7 @@ const Modernisation = () => {
   useWebSocketSearch({
     searchQuery: searchQuery,
     endpointPath:
-      typeOfSearch === "User" ? "search-account" : "search-workorder",
+      typeOfSearch === "User" ? "search-account" : "search-modernisation",
     setResults: typeOfSearch === "User" ? setUsersWs : setModernisationWs,
     setLoader:
       typeOfSearch === "User"
@@ -234,7 +234,7 @@ const Modernisation = () => {
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header
-          pageSentence="Here are information about all missions"
+          pageSentence="Here are information about all modernisation "
           searchBar={false}
         />
 
@@ -284,7 +284,7 @@ const Modernisation = () => {
               >
                 <span className="text-n500 text-[14px] sm:flex hidden">
                   {typeOfSearch === "Wo"
-                    ? "Search by workorder"
+                    ? "Search by modernisation "
                     : "Search by user"}
                 </span>
                 <svg
@@ -346,7 +346,7 @@ const Modernisation = () => {
                             className="flex items-center gap-2 px-3 w-full hover:bg-slate-300 cursor-pointer"
                             onClick={() => {
                               navigate(
-                                `/workorders-by-user/${user.email}-${user.id}`
+                                `/modernisations-by-user/${user.email}-${user.id}`
                               );
                             }}
                           >
@@ -396,7 +396,7 @@ const Modernisation = () => {
         </div>
 
         <Main
-          page="workorders"
+          page="modernisation"
           flitration={
             searchQuery
               ? typeOfSearch === "Wo"
@@ -411,7 +411,7 @@ const Modernisation = () => {
           FiltrationFunc={fetchModernisations}
           subFilterFunc={filterExcuted}
           functionalties={{
-            primaryFunc: { name: "Add workorder" },
+            primaryFunc: { name: "Add modernisation" },
             secondaryFuncs: [{ name: "Delete" }],
           }}
           handleAddPrimaryButtonClick={handladdMissionButtonClick}
@@ -670,13 +670,13 @@ const Modernisation = () => {
         fetchModernisations={fetchModernisations}
       />
       <DeletePopup
-        page="workorders"
+        page="modernisation"
         ref={deleteDialogRef}
-        deleteItems={selectedWorkorders}
-        deleteUrl={`${baseUrl}/workorder/delete-workorders`}
-        jsonTitle="workorders"
+        deleteItems={selectedModernisation}
+        deleteUrl={`${baseUrl}/modernisation/delete-modernisations`}
+        jsonTitle="modernisations"
         fetchFunc={fetchModernisations}
-        fetchUrl={`${baseUrl}/workorder/get-workorders`}
+        fetchUrl={`${baseUrl}/modernisation/get-modernisations`}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}

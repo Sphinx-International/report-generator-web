@@ -12,7 +12,7 @@ import { RootState } from "../Redux/store";
 import { ResMission } from "../assets/types/Mission";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
+import { toggleExtantionInTab } from "../Redux/slices/selectedExtantionsSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
@@ -25,7 +25,7 @@ const Missions = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const selectedWorkorders = useSelector(
-    (state: RootState) => state.selectedWorkorders.workOrdersTab
+    (state: RootState) => state.selectedExtantions.workOrdersTab
   );
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
@@ -59,7 +59,7 @@ const Missions = () => {
   };
 
   const handleCheckboxChange = (userId: string) => {
-    dispatch(toggleWorkorderInTab(userId));
+    dispatch(toggleExtantionInTab({ tab: "workOrdersTab", id: userId }));
   };
 
   const handleDeleteButtonClick = () => {

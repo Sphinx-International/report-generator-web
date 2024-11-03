@@ -1,13 +1,12 @@
 import { forwardRef, useState, MouseEvent } from "react";
 import { useDispatch } from "react-redux";
 import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
-import { deleteSelectedWorkorders } from "../Redux/slices/selectedWorkordersSlice";
+import { deleteSelectedExtantions } from "../Redux/slices/selectedExtantionsSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
-const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface DeletePopUpProps {
-  page: "workorders" | "accounts";
+  page: "workorders" | "accounts" | "modernisation";
   deleteItems: number[] | string[];
   deleteUrl: string
   jsonTitle:string
@@ -64,23 +63,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialUserCount = initialData.data.length;
     
 
-        if (props.deleteUrl === `${baseUrl}/account/delete-accounts`) {
-          const secondResponse = await fetch(`${baseUrl}/workorder/delete-workorders-by-account`, {
 
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${token}`,
-            },
-            body: JSON.stringify({
-              "accounts": props.deleteItems,
-            }),
-          });
-          if (!secondResponse.ok) {
-            console.error("Failed to delete workorders related to this users");
-            throw new Error("Failed to delete workorders related to this users");
-          }
-        }
         // Perform deletion
         const response = await fetch(`${props.deleteUrl}`, {
           method: "DELETE",
@@ -142,7 +125,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         setIsLoading(false);
         closeDialog(e);
         dispatch(deleteSelectedUsers());
-        dispatch(deleteSelectedWorkorders());
+        dispatch(deleteSelectedExtantions());
 
       }
     };

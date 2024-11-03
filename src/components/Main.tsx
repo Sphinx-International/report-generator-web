@@ -12,8 +12,8 @@ type Functionalities = {
   secondaryFuncs?: SecondaryFunc[];
 };
 
-interface HeaderProps {
-  page: "workorders" | "accounts";
+interface MainProps {
+  page: "workorders" | "accounts" | "modernisation";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
   subFilterFunc?: (
@@ -53,7 +53,7 @@ const excutedFilter: ExcutedFilter[] = [
     voucher: false,
   },
 ];
-const Main: React.FC<HeaderProps> = (props) => {
+const Main: React.FC<MainProps> = (props) => {
   const getDefaultFilter = () => {
     const storedFilter =
       props.page === "accounts"
@@ -65,8 +65,12 @@ const Main: React.FC<HeaderProps> = (props) => {
     return ["0", "1"].includes(localStorage.getItem("role")!) ? "all" : "To do";
   };
 
-  const selectedWorkorders = useSelector(
-    (state: RootState) => state.selectedWorkorders.workOrdersTab
+  const selectedExtension = useSelector((state: RootState) =>
+    props.page === "workorders"
+      ? state.selectedExtantions.workOrdersTab
+      : props.page === "modernisation"
+      ? state.selectedExtantions.modernisationsTab
+      : null
   );
   const [selectedFilter, setSelectedFilter] =
     useState<string>(getDefaultFilter);
@@ -218,14 +222,14 @@ const Main: React.FC<HeaderProps> = (props) => {
                     <button
                       key={index}
                       className={`flex items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
-                        selectedWorkorders.length === 0
+                        selectedExtension?.length === 0
                           ? "text-n600 border-n400"
                           : button.name === "Delete"
                           ? "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
                           : "text-n600 border-n400"
                       }`}
                       aria-disabled={
-                        selectedWorkorders.length === 0 &&
+                        selectedExtension?.length === 0 &&
                         button.name === "Delete"
                           ? true
                           : false
@@ -289,7 +293,7 @@ const Main: React.FC<HeaderProps> = (props) => {
                         setSelectedFilter(option);
                         setIsOpen(false);
                         handleFilterClick(option.toLowerCase());
-                        setSelectedExcutedFilter("")
+                        setSelectedExcutedFilter("");
                       } else {
                         setVisibleExcutedPopup(!visibleExcutedPopup);
                       }
@@ -323,7 +327,11 @@ const Main: React.FC<HeaderProps> = (props) => {
                         return (
                           <sub
                             key={`sub-${index}`}
-                            className={`w-full px-[28px] py-[14px] ${selectedExcutedFilter === filter.title ? "text-primary":"text-n600"}  sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
+                            className={`w-full px-[28px] py-[14px] ${
+                              selectedExcutedFilter === filter.title
+                                ? "text-primary"
+                                : "text-n600"
+                            }  sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
                             onClick={() => {
                               if (filter.title === "All") {
                                 handleFilterClick("executed");
@@ -337,7 +345,7 @@ const Main: React.FC<HeaderProps> = (props) => {
                                 filter.title
                               );
                             }}
-                         >
+                          >
                             {filter.title}
                           </sub>
                         );
@@ -349,36 +357,34 @@ const Main: React.FC<HeaderProps> = (props) => {
             </ul>
           )}
         </div>
-        
-        
-        <div className="flex items-center gap-3 flex-row-reverse">
-        {props.functionalties && (
-          <button
-            className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-            onClick={props.handleAddPrimaryButtonClick}
-          >
-            {props.functionalties && props.functionalties.primaryFunc.name}
-          </button>
-        )}
 
-        {props.functionalties &&
-          props.functionalties.secondaryFuncs?.some(
-            (func) => func.name === "Delete"
-          ) && localStorage.getItem("role") === "0" && (
+        <div className="flex items-center gap-3 flex-row-reverse">
+          {props.functionalties && (
             <button
-              className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
-                selectedWorkorders.length === 0
-                  ? "text-n600 border-n400"
-                  : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
-              }`}
-              onClick={props.handleSecondaryButtonClick}
+              className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+              onClick={props.handleAddPrimaryButtonClick}
             >
-              Delete
+              {props.functionalties && props.functionalties.primaryFunc.name}
             </button>
           )}
-      </div>
-        
 
+          {props.functionalties &&
+            props.functionalties.secondaryFuncs?.some(
+              (func) => func.name === "Delete"
+            ) &&
+            localStorage.getItem("role") === "0" && (
+              <button
+                className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                  selectedExtension?.length === 0
+                    ? "text-n600 border-n400"
+                    : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
+                }`}
+                onClick={props.handleSecondaryButtonClick}
+              >
+                Delete
+              </button>
+            )}
+        </div>
       </div>
 
       {props.children}

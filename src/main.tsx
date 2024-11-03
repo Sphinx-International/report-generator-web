@@ -18,6 +18,7 @@ import LosCommands from "./pages/LosCommands.tsx";
 import UsersPerformance from "./pages/usersPerformance.tsx";
 import Modernisation from "./pages/Modernisation.tsx";
 import ModernisationDetails from "./pages/ModernisationDetails.tsx";
+import ModernisationByUser from "./pages/ModernisationByUser.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -114,6 +115,12 @@ const router = createBrowserRouter([
     path: "/modernisations/:id",
     element: (
       <ProtectedRoute element={<ModernisationDetails />} allowedRoles={[0, 1, 2]} />
+    ),
+  },
+  {
+    path: "/modernisations-by-user/:userInfo",
+    element: (
+      <ProtectedRoute element={<ModernisationByUser />} allowedRoles={[0, 1, 2]} />
     ),
   },
   {

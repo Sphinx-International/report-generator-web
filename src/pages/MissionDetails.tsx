@@ -64,8 +64,6 @@ const MissionDetails = () => {
   const { id } = useParams();
   // const decodedId = decodeURIComponent(id || "");
 
-  console.log(id);
-
   const dispatch = useDispatch<AppDispatch>();
   const uploadingFiles = useSelector(
     (state: RootState) => state.uploadingFiles
@@ -308,8 +306,6 @@ const MissionDetails = () => {
     }
     const url = `${baseUrl}/workorder/get-workorder/${encodeURIComponent(id!)}`;
 
-    console.log(url);
-
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -323,7 +319,6 @@ const MissionDetails = () => {
           {
             const data = await response.json();
             setWorkorder(data);
-            console.log(data);
             setBasicDataWorkorder({
               title: data.workorder.title,
               id: data.workorder.id,
