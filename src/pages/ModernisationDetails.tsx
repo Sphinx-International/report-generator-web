@@ -1596,8 +1596,9 @@ const ModernisationDetails = () => {
                                       if (attach.is_completed) {
                                         downloadFile(
                                           attach.id,
-                                          "download-workorder-attachment",
+                                          "attachment",
                                           attach.file_name,
+                                          "modernisation",
                                           (progress) => {
                                             setModernisation((prev) => {
                                               if (!prev) return null;
@@ -1852,8 +1853,9 @@ const ModernisationDetails = () => {
                                     onClick={() => {
                                       downloadFile(
                                         attach.id,
-                                        "download-workorder-attachment",
+                                        "attachment",
                                         attach.file_name,
+                                        "modernisation",
                                         (progress) => {
                                           dispatch(
                                             setDownloadProgress({
@@ -2171,8 +2173,9 @@ const ModernisationDetails = () => {
                                     if (report.is_completed) {
                                       downloadFile(
                                         report.id,
-                                        "download-workorder-report",
+                                        "report",
                                         report.file_name,
+                                        "modernisation",
                                         (progress) => {
                                           // You can update the progress in the state to show it in the UI
                                           setModernisation((prev) => {
@@ -2550,8 +2553,9 @@ const ModernisationDetails = () => {
                                     if (certificate.is_completed) {
                                       downloadFile(
                                         certificate.id,
-                                        "download-workorder-acceptance-certificate",
+                                        "acceptance-certificate",
                                         certificate.file_name,
+                                        "modernisation",
                                         (progress) => {
                                           setModernisation((prev) => {
                                             if (!prev) return null;
@@ -2972,8 +2976,9 @@ const ModernisationDetails = () => {
                                         if (voucher.is_completed) {
                                           downloadFile(
                                             voucher.id,
-                                            "download-workorder-return-voucher",
+                                            "return-voucher",
                                             voucher.file_name,
+                                            "modernisation",
                                             (progress) => {
                                               setModernisation((prev) => {
                                                 if (!prev) return null;

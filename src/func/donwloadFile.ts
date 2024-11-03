@@ -3,8 +3,9 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 
 export const downloadFile = async (
   fileId: number | undefined,
-  path: string,
+  type: "attachment" | "report" | "acceptance-certificate" | "return-voucher" ,
   fileName: string | undefined,
+  extantionType: "workorder" | "modernisation",
   onProgress: (progress: number) => void,
   onComplete: () => void
 ) => {
@@ -16,7 +17,7 @@ export const downloadFile = async (
   }
   try {
     const response = await fetch(
-      `${baseUrl}/workorder/${path}/${fileId}`,
+      `${baseUrl}/${extantionType}/download-${extantionType}-${type}/${fileId}`,
       {
         method: "GET",
         headers: {

@@ -1617,8 +1617,9 @@ const MissionDetails = () => {
                                       if (attach.is_completed) {
                                         downloadFile(
                                           attach.id,
-                                          "download-workorder-attachment",
+                                          "attachment",
                                           attach.file_name,
+                                          "workorder",
                                           (progress) => {
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
@@ -1872,8 +1873,9 @@ const MissionDetails = () => {
                                     onClick={() => {
                                       downloadFile(
                                         attach.id,
-                                        "download-workorder-attachment",
+                                        "attachment",
                                         attach.file_name,
+                                        "workorder",
                                         (progress) => {
                                           dispatch(
                                             setDownloadProgress({
@@ -2191,8 +2193,9 @@ const MissionDetails = () => {
                                     if (report.is_completed) {
                                       downloadFile(
                                         report.id,
-                                        "download-workorder-report",
+                                        "report",
                                         report.file_name,
+                                        "workorder",
                                         (progress) => {
                                           // You can update the progress in the state to show it in the UI
                                           setWorkorder((prev) => {
@@ -2569,8 +2572,9 @@ const MissionDetails = () => {
                                       if (certificate.is_completed) {
                                         downloadFile(
                                           certificate.id,
-                                          "download-workorder-acceptance-certificate",
+                                          "acceptance-certificate",
                                           certificate.file_name,
+                                          "workorder",
                                           (progress) => {
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
@@ -3002,8 +3006,9 @@ const MissionDetails = () => {
                                         if (voucher.is_completed) {
                                           downloadFile(
                                             voucher.id,
-                                            "download-workorder-return-voucher",
+                                            "return-voucher",
                                             voucher.file_name,
+                                            "workorder",
                                             (progress) => {
                                               setWorkorder((prev) => {
                                                 if (!prev) return null;
