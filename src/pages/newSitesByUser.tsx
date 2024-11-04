@@ -21,14 +21,14 @@ const NewSitesByUser = () => {
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
 
-  const [modernisations, setModernisations] = useState<ResMission[] | null>(null);
+  const [newSites, setNewSites] = useState<ResMission[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [totalModernisations, setTotalModernisations] = useState(0);
+  const [totalNewSites, setTotalNewSites] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 6;
 
-  const totalPages = Math.ceil(totalModernisations / limit);
+  const totalPages = Math.ceil(totalNewSites / limit);
 
   const handladdMissionButtonClick = () => {
     const dialog = missionDialogRef.current;
@@ -39,10 +39,10 @@ const NewSitesByUser = () => {
   };
 
   const handleCheckboxChange = (userId: string) => {
-    dispatch(toggleExtantionInTab({ tab: "modernisationsTab", id: userId }));
+    dispatch(toggleExtantionInTab({ tab: "newSitesTab", id: userId }));
   };
   useEffect(() => {
-    fetchModernisations((currentPage - 1) * limit, limit);
+    fetchNewSites((currentPage - 1) * limit, limit);
   }, [currentPage]);
 
   if (!userInfo) {
@@ -53,7 +53,7 @@ const NewSitesByUser = () => {
   const email = userInfo.slice(0, lastDashIndex); // Everything before the last dash
   const id = userInfo.slice(lastDashIndex + 1);
 
-  const fetchModernisations = async (offset = 0, limit = 6) => {
+  const fetchNewSites = async (offset = 0, limit = 6) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
@@ -62,7 +62,7 @@ const NewSitesByUser = () => {
     }
 
     setIsLoading(true);
-    const url = `${baseUrl}/modernisation/get-modernisations-by-account/${id}?offset=${offset}&limit=${limit}`;
+    const url = `${baseUrl}/new-site/get-new-sites-by-account/${id}?offset=${offset}&limit=${limit}`;
 
     try {
       const response = await fetch(url, {
@@ -82,12 +82,12 @@ const NewSitesByUser = () => {
       switch (response.status) {
         case 200: {
           const data = await response.json();
-          setModernisations(data.data);
-          setTotalModernisations(data.total);
+          setNewSites(data.data);
+          setTotalNewSites(data.total);
           return { total: data.total, current_offset: offset };
         }
         case 204:
-          setModernisations(null);
+          setNewSites(null);
           break;
 
         default:
@@ -113,7 +113,7 @@ const NewSitesByUser = () => {
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[0px] w-full md:h-[100vh] overflow-y-auto">
         <Header
-          pageSentence="Here are information about all modernisations"
+          pageSentence="Here are information about all new sites"
           searchBar={false}
           wsUrl=""
         />
@@ -128,7 +128,7 @@ const NewSitesByUser = () => {
           <div
             className="sm:flex hidden items-center gap-3 sm:px-3 sm:py-[5px] p-2 border-[1px] border-primary rounded-[30px] hover:bg-gray-50 cursor-pointer transition-all duration-200"
             onClick={() => {
-              navigate("/modernisations");
+              navigate("/newsites");
             }}
           >
             <svg
@@ -149,20 +149,20 @@ const NewSitesByUser = () => {
           </div>
         </div>
 
-          {modernisations && !isLoading ? (
+          {newSites && !isLoading ? (
             <>
               <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
-                {modernisations.map((modernisation : ResMission, index: number) => (
+                {newSites.map((newSite : ResMission, index: number) => (
                   <div
-                    key={modernisation.id}
+                    key={newSite.id}
                     className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
                   >
                     <div
                       className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
-                      onClick={() => navigate(`/modernisations/${modernisation.id}`)}
+                      onClick={() => navigate(`/newsites/${newSite.id}`)}
                     >
                       <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
-                        {modernisation.title}
+                        {newSite.title}
                       </h2>
                       <p
                         className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
@@ -172,22 +172,22 @@ const NewSitesByUser = () => {
                           WebkitBoxOrient: "vertical",
                         }}
                       >
-                        {modernisation.description}
+                        {newSite.description}
                       </p>
                       <div className="flex items-center gap-[8px]">
                         <WorkOrderStatus
-                          status={modernisation.status}
+                          status={newSite.status}
                           styles={{ fontSize: 10, px: 6, py: 4.5 }}
                         />
                         <WorkOrderpriority
-                          priority={modernisation.priority}
+                          priority={newSite.priority}
                           styles={{ fontSize: 10, px: 6, py: 4.5 }}
                         />
                       </div>
                     </div>
 
                     <div className="w-full h-[65px] flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px] px-[24px] py-[16px]">
-                      {modernisation.assigned_to ? (
+                      {newSite.assigned_to ? (
                         <div className="w-full flex items-center gap-[5px]">
                           <img
                             src="/avatar1.png"
@@ -195,19 +195,19 @@ const NewSitesByUser = () => {
                             className="sm:w-[29px] w-[26px]"
                           />
                           <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
-                            {modernisation.assigned_to.email}
+                            {newSite.assigned_to.email}
                           </span>
                         </div>
                       ) : null}
                       {localStorage.getItem("role") === "0" && (
                         <input
                           type="checkbox"
-                          name="select-modernisation"
+                          name="select-new-site"
                           id={`${index}`}
                           className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCheckboxChange(`${modernisation.id}`);
+                            handleCheckboxChange(`${newSite.id}`);
                           }}
                         />
                       )}
@@ -220,7 +220,7 @@ const NewSitesByUser = () => {
                 ))}
 
                 <Pagination
-                  buttonTitle="Add modernisation"
+                  buttonTitle="Add new site"
                   buttonFunc={handladdMissionButtonClick}
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -243,7 +243,7 @@ const NewSitesByUser = () => {
                 className="w-[300px]"
               />
               <h3 className="text-[30px] font-bold text-n800">
-                No modernisation founded for this user
+                No new site founded for this user
               </h3>
             </div>
           )}

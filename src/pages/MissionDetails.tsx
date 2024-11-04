@@ -1312,7 +1312,7 @@ const MissionDetails = () => {
                       })}
                   </div>
 
-                  <div className="flex items-center gap-[8px] relative">
+                  <div className="flex items-center gap-[8px] relative flex-wrap">
                     <WorkOrderStatus
                       status={
                         workorder.workorder.report_status === 1 &&

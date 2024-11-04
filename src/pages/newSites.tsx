@@ -308,7 +308,7 @@ const NewSites = () => {
                     </span>
                     <div className="flex items-center gap-[4px]">
                       <button
-                        className={`px-[20px] py-[5px] rounded-[26px] border-[1px]  text-[12px] leading-[18px]  font-medium ${
+                        className={`px-[20px] text-nowrap py-[5px] rounded-[26px] border-[1px]  text-[12px] leading-[18px]  font-medium ${
                           typeOfSearch === "Wo"
                             ? "text-primary border-primary"
                             : "text-n600 border-n400"
