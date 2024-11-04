@@ -1,5 +1,6 @@
 import { ReqMission } from "../assets/types/Mission";
 import { ReqModernisation } from "../assets/types/Modernisation";
+import { ReqNewSite } from "../assets/types/NewSite";
 
 export interface MissionFormErrors {
     title?: string;
@@ -29,14 +30,14 @@ export const validateForm1 = (formValues:ReqMission): MissionFormErrors => {
   };
 
 
-  export const validateModernisationForm1 = (formValues:ReqModernisation): ModernisationFormErrors => {
+  export const validateModernisationForm1 = (formValues:ReqModernisation | ReqNewSite): ModernisationFormErrors => {
     const formErrors:MissionFormErrors = {};
     if (formValues.title === "") formErrors.title = 'Title is required';
     if (formValues.description === "") formErrors.description = 'Description is required';
     return formErrors;
   };
 
-  export const validateModernisationForm2 = (formValues:ReqModernisation): ModernisationFormErrors => {
+  export const validateModernisationForm2 = (formValues:ReqModernisation | ReqNewSite): ModernisationFormErrors => {
     const formErrors:MissionFormErrors = {};
     if (formValues.emails.length === 0) formErrors.emails = 'At least enter someone to receive mail';
     return formErrors;

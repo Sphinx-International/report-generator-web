@@ -6,7 +6,7 @@ import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 
 interface DeletePopUpProps {
-  page: "workorders" | "accounts" | "modernisation";
+  page: "workorders" | "accounts" | "modernisation" | "new site";
   deleteItems: number[] | string[];
   deleteUrl: string
   jsonTitle:string
@@ -83,7 +83,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         }    
         // Determine if the current page is empty after deletion
         const newUserCount = initialUserCount - props.deleteItems.length;
-        if (props.page === "workorders") {
+        if (props.page !== "accounts") {
           if (localStorage.getItem("selectedFilterForWorkorders") === "all" || !localStorage.getItem("selectedFilterForWorkorders") ) {
             if (newUserCount === 0 && props.currentPage > 1) {
               await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit);

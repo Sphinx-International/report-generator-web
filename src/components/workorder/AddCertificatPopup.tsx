@@ -13,7 +13,7 @@ import { handleFileChange } from "../../func/otherworkorderApis";
 
 interface AddCertificatProps {
   workorderId: string | undefined;
-  extantionType: "workorder" | "modernisation";
+  extantionType: "workorder" | "modernisation" | "new-site";
   fetchOneWorkOrder: () => void;
 }
 

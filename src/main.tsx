@@ -19,6 +19,9 @@ import UsersPerformance from "./pages/usersPerformance.tsx";
 import Modernisation from "./pages/Modernisation.tsx";
 import ModernisationDetails from "./pages/ModernisationDetails.tsx";
 import ModernisationByUser from "./pages/ModernisationByUser.tsx";
+import NewSites from "./pages/newSites.tsx";
+import NewSiteDetails from "./pages/newSiteDetails.tsx";
+import NewSitesByUser from "./pages/newSitesByUser.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -123,6 +126,24 @@ const router = createBrowserRouter([
       <ProtectedRoute element={<ModernisationByUser />} allowedRoles={[0, 1, 2]} />
     ),
   },
+
+  {
+    path: "/newsites",
+    element: <ProtectedRoute element={<NewSites />} allowedRoles={[0, 1, 2]} />,
+  },
+  {
+    path: "/newsites/:id",
+    element: (
+      <ProtectedRoute element={<NewSiteDetails />} allowedRoles={[0, 1, 2]} />
+    ),
+  },
+  {
+    path: "/newsites-by-user/:userInfo",
+    element: (
+      <ProtectedRoute element={<NewSitesByUser />} allowedRoles={[0, 1, 2]} />
+    ),
+  },
+
   {
     path: "*",
     element: <Page404 />,

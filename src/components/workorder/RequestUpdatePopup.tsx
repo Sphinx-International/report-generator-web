@@ -5,7 +5,7 @@ import { handleCloseDialog } from "../../func/openDialog";
 
 interface RequestUpdateProps {
   workorderId: string | undefined;
-  extantionType: "workorder" | "modernisation";
+  extantionType: "workorder" | "modernisation" | "new-site";
   fetchOneWorkOrder: () => void;
 }
 

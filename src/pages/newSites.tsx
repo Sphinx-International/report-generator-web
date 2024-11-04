@@ -3,13 +3,13 @@ import SideBar from "../components/SideBar";
 import Header from "../components/Header";
 import Main from "../components/Main";
 import Pagination from "../components/Pagination";
-import ModernisationPopup from "../components/Modernisation/ModernisationPopup";
+import NewSitePopup from "../components/NewSite/NewSitePopup";
 import WorkOrderStatus from "../components/workorder/WorkOrderStatus";
 import WorkOrderpriority from "../components/workorder/WorkOrderPriorities";
 import DeletePopup from "../components/DeletePopup";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../Redux/store";
-import { ResModernisation } from "../assets/types/Modernisation";
+import { ResNewSite } from "../assets/types/NewSite";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { toggleExtantionInTab } from "../Redux/slices/selectedExtantionsSlice";
@@ -20,28 +20,28 @@ import { User } from "../assets/types/User";
 import { getRole } from "../func/getUserRole";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-const Modernisation = () => {
+const NewSites = () => {
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
-  const selectedModernisation = useSelector(
-    (state: RootState) => state.selectedExtantions.modernisationsTab
+  const selectedNewSite = useSelector(
+    (state: RootState) => state.selectedExtantions.newSitesTab
   );
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
-  const [modernisations, setModernisations] = useState<
-    ResModernisation[] | null
+  const [newSites, setNewSites] = useState<
+  ResNewSite[] | null
   >(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [usersWs, setUsersWs] = useState<User[] | null>(null);
   const [isLoadingUsersWs, setIsLoadingUsersWs] = useState<boolean>(true);
-  const [modernisationWs, setModernisationWs] = useState<
-    ResModernisation[] | null
+  const [newSiteWs, setNewSiteWs] = useState<
+    ResNewSite[] | null
   >(null);
-  const [isLoadingmodernisationWs, setIsLoadingmodernisationWs] =
+  const [isLoadingNewSiteWsWs, setIsLoadingNewSiteWs] =
     useState<boolean>(true);
 
   const [totalWorkorders, setTotalWorkorders] = useState(0);
@@ -63,11 +63,11 @@ const Modernisation = () => {
   };
 
   const handleCheckboxChange = (userId: string) => {
-    dispatch(toggleExtantionInTab({ tab: "modernisationsTab", id: userId }));
+    dispatch(toggleExtantionInTab({ tab: "newSitesTab", id: userId }));
   };
 
   const handleDeleteButtonClick = () => {
-    if (selectedModernisation.length === 0) {
+    if (selectedNewSite.length === 0) {
       return;
     }
     // Perform the action when users are selected
@@ -78,7 +78,7 @@ const Modernisation = () => {
     }
   };
 
-  const fetchModernisations = async (
+  const fetchNewSites = async (
     offset = 0,
     limit = 6,
     status?: string
@@ -93,8 +93,8 @@ const Modernisation = () => {
     setIsLoading(true);
 
     const url = status
-      ? `${baseUrl}/modernisation/get-modernisations/${status}?offset=${offset}&limit=${limit}`
-      : `${baseUrl}/modernisation/get-modernisations?offset=${offset}&limit=${limit}`;
+      ? `${baseUrl}/new-site/get-new-sites/${status}?offset=${offset}&limit=${limit}`
+      : `${baseUrl}/new-site/get-new-sites?offset=${offset}&limit=${limit}`;
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -114,14 +114,14 @@ const Modernisation = () => {
         case 200:
           {
             const data = await response.json();
-            setModernisations(data.data);
+            setNewSites(data.data);
             setTotalWorkorders(data.total);
             return { total: data.total, current_offset: offset };
           }
           break;
 
         case 204:
-          setModernisations(null);
+          setNewSites(null);
           break;
 
         default:
@@ -151,7 +151,7 @@ const Modernisation = () => {
 
     setIsLoading(true);
 
-    const url = `${baseUrl}/modernisation/get-executed-modernisation?offset=${offset}&limit=${limit}&report=${report}&certificate=${certificate}&voucher=${voucher}`;
+    const url = `${baseUrl}/new-site/get-executed-new-site?offset=${offset}&limit=${limit}&report=${report}&certificate=${certificate}&voucher=${voucher}`;
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -160,7 +160,6 @@ const Modernisation = () => {
           Authorization: `Token ${token}`,
         },
       });
-      console.log(response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -172,14 +171,14 @@ const Modernisation = () => {
         case 200:
           {
             const data = await response.json();
-            setModernisations(data.data);
+            setNewSites(data.data);
             setTotalWorkorders(data.total);
             return { total: data.total, current_offset: offset };
           }
           break;
 
         case 204:
-          setModernisations(null);
+          setNewSites(null);
           break;
 
         default:
@@ -205,7 +204,7 @@ const Modernisation = () => {
     const subFilter = localStorage.getItem("selectedSubExecutedFilter");
 
     if (filter === "all" || !filter) {
-      fetchModernisations((currentPage - 1) * limit, limit);
+      fetchNewSites((currentPage - 1) * limit, limit);
     } else if (subFilter && subFilter !== "All" && filter === "executed") {
       filterExcuted(
         (currentPage - 1) * limit,
@@ -215,26 +214,26 @@ const Modernisation = () => {
         subFilter === "Missing return voucher" ? false : null
       );
     } else {
-      fetchModernisations((currentPage - 1) * limit, limit, filter);
+      fetchNewSites((currentPage - 1) * limit, limit, filter);
     }
   }, [currentPage]);
 
   useWebSocketSearch({
     searchQuery: searchQuery,
     endpointPath:
-      typeOfSearch === "User" ? "search-account" : "search-modernisation",
-    setResults: typeOfSearch === "User" ? setUsersWs : setModernisationWs,
+      typeOfSearch === "User" ? "search-account" : "search-new-site",
+    setResults: typeOfSearch === "User" ? setUsersWs : setNewSiteWs,
     setLoader:
       typeOfSearch === "User"
         ? setIsLoadingUsersWs
-        : setIsLoadingmodernisationWs,
+        : setIsLoadingNewSiteWs,
   });
   return (
     <div className="flex w-full md:h-[100vh]">
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
         <Header
-          pageSentence="Here are information about all modernisation "
+          pageSentence="Here are information about all new sites "
           searchBar={false}
         />
 
@@ -244,7 +243,7 @@ const Modernisation = () => {
             name=""
             id=""
             className="w-full h-[44px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[14px] text-[12px]"
-            placeholder={`Search for modernisation`}
+            placeholder={`Search for new site`}
             onChange={(e) => {
               setSearchQuery(e.target.value);
             }}
@@ -284,7 +283,7 @@ const Modernisation = () => {
               >
                 <span className="text-n500 text-[14px] sm:flex hidden">
                   {typeOfSearch === "Wo"
-                    ? "Search by modernisation "
+                    ? "Search by new site "
                     : "Search by user"}
                 </span>
                 <svg
@@ -318,7 +317,7 @@ const Modernisation = () => {
                           setTypeOfSearch("Wo");
                         }}
                       >
-                        Modernisation
+                        New Site
                       </button>
                       <button
                         className={`px-[20px] py-[5px] rounded-[26px] border-[1px] text-[12px] leading-[18px] font-medium ${
@@ -346,7 +345,7 @@ const Modernisation = () => {
                             className="flex items-center gap-2 px-3 w-full hover:bg-slate-300 cursor-pointer"
                             onClick={() => {
                               navigate(
-                                `/modernisations-by-user/${user.email}-${user.id}`
+                                `/newsites-by-user/${user.email}-${user.id}`
                               );
                             }}
                           >
@@ -396,7 +395,7 @@ const Modernisation = () => {
         </div>
 
         <Main
-          page="modernisation"
+          page="new site"
           flitration={
             searchQuery
               ? typeOfSearch === "Wo"
@@ -408,39 +407,39 @@ const Modernisation = () => {
               ? ["All", "Created", "Assigned", "Executed", "Closed"]
               : ["All", "To do", "Executed", "Closed"]
           }
-          FiltrationFunc={fetchModernisations}
+          FiltrationFunc={fetchNewSites}
           subFilterFunc={filterExcuted}
           functionalties={{
-            primaryFunc: { name: "Add modernisation" },
+            primaryFunc: { name: "Add new site" },
             secondaryFuncs: [{ name: "Delete" }],
           }}
           handleAddPrimaryButtonClick={handladdMissionButtonClick}
           handleSecondaryButtonClick={handleDeleteButtonClick}
           setCurrentPage={setCurrentPage}
         >
-          {typeOfSearch === "Wo" && searchQuery && modernisationWs !== null ? (
-            !isLoadingmodernisationWs ? (
-              modernisationWs.length > 0 ? (
+          {typeOfSearch === "Wo" && searchQuery && newSiteWs !== null ? (
+            !isLoadingNewSiteWsWs ? (
+              newSiteWs.length > 0 ? (
                 <>
                   <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
-                    {modernisationWs.map(
-                      (modernisation: ResModernisation, index: number) => (
+                    {newSiteWs.map(
+                      (newSite: ResNewSite, index: number) => (
                         <div
-                          key={modernisation.id}
+                          key={newSite.id}
                           className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
                         >
                           <div
                             className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
                             onClick={() =>
                               navigate(
-                                `/modernisations/${encodeURIComponent(
-                                  modernisation.id
+                                `/newsites/${encodeURIComponent(
+                                  newSite.id
                                 )}`
                               )
                             }
                           >
                             <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
-                              {modernisation.title}
+                              {newSite.title}
                             </h2>
                             <p
                               className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
@@ -450,22 +449,22 @@ const Modernisation = () => {
                                 WebkitBoxOrient: "vertical",
                               }}
                             >
-                              {modernisation.description}
+                              {newSite.description}
                             </p>
                             <div className="flex items-center gap-[8px]">
                               <WorkOrderStatus
-                                status={modernisation.status}
+                                status={newSite.status}
                                 styles={{ fontSize: 10, px: 6, py: 4.5 }}
                               />
                               <WorkOrderpriority
-                                priority={modernisation.priority}
+                                priority={newSite.priority}
                                 styles={{ fontSize: 10, px: 6, py: 4.5 }}
                               />
                             </div>
                           </div>
 
                           <div className="w-full h-[65px] flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px] px-[24px] py-[16px]">
-                            {modernisation.assigned_to ? (
+                            {newSite.assigned_to ? (
                               <div className="w-full flex items-center gap-[5px]">
                                 <img
                                   src="/avatar1.png"
@@ -473,7 +472,7 @@ const Modernisation = () => {
                                   className="sm:w-[29px] w-[26px]"
                                 />
                                 <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
-                                  {modernisation.assigned_to.email}
+                                  {newSite.assigned_to.email}
                                 </span>
                               </div>
                             ) : null}
@@ -485,7 +484,7 @@ const Modernisation = () => {
                                 className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCheckboxChange(`${modernisation.id}`);
+                                  handleCheckboxChange(`${newSite.id}`);
                                 }}
                               />
                             )}
@@ -520,28 +519,28 @@ const Modernisation = () => {
                 />
               </div>
             )
-          ) : modernisations && !isLoading ? (
+          ) : newSites && !isLoading ? (
             <>
               <div className="w-full flex flex-col gap-[40px]">
                 <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
-                  {modernisations.map(
-                    (modernisation: ResModernisation, index: number) => (
+                  {newSites.map(
+                    (newSite: ResNewSite, index: number) => (
                       <div
-                        key={modernisation.id}
+                        key={newSite.id}
                         className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
                       >
                         <div
                           className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
                           onClick={() =>
                             navigate(
-                              `/modernisations/${encodeURIComponent(
-                                modernisation.id
+                              `/newsites/${encodeURIComponent(
+                                newSite.id
                               )}`
                             )
                           }
                         >
                           <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
-                            {modernisation.title}
+                            {newSite.title}
                           </h2>
                           <p
                             className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
@@ -551,18 +550,18 @@ const Modernisation = () => {
                               WebkitBoxOrient: "vertical",
                             }}
                           >
-                            {modernisation.description}
+                            {newSite.description}
                           </p>
                           <div className="flex items-center gap-[8px] flex-wrap">
                             <WorkOrderStatus
-                              status={modernisation.status}
+                              status={newSite.status}
                               styles={{ fontSize: 10, px: 6, py: 4.5 }}
                             />
                             <WorkOrderpriority
-                              priority={modernisation.priority}
+                              priority={newSite.priority}
                               styles={{ fontSize: 10, px: 6, py: 4.5 }}
                             />
-                            {modernisation.report_status === 1 ? (
+                            {newSite.report_status === 1 ? (
                               <WorkOrderStatus
                                 status="rep"
                                 styles={{ fontSize: 10, px: 6, py: 4.5 }}
@@ -573,7 +572,7 @@ const Modernisation = () => {
                                 styles={{ fontSize: 10, px: 6, py: 4.5 }}
                               />
                             )}
-                            {modernisation.certificate_status === 1 ? (
+                            {newSite.certificate_status === 1 ? (
                               <WorkOrderStatus
                                 status="acc"
                                 styles={{ fontSize: 10, px: 6, py: 4.5 }}
@@ -584,24 +583,11 @@ const Modernisation = () => {
                                 styles={{ fontSize: 10, px: 6, py: 4.5 }}
                               />
                             )}
-                            {modernisation.require_return_voucher ? (
-                              modernisation.voucher_status ? (
-                                <WorkOrderStatus
-                                  status="vo"
-                                  styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                                />
-                              ) : (
-                                <WorkOrderStatus
-                                  status="noVo"
-                                  styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                                />
-                              )
-                            ) : null}
                           </div>
                         </div>
 
                         <div className="w-full h-[65px] flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px] px-[24px] py-[16px]">
-                          {modernisation.assigned_to ? (
+                          {newSite.assigned_to ? (
                             <div className="w-full flex items-center gap-[5px]">
                               <img
                                 src="/avatar1.png"
@@ -609,7 +595,7 @@ const Modernisation = () => {
                                 className="sm:w-[29px] w-[26px]"
                               />
                               <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
-                                {modernisation.assigned_to.email}
+                                {newSite.assigned_to.email}
                               </span>
                             </div>
                           ) : null}
@@ -621,7 +607,7 @@ const Modernisation = () => {
                               className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleCheckboxChange(`${modernisation.id}`);
+                                handleCheckboxChange(`${newSite.id}`);
                               }}
                             />
                           )}
@@ -635,7 +621,7 @@ const Modernisation = () => {
                   )}
 
                   <Pagination
-                    buttonTitle="Add modernisations"
+                    buttonTitle="Add new site"
                     buttonFunc={handladdMissionButtonClick}
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -659,24 +645,24 @@ const Modernisation = () => {
                 className="w-[230px]"
               />
               <h3 className="text-[30px] font-bold text-n800">
-                No Modernisation Founded
+                No New Site Founded
               </h3>
             </div>
           )}
         </Main>
       </div>
-      <ModernisationPopup
+      <NewSitePopup
         ref={missionDialogRef}
-        fetchModernisations={fetchModernisations}
+        fetchNewSites={fetchNewSites}
       />
       <DeletePopup
-        page="modernisation"
+        page="new site"
         ref={deleteDialogRef}
-        deleteItems={selectedModernisation}
-        deleteUrl={`${baseUrl}/modernisation/delete-modernisations`}
-        jsonTitle="modernisations"
-        fetchFunc={fetchModernisations}
-        fetchUrl={`${baseUrl}/modernisation/get-modernisations`}
+        deleteItems={selectedNewSite}
+        deleteUrl={`${baseUrl}/new-site/delete-new-sites`}
+        jsonTitle="new_sites"
+        fetchFunc={fetchNewSites}
+        fetchUrl={`${baseUrl}/new-site/get-new-sites`}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         limit={limit}
@@ -685,4 +671,4 @@ const Modernisation = () => {
   );
 };
 
-export default Modernisation;
+export default NewSites;

@@ -6,7 +6,7 @@ import { AppDispatch } from "../Redux/store";
 export const handle_edit_or_reqUpdate_report = async (
   workorder_id: string,
   notify_engineer: boolean,
-  extantionType: "workorder" | "modernisation",
+  extantionType: "modernisation" | "workorder" | "new-site",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
   message?: string
@@ -30,6 +30,8 @@ export const handle_edit_or_reqUpdate_report = async (
           ? { workorder_id, notify_engineer, message }
           : extantionType === "modernisation"
           ? { modernisation_id: workorder_id, notify_engineer, message }
+          : extantionType === "new-site"
+          ? { new_site_id: workorder_id, notify_engineer, message }
           : null
       ),
     });
@@ -56,7 +58,7 @@ export const handle_edit_or_reqUpdate_report = async (
 export const handle_update_cert_type = async (
   workorder_id: string,
   certificate_type: 1 | 2 | 3,
-  extantionType: "workorder" | "modernisation",
+  extantionType: "modernisation" | "workorder" | "new-site",
   fetchOneWorkOrder: () => void
 ) => {
   const token =
@@ -77,7 +79,11 @@ export const handle_update_cert_type = async (
         body: JSON.stringify(
           extantionType === "workorder"
             ? { workorder_id, certificate_type }
-            : { modernisation_id: workorder_id, certificate_type }
+            : extantionType === "modernisation"
+            ? { modernisation_id: workorder_id, certificate_type }
+            : extantionType === "new-site"
+            ? { new_site_id: workorder_id, certificate_type }
+            : null
         ),
       }
     );
@@ -103,7 +109,7 @@ export const handleFileChange = async (
   dispatch: AppDispatch,
   workorder_id: string,
   fileType: "attachements" | "report" | "certificate" | "voucher",
-  extantionType: "workorder" | "modernisation",
+  extantionType: "modernisation" | "workorder" | "new-site",
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
@@ -258,7 +264,7 @@ export const handle_Assignment_and_execute = async (
   workorder_id: string,
   endPointPah: string,
   method: "PUT" | "PATCH",
-  extantionType: "modernisation" | "workorder",
+  extantionType: "modernisation" | "workorder" | "new-site",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder?: () => void,
   engineer_id?: number
@@ -279,12 +285,20 @@ export const handle_Assignment_and_execute = async (
       ? JSON.stringify(
           extantionType === "workorder"
             ? { workorder_id, engineer_id }
-            : { modernisation_id: workorder_id, engineer_id }
+            : extantionType === "modernisation"
+            ? { modernisation_id: workorder_id, engineer_id }
+            : extantionType === "new-site"
+            ? { new_site_id: workorder_id, engineer_id }
+            : null
         )
       : JSON.stringify(
           extantionType === "workorder"
             ? { workorder_id }
-            : { modernisation_id: workorder_id }
+            : extantionType === "modernisation"
+            ? { modernisation_id: workorder_id }
+            : extantionType === "new-site"
+            ? { new_site_id: workorder_id }
+            : null
         );
   try {
     const response = await fetch(`${baseUrl}/${extantionType}/${endPointPah}`, {
@@ -322,7 +336,7 @@ export const handle_add_or_delete_mailedPerson = async (
   workorder_id: string,
   Email: string | number,
   mail_method: "add" | "delete",
-  extantionType: "modernisation" | "workorder",
+  extantionType: "modernisation" | "workorder" | "new-site",
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setVisibleCoordPopup: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void
@@ -346,7 +360,11 @@ export const handle_add_or_delete_mailedPerson = async (
         body: JSON.stringify(
           extantionType === "workorder"
             ? { workorder_id, [mail_method]: [Email] }
-            : { modernisation_id: workorder_id, [mail_method]: [Email] }
+            : extantionType === "modernisation"
+            ? { modernisation_id: workorder_id, [mail_method]: [Email] }
+            : extantionType === "new-site"
+            ? { new_site_id: workorder_id, [mail_method]: [Email] }
+            : null
         ),
       }
     );

@@ -13,7 +13,7 @@ type Functionalities = {
 };
 
 interface MainProps {
-  page: "workorders" | "accounts" | "modernisation";
+  page: "workorders" | "accounts" | "modernisation" | "new site";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
   subFilterFunc?: (
@@ -70,6 +70,8 @@ const Main: React.FC<MainProps> = (props) => {
       ? state.selectedExtantions.workOrdersTab
       : props.page === "modernisation"
       ? state.selectedExtantions.modernisationsTab
+      : props.page === "new site"
+      ? state.selectedExtantions.newSitesTab
       : null
   );
   const [selectedFilter, setSelectedFilter] =
@@ -181,31 +183,39 @@ const Main: React.FC<MainProps> = (props) => {
               {item === "Executed" && visibleExcutedPopup && (
                 <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
                   {excutedFilter.map((filter, index) => {
-                    return (
-                      <span
-                        key={index}
-                        className={`text-[14px] text-nowrap cursor-pointer ${
-                          selectedExcutedFilter === filter.title
-                            ? "text-primary"
-                            : "text-n600"
-                        }`}
-                        onClick={() => {
-                          if (filter.title === "All") {
-                            handleFilterClick("executed");
-                          } else {
-                            handleFilterClick(filter.title);
-                          }
-                          setSelectedExcutedFilter(filter.title);
-                          setVisibleExcutedPopup(false);
-                          localStorage.setItem(
-                            "selectedSubExecutedFilter",
-                            filter.title
-                          );
-                        }}
-                      >
-                        {filter.title}
-                      </span>
-                    );
+                    // Only render if the page is not "new site" and filter.title is not "Missing return voucher"
+                    if (
+                      !(props.page === "new site" && filter.title === "Missing return voucher")
+                    ) {
+                      return (
+                        <span
+                          key={index}
+                          className={`text-[14px] text-nowrap cursor-pointer ${
+                            selectedExcutedFilter === filter.title
+                              ? "text-primary"
+                              : "text-n600"
+                          }`}
+                          onClick={() => {
+                            // Handle the filter click logic
+                            if (filter.title === "All") {
+                              handleFilterClick("executed");
+                            } else {
+                              handleFilterClick(filter.title);
+                            }
+                            setSelectedExcutedFilter(filter.title);
+                            setVisibleExcutedPopup(false);
+                            localStorage.setItem(
+                              "selectedSubExecutedFilter",
+                              filter.title
+                            );
+                          }}
+                        >
+                          {filter.title}
+                        </span>
+                      );
+                    }
+                    // Return null if the condition is not met
+                    return null;
                   })}
                 </div>
               )}
@@ -324,31 +334,36 @@ const Main: React.FC<MainProps> = (props) => {
                       }`}
                     >
                       {excutedFilter.map((filter, index) => {
-                        return (
-                          <sub
-                            key={`sub-${index}`}
-                            className={`w-full px-[28px] py-[14px] ${
-                              selectedExcutedFilter === filter.title
-                                ? "text-primary"
-                                : "text-n600"
-                            }  sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
-                            onClick={() => {
-                              if (filter.title === "All") {
-                                handleFilterClick("executed");
-                              } else {
-                                handleFilterClick(filter.title);
-                              }
-                              setSelectedExcutedFilter(filter.title);
-                              setIsOpen(false);
-                              localStorage.setItem(
-                                "selectedSubExecutedFilter",
-                                filter.title
-                              );
-                            }}
-                          >
-                            {filter.title}
-                          </sub>
-                        );
+                        if (
+                          !(props.page === "new site" && filter.title === "Missing return voucher")
+                        ) {
+                          return (
+                            <sub
+                              key={`sub-${index}`}
+                              className={`w-full px-[28px] py-[14px] ${
+                                selectedExcutedFilter === filter.title
+                                  ? "text-primary"
+                                  : "text-n600"
+                              } sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
+                              onClick={() => {
+                                if (filter.title === "All") {
+                                  handleFilterClick("executed");
+                                } else {
+                                  handleFilterClick(filter.title);
+                                }
+                                setSelectedExcutedFilter(filter.title);
+                                setIsOpen(false);
+                                localStorage.setItem(
+                                  "selectedSubExecutedFilter",
+                                  filter.title
+                                );
+                              }}
+                            >
+                              {filter.title}
+                            </sub>
+                          );
+                        }
+                        return null; // Don't render anything for this filter
                       })}
                     </div>
                   )}

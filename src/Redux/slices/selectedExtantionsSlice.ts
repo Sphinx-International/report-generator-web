@@ -3,13 +3,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface SelectedExtantionsTab {
   workOrdersTab: string[];
   modernisationsTab: string[];
- // newSitesTab: string[];
+  newSitesTab: string[];
 }
 
 const initialState: SelectedExtantionsTab = {
   workOrdersTab: [],
   modernisationsTab: [],
- // newSitesTab: [],
+  newSitesTab: [],
 };
 
 interface ToggleExtantionsPayload {

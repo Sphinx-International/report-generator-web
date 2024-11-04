@@ -5,7 +5,7 @@ export const downloadFile = async (
   fileId: number | undefined,
   type: "attachment" | "report" | "acceptance-certificate" | "return-voucher" ,
   fileName: string | undefined,
-  extantionType: "workorder" | "modernisation",
+  extantionType: "workorder" | "modernisation" | "new-site",
   onProgress: (progress: number) => void,
   onComplete: () => void
 ) => {
