@@ -4,7 +4,6 @@ import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
 import { deleteSelectedWorkorders } from "../Redux/slices/selectedWorkordersSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
-const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface DeletePopUpProps {
   page: "workorders" | "accounts";
@@ -63,24 +62,6 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialData = await initialResponse.json();
         const initialUserCount = initialData.data.length;
     
-
-        if (props.deleteUrl === `${baseUrl}/account/delete-accounts`) {
-          const secondResponse = await fetch(`${baseUrl}/workorder/delete-workorders-by-account`, {
-
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${token}`,
-            },
-            body: JSON.stringify({
-              "accounts": props.deleteItems,
-            }),
-          });
-          if (!secondResponse.ok) {
-            console.error("Failed to delete workorders related to this users");
-            throw new Error("Failed to delete workorders related to this users");
-          }
-        }
         // Perform deletion
         const response = await fetch(`${props.deleteUrl}`, {
           method: "DELETE",
@@ -95,7 +76,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
     
         if (!response.ok) {
           console.error("Error deleting users:", await response.text());
-          alert("Failed to delete users");
+          alert(`Failed to delete ${props.page}.`);
           return;
         }    
         // Determine if the current page is empty after deletion
