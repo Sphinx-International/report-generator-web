@@ -1314,7 +1314,7 @@ const ModernisationDetails = () => {
                       })}
                   </div>
 
-                  <div className="flex items-center gap-[8px] relative">
+                  <div className="flex items-center gap-[8px] relative flex-wrap">
                     <WorkOrderStatus
                       status={
                         modernisation.modernisation.report_status === 1 &&

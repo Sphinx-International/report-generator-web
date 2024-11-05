@@ -13,7 +13,7 @@ const GlobalBeforeUnload = ({ children }: { children: React.ReactNode }) => {
       const hasOngoingUploads =
         uploadingFiles.attachFiles.length +
           uploadingFiles.reportFiles.length +
-          uploadingFiles.acceptenceFiles.length >
+          uploadingFiles.acceptenceFiles.length + uploadingFiles.voucherFiles.length >
         0;
 
       if (hasOngoingUploads) {

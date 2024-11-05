@@ -63,7 +63,6 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         const initialUserCount = initialData.data.length;
     
 
-
         // Perform deletion
         const response = await fetch(`${props.deleteUrl}`, {
           method: "DELETE",

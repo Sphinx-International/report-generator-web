@@ -1305,7 +1305,7 @@ const NewSiteDetails = () => {
                       })}
                   </div>
 
-                  <div className="flex items-center gap-[8px] relative">
+                  <div className="flex items-center gap-[8px] relative flex-wrap">
                     <WorkOrderStatus
                       status={
                         newSite.new_site.report_status === 1 &&

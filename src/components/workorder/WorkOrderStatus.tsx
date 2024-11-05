@@ -41,7 +41,7 @@ const WorkOrderStatus: React.FC<WorkOrderStatusProps> = ({
       onClick={handleClick}
       className={`rounded-[100px] cursor-pointer text-nowrap sm:text-[${
         styles.fontSize
-      }px] text-[11px] sm:px-[${styles.px}] px-[16px] sm:py-[${styles.py}] py-[6px] font-medium leading-[15px] ${
+      }px] text-[11px] sm:px-[${styles.px}] px-[16px] sm:py-[${styles.py}] py-[7px] font-medium leading-[15px] ${
         status === 0
           ? "bg-[#F6FFF9] text-[#48C1B5]"
           : status === 1
