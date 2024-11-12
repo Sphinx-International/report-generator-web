@@ -8,7 +8,7 @@ type SecondaryFunc = {
 };
 
 type Functionalities = {
-  primaryFunc: SecondaryFunc;
+  primaryFunc?: SecondaryFunc;
   secondaryFuncs?: SecondaryFunc[];
 };
 
@@ -185,7 +185,10 @@ const Main: React.FC<MainProps> = (props) => {
                   {excutedFilter.map((filter, index) => {
                     // Only render if the page is not "new site" and filter.title is not "Missing return voucher"
                     if (
-                      !(props.page === "new site" && filter.title === "Missing return voucher")
+                      !(
+                        props.page === "new site" &&
+                        filter.title === "Missing return voucher"
+                      )
                     ) {
                       return (
                         <span
@@ -254,7 +257,7 @@ const Main: React.FC<MainProps> = (props) => {
                   );
                 })
               : null}
-            {props.functionalties && (
+            {props.functionalties && props.functionalties.primaryFunc && (
               <button
                 className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
                 onClick={props.handleAddPrimaryButtonClick}
@@ -335,7 +338,10 @@ const Main: React.FC<MainProps> = (props) => {
                     >
                       {excutedFilter.map((filter, index) => {
                         if (
-                          !(props.page === "new site" && filter.title === "Missing return voucher")
+                          !(
+                            props.page === "new site" &&
+                            filter.title === "Missing return voucher"
+                          )
                         ) {
                           return (
                             <sub
@@ -374,7 +380,7 @@ const Main: React.FC<MainProps> = (props) => {
         </div>
 
         <div className="flex items-center gap-3 flex-row-reverse">
-          {props.functionalties && (
+          {props.functionalties && props.functionalties.primaryFunc && (
             <button
               className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
               onClick={props.handleAddPrimaryButtonClick}

@@ -1,44 +1,34 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
-interface CustomSelectProps {
-  options: string[]; // Array of options passed as props
-  defaultValue?: string; // Optional default value
+interface CustomSelectProps<T> {
+  options: string[];
+  setState: Dispatch<SetStateAction<T>>;
+  onChangeCallback?: (value: T) => void; // Callback after selection
+  defaultValue?: string;
 }
 
-const CustomSelect: React.FC<CustomSelectProps> = ({ options, defaultValue }) => {
+function CustomSelect<T>({ options, setState, onChangeCallback, defaultValue }: CustomSelectProps<T>) {
   const [selectedValue, setSelectedValue] = useState(defaultValue || options[0]);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (value: string) => {
     setSelectedValue(value);
     setIsOpen(false);
+
+    // Cast value to T and update state
+    const newValue = options.indexOf(value) + 1 as T; // Convert index to match 1-based enums
+    setState(newValue);
+    if (onChangeCallback) onChangeCallback(newValue);
   };
+  
 
   return (
     <div className="relative w-full">
-      {/* Hidden select for accessibility */}
-      <select
-        id="type"
-        className="hidden"
-        value={selectedValue}
-        onChange={(e) => setSelectedValue(e.target.value)}
-      >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-
-      {/* Custom Dropdown */}
       <div
-        className="w-full rounded-[46px] h-[52px] shadow-md px-[24px] bg-white text-n700 flex items-center justify-between cursor-pointer"
+        className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] bg-white text-n700 flex items-center justify-between cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {/* Selected Value */}
         {selectedValue}
-
-        {/* Arrow Icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-5 w-5"
@@ -70,6 +60,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ options, defaultValue }) =>
       )}
     </div>
   );
-};
+}
 
 export default CustomSelect;

@@ -1,10 +1,26 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useState, FormEvent, MouseEvent, useEffect } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import "../../styles/PrioritySelector.css";
 import { handleCloseDialog } from "../../func/openDialog";
 import { RotatingLines } from "react-loader-spinner";
+import { User } from "../../assets/types/User";
+import useWebSocketSearch from "../../hooks/useWebSocketSearch";
+import { reqOrders } from "../../assets/types/LosCommands";
+import { ResSite, ResProjectType } from "../../assets/types/LosSites";
+import { fetchGroupMembers } from "../../func/groupsApi";
+import {
+  LosFormErrors,
+  validateLosForm1,
+  validateLosForm2,
+} from "../../func/los/validation/Validation";
+import { handleCreateOrder } from "../../func/los/orders";
+import { fetchProjectTypes } from "../../func/los/orders";
 
-const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
+interface LosPopupProps {
+  fetchOrders: ()=> void
+}
+
+const LosPopup = forwardRef<HTMLDialogElement,LosPopupProps>((props, ref) => {
   const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2>(1);
 
   const priorities = ["Low", "Medium", "High", "Urgent"];
@@ -20,7 +36,57 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
     useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  setIsLoading(false)
+
+  const [selectedEng, setSelectedEng] = useState<User | null>(null);
+
+  const [searchQueryEng, setSearchQueryEng] = useState("");
+  const [searchQueryCoord, setSearchQueryCoord] = useState("");
+
+  const [isFocusedAssignInput, setIsFocusedAssignInput] = useState(false);
+  const [isFocusedMailInput, setIsFocusedMailInput] = useState(false);
+
+  const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
+  const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
+
+  const [searchEngs, setSearchEngs] = useState<User[]>([]);
+  const [searchCoords, setSearchCoords] = useState<
+    { email: string; id: number; name: string }[]
+  >([]);
+  const [loaderGettingGroupMembers, setLoaderGettingGroupMembers] =
+    useState(false);
+  const [selectedCoord, setSelectedCoord] = useState<string[]>([]);
+
+  const [searchQueryNE, setSearchQueryNE] = useState<string>("");
+  const [searchQueryAlt, setSearchQueryAlt] = useState<string>("");
+
+  const [searchSitesNE, setSearchSitesNE] = useState<ResSite[]>([]);
+  const [selectedSitesNE, setSelectedSitesNE] = useState<ResSite | null>(null);
+
+  const [searchSitesAlt, setSearchSitesAlt] = useState<ResSite[]>([]);
+  const [selectedAlt, setSelectedAlt] = useState<ResSite[]>([]);
+
+  const [loaderWsSiteNE, setLoaderWsSiteNE] = useState(false);
+  const [loaderWsSiteAlt, setLoaderWsSiteAlt] = useState(false);
+
+  const [formValues, setformValues] = useState<reqOrders>({
+    type: null,
+    near_end_location: null,
+    priority: currentPriorityIndex,
+    alternative_far_ends: [],
+    execute_with_all_alternatives: false,
+    assigned_to: null,
+    emails: [],
+    attachments: [],
+  });
+
+  const [formErrs, setFormErrs] = useState<LosFormErrors>({});
+
+  // const [loaderProjectTypes, setLoaderProjectTypes] = useState(false);
+  const [openProjectTypesOptions, setOpenProjectTypesOptions] = useState(false);
+
+  const [projectTypes, setProjectTypes] = useState<ResProjectType[]>([]);
+  const [selectedProjectType, setSelectedProjectType] =
+    useState<ResProjectType>();
 
   const handlePreviousClick = () => {
     setCurrentPriorityIndex((prevIndex) => {
@@ -42,6 +108,105 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
     });
   };
 
+  const removeEng = () => {
+    setSelectedEng(null);
+    setformValues((prev) => ({
+      ...prev,
+      assigned_to: null,
+    }));
+  };
+  const removeCoord = (deletedItem: string) => {
+    setSelectedCoord((prev) => prev.filter((item) => item !== deletedItem));
+
+    setformValues((prev) => ({
+      ...prev,
+      emails: prev.emails.filter((item) => item !== deletedItem),
+    }));
+  };
+  const removeNE = () => {
+    setSelectedSitesNE(null);
+    setformValues((prev) => ({
+      ...prev,
+      near_end_location: null,
+    }));
+  };
+  const removeAlternative = (site: ResSite) => {
+    setformValues((prevFormValues) => ({
+      ...prevFormValues,
+      alternative_far_ends: prevFormValues.alternative_far_ends.filter(
+        (alt) => alt !== site.id
+      ),
+    }));
+
+    setSelectedAlt((prevSelectedAlt) =>
+      prevSelectedAlt.filter((alt) => alt.id !== site.id)
+    );
+  };
+  const handleFirst = (
+    e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    setFormErrs({});
+    const formErrors = validateLosForm1(formValues);
+
+    if (Object.keys(formErrors).length === 0) {
+      setCurrentSliderIndex(2);
+      setFormErrs({});
+    } else {
+      setFormErrs(formErrors);
+    }
+  };
+
+  const handleSecondSubmit = (
+    e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    setFormErrs({});
+    const formErrors = validateLosForm2(formValues);
+
+    if (Object.keys(formErrors).length === 0) {
+      handleCreateOrder(formValues, setIsLoading, ref, props.fetchOrders);
+      setFormErrs({});
+    } else {
+      setFormErrs(formErrors);
+    }
+  };
+
+  useWebSocketSearch({
+    searchQuery: searchQueryEng,
+    endpointPath: "search-account/engineer",
+    setResults: setSearchEngs,
+    setLoader: setLoaderAssignSearch,
+  });
+
+  useWebSocketSearch({
+    searchQuery: searchQueryCoord,
+    endpointPath:
+      typeOfSearchForCoord === "Emails" ? "search-mail" : "search-group",
+    setResults: setSearchCoords,
+    setLoader: setLoaderCoordSearch,
+  });
+
+  // ws of sites
+  useWebSocketSearch({
+    searchQuery: searchQueryNE,
+    endpointPath: "search-site",
+    setResults: setSearchSitesNE,
+    setLoader: setLoaderWsSiteNE,
+  });
+
+  useWebSocketSearch({
+    searchQuery: searchQueryAlt,
+    endpointPath: "search-site",
+    setResults: setSearchSitesAlt,
+    setLoader: setLoaderWsSiteAlt,
+  });
+
+  useEffect(() => {
+    fetchProjectTypes(setProjectTypes, setSelectedProjectType, setformValues);
+    return () => {};
+  }, []);
+
   return (
     <dialog
       ref={ref}
@@ -51,71 +216,154 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
       {currentSliderIndex === 1 ? (
         <form className="w-full flex flex-col gap-[30px]">
           <div className="flex items-center flex-col gap-[17.5px] w-full">
-            <div className="flex flex-col sm:flex-row items-start gap-[17px] w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center items-start gap-[17px] w-full">
               <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                 <label
-                  htmlFor="id"
+                  htmlFor="near_end_location"
                   className="leading-[21px] font-medium ml-[9px] text-n700"
                 >
-                  ID
+                  Site NE
                 </label>
-                <input
-                  type="text"
-                  name="id"
-                  id="id"
-                  placeholder="Enter id"
-                  className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
-                />
-                {/* formErrs.id !== "" && formErrs.title !== undefined && (
-                      <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                        {formErrs.id  } 
+                {formValues.near_end_location === null ? (
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      name="near_end_location"
+                      id="near_end_location"
+                      placeholder="Search for id"
+                      className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
+                      onChange={(e) => {
+                        setSearchQueryNE(e.target.value);
+                      }}
+                      value={searchQueryNE}
+                      onFocus={() => {
+                        setFormErrs((prevErrs) => ({
+                          ...prevErrs,
+                          siteNE: "",
+                        }));
+                      }}
+                    />
+                    {searchQueryNE !== "" && (
+                      <div className="bg-white rounded-[20px] w-full shadow-md absolute z-40 py-4 flex flex-col items-start gap-[10px]">
+                        {loaderWsSiteNE ? (
+                          <div className="w-full flex items-center justify-center">
+                            <RotatingLines strokeColor="#4A3AFF" width="20" />
+                          </div>
+                        ) : searchSitesNE && searchSitesNE.length > 0 ? (
+                          searchSitesNE.map((site, index) => {
+                            return (
+                              <div
+                                key={index}
+                                className="w-full px-4 flex items-center gap-2 hover:bg-slate-200 cursor-pointer"
+                                onClick={() => {
+                                  setformValues((prev) => ({
+                                    ...prev,
+                                    near_end_location: site.id,
+                                  }));
+                                  setSelectedSitesNE(site);
+                                  setSearchQueryNE("");
+                                }}
+                              >
+                                {" "}
+                                <img
+                                  src="/site.png"
+                                  alt="avatar"
+                                  className="w-[35px]"
+                                />
+                                <span className="text-550 text-[14px]">
+                                  {site.code}
+                                </span>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <span className="text-primary font-medium flex items-center justify-center w-full">
+                            no result founded..
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      {" "}
+                      <img src="/site.png" alt="avatar" className="w-[35px]" />
+                      <span
+                        className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-30 hover:opacity-100 cursor-pointer rounded-[50%]"
+                        onClick={removeNE}
+                      >
+                        🗙
                       </span>
-                    ) */}
-              </div>
-
-              <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
-                <label
-                  htmlFor="title"
-                  className="leading-[21px] font-medium ml-[9px] text-n700"
-                >
-                  Title
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  id="title"
-                  placeholder="Enter title"
-                  className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
-                />
-                {/* formErrs.title !== "" && formErrs.title !== undefined && (
-                      <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                        {formErrs.title}
-                      </span>
-                    )  */}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-start gap-[8px] w-full">
-              <label
-                htmlFor="description"
-                className="leading-[21px] font-medium ml-[9px] text-n700"
-              >
-                Description
-              </label>
-              <textarea
-                name="description"
-                id="description"
-                placeholder="Description"
-                className="rounded-[21px] border-[1px] border-n400 w-full p-[20px] h-[140px] max-h-[300px]"
-              />
-              {/* formErrs.description !== "" && (
-                    <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                      {formErrs.description}
+                    </div>
+                    <span className="text-n700 font-medium">
+                      {selectedSitesNE && selectedSitesNE.code}
                     </span>
-                  ) */}
+                  </div>
+                )}
+
+                {formErrs.siteNE !== "" && formErrs.siteNE !== undefined && (
+                  <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                    {formErrs.siteNE}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
+                <label
+                  htmlFor="type"
+                  className="leading-[21px] font-medium ml-[9px] text-n700"
+                >
+                  Los Type
+                </label>
+                <div className="relative w-full">
+                  <div
+                    className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] bg-white text-n700 flex items-center justify-between cursor-pointer"
+                    onClick={() =>
+                      setOpenProjectTypesOptions(!openProjectTypesOptions)
+                    }
+                  >
+                    {selectedProjectType ? selectedProjectType.name : "Still there is no LOS type yet !"}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+
+                  {openProjectTypesOptions && (
+                    <div className="absolute w-full mt-2 bg-white shadow-lg rounded-md z-10">
+                      {projectTypes.map((type, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                          onClick={() => {
+                            setSelectedProjectType(type);
+                            setOpenProjectTypesOptions(false);
+                            setformValues((prev) => ({
+                              ...prev,
+                              type: type.id,
+                            }));
+                          }}
+                        >
+                          {type.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row items-start gap-[17px] w-full">
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center items-start gap-[17px] w-full">
               <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                 <label
                   htmlFor="title"
@@ -124,112 +372,112 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                   Assigned to
                 </label>
 
-                {/* selectedEng ? (
-                      <div className="flex items-center gap-[8px] w-full">
-                        <div className="relative">
-                          {" "}
-                          <img
-                            src="avatar.png"
-                            alt="avatar"
-                            className="w-[40px"
-                          />
-                          <span
-                            className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-30 hover:opacity-100 cursor-pointer rounded-[50%]"
-                            onClick={removeEng}
-                          >
-                            🗙
-                          </span>
-                        </div>
-  
-                        <span className="text-550 text-[14px]">
-                          {selectedEng}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="relative w-full">
-                        <input
-                          type="search"
-                          name="assigned_to"
-                          id="assigned_to"
-                          value={searchQueryEng}
-                          className="w-full rounded-[19px] border-[1px] h-[47px] border-n400  pl-[40px] pr-[12px] md:text-[15px] text-[13px] text-n600"
-                          placeholder="Search members"
-                          onChange={(e) => {
-                            setSearchQueryEng(e.target.value);
-                          }}
-                          onFocus={() => setIsFocusedAssignInput(true)}
-                        />
-                        <svg
-                          className="absolute left-[14px] top-[50%] translate-y-[-50%]"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
-                            stroke="#6F6C8F"
-                            strokeWidth="1.5"
-                            fillOpacity="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
-                            stroke="#6F6C8F"
-                            strokeWidth="1.5"
-                            fillOpacity="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        {isFocusedAssignInput && searchQueryEng !== "" && (
-                          <div
-                            className="rounded-[20px] py-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px] z-50 overflow-auto"
-                            style={{ top: "100%", left: 0 }}
-                          >
-                            {loaderAssignSearch ? (
-                              <div className="w-full py-[10px] px-[18px] flex items-center justify-center">
-                                <RotatingLines
-                                  strokeWidth="4"
-                                  strokeColor="#4A3AFF"
-                                  width="20"
-                                />
-                              </div>
-                            ) : searchEngs !== null && searchEngs.length > 0 ? (
-                              searchEngs.map((eng) => {
-                                return (
-                                  <div
-                                    key={eng.id}
-                                    className="flex items-center gap-[8px] px-[18px] w-full cursor-pointer hover:bg-slate-100"
-                                    onClick={() => {
-                                      setformValues((prev) => ({
-                                        ...prev,
-                                        assigned_to: eng.email,
-                                      }));
-                                      setSelectedEng(eng.email);
-                                      setSearchQueryEng("");
-                                    }}
-                                  >
-                                    <img
-                                      src="avatar.png"
-                                      alt="avatar"
-                                      className="w-[35px]"
-                                    />
-                                    <span className="text-n700 text-[14px]">
-                                      {eng.email}
-                                    </span>
-                                  </div>
-                                );
-                              })
-                            ) : (
-                              <span className="text-n700 w-full flex justify-center text-[14px]">
-                                no result founded
-                              </span>
-                            )}
+                {selectedEng ? (
+                  <div className="flex items-center gap-[8px] w-full">
+                    <div className="relative">
+                      {" "}
+                      <img
+                        src="/avatar.png"
+                        alt="avatar"
+                        className="w-[40px]"
+                      />
+                      <span
+                        className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-30 hover:opacity-100 cursor-pointer rounded-[50%]"
+                        onClick={removeEng}
+                      >
+                        🗙
+                      </span>
+                    </div>
+
+                    <span className="text-550 text-[14px]">
+                      {selectedEng.email}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="relative w-full">
+                    <input
+                      type="search"
+                      name="assigned_to"
+                      id="assigned_to"
+                      value={searchQueryEng}
+                      className="w-full rounded-[19px] border-[1px] h-[47px] border-n400  pl-[40px] pr-[12px] md:text-[15px] text-[13px] text-n600"
+                      placeholder="Search members"
+                      onChange={(e) => {
+                        setSearchQueryEng(e.target.value);
+                      }}
+                      onFocus={() => setIsFocusedAssignInput(true)}
+                    />
+                    <svg
+                      className="absolute left-[14px] top-[50%] translate-y-[-50%]"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
+                        stroke="#6F6C8F"
+                        strokeWidth="1.5"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
+                        stroke="#6F6C8F"
+                        strokeWidth="1.5"
+                        fillOpacity="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {isFocusedAssignInput && searchQueryEng !== "" && (
+                      <div
+                        className="rounded-[20px] py-[18px] bg-white absolute w-full shadow-md flex flex-col gap-[12px] z-50 overflow-auto"
+                        style={{ top: "100%", left: 0 }}
+                      >
+                        {loaderAssignSearch ? (
+                          <div className="w-full py-[10px] px-[18px] flex items-center justify-center">
+                            <RotatingLines
+                              strokeWidth="4"
+                              strokeColor="#4A3AFF"
+                              width="20"
+                            />
                           </div>
+                        ) : searchEngs !== null && searchEngs.length > 0 ? (
+                          searchEngs.map((eng) => {
+                            return (
+                              <div
+                                key={eng.id}
+                                className="flex items-center gap-[8px] px-[18px] w-full cursor-pointer hover:bg-slate-100"
+                                onClick={() => {
+                                  setformValues((prev) => ({
+                                    ...prev,
+                                    assigned_to: eng.id,
+                                  }));
+                                  setSelectedEng(eng);
+                                  setSearchQueryEng("");
+                                }}
+                              >
+                                <img
+                                  src="/avatar.png"
+                                  alt="avatar"
+                                  className="w-[35px]"
+                                />
+                                <span className="text-n700 text-[14px]">
+                                  {eng.email}
+                                </span>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <span className="text-n700 w-full flex justify-center text-[14px]">
+                            no result founded
+                          </span>
                         )}
                       </div>
-                    )  */}
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-full">
                 <label
@@ -325,6 +573,135 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                 </div>
               </div>
             </div>
+
+            <div className="flex flex-col items-start gap-[8px] w-full ">
+              <label
+                htmlFor="alternative_far_ends"
+                className="leading-[21px] font-medium ml-[9px] text-n700"
+              >
+                Alternatives
+              </label>
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  name="alternative_far_ends"
+                  id="alternative_far_ends"
+                  placeholder="Search for a site"
+                  className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
+                  onChange={(e) => {
+                    setSearchQueryAlt(e.target.value);
+                  }}
+                  value={searchQueryAlt}
+                  onFocus={() => {
+                    setFormErrs((prevErrs) => ({
+                      ...prevErrs,
+                      alternatives: "",
+                    }));
+                  }}
+                />
+
+                {searchQueryAlt !== "" && (
+                  <div className="bg-white rounded-[20px] w-full shadow-md absolute z-40 py-4 flex flex-col items-start gap-[10px]">
+                    {loaderWsSiteAlt ? (
+                      <div className="w-full flex items-center justify-center">
+                        <RotatingLines strokeColor="#4A3AFF" width="20" />
+                      </div>
+                    ) : searchSitesAlt && searchSitesAlt.length > 0 ? (
+                      searchSitesAlt.map((site, index) => {
+                        return (
+                          <div
+                            key={index}
+                            className="w-full px-4 flex items-center gap-2 hover:bg-slate-200 cursor-pointer"
+                            onClick={() => {
+                              setformValues((prev) => {
+                                if (
+                                  !prev.alternative_far_ends.includes(site.id!)
+                                ) {
+                                  return {
+                                    ...prev,
+                                    alternative_far_ends: [
+                                      ...prev.alternative_far_ends,
+                                      site.id,
+                                    ],
+                                  };
+                                }
+                                return prev;
+                              });
+                              setSelectedAlt((prev) => {
+                                if (!prev.find((item) => item.id === site.id)) {
+                                  return [...prev, site];
+                                }
+                                return prev;
+                              });
+                              setSearchQueryAlt("");
+                            }}
+                          >
+                            {" "}
+                            <img
+                              src="/site.png"
+                              alt="site icon"
+                              className="w-[35px]"
+                            />
+                            <span className="text-550 text-[14px]">
+                              {site.code}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <span className="text-primary font-medium flex items-center justify-center w-full">
+                        no result founded..
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="w-full flex items-center gap-2 flex-wrap">
+                {selectedAlt.length > 0 &&
+                  selectedAlt.map((alt, index) => {
+                    return (
+                      <div
+                        key={index}
+                        className="relative px-[10px] py-[6px] rounded-[33px] border-primary border-[1px] group transition-all duration-300"
+                      >
+                        {/* Content to blur on hover */}
+                        <div className="flex items-center justify-center gap-5 group-hover:blur-sm transition-all duration-300">
+                          <div className="flex items-center gap-[6px]">
+                            <img
+                              src="/site.png"
+                              alt="site png"
+                              className="w-[23px]"
+                            />
+                            <span className="text-[14px] text-n600">
+                              {alt.code}
+                            </span>
+                          </div>
+                          <span className="text-n500 text-[13px]">
+                            {index + 1}
+                          </span>
+                        </div>
+
+                        {/* Remove Icon */}
+                        <span
+                          className="absolute inset-0 flex items-center justify-center opacity-0 text-[28px] font-bold text-red-500 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                          onClick={() => {
+                            removeAlternative(alt);
+                          }}
+                        >
+                          ×
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {formErrs.alternatives !== "" &&
+                formErrs.alternatives !== undefined && (
+                  <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                    {formErrs.alternatives}
+                  </span>
+                )}
+            </div>
           </div>
 
           <div className="w-full flex flex-row-reverse items-center justify-between">
@@ -341,8 +718,7 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
               <button
                 className="text-white sm:px-[42px] px-[36px] sm:py-[10px] py-[7px]  font-semibold rounded-[86px] bg-primary sm:text-[15px] text-[13px]"
                 onClick={(eo) => {
-                  eo.preventDefault();
-                  setCurrentSliderIndex(2);
+                  handleFirst(eo);
                 }}
               >
                 Next
@@ -353,13 +729,15 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                 type="checkbox"
                 id="acceptance"
                 className="hidden peer"
-                // checked={formValues.require_acceptence ? true : false}
-                /*  onChange={(e) => {
-                      setformValues((prev) => ({
-                        ...prev,
-                        require_acceptence: e.target.checked,
-                      })); 
-                    }} */
+                checked={
+                  formValues.execute_with_all_alternatives ? true : false
+                }
+                onChange={(e) => {
+                  setformValues((prev) => ({
+                    ...prev,
+                    execute_with_all_alternatives: e.target.checked,
+                  }));
+                }}
               />
               <label
                 htmlFor="acceptance"
@@ -383,7 +761,7 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                 htmlFor="acceptance"
                 className="text-550 text-[14px] leading-[20px] font-medium"
               >
-                Require acceptance
+                Executed with all alternatives
               </label>
             </div>
           </div>
@@ -403,13 +781,19 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                   type="search"
                   name="mailed_users"
                   id=""
-                  // value={searchQueryCoord}
+                  value={searchQueryCoord}
                   className="w-full rounded-[19px] border-[1px] h-[47px] border-n400  pl-[40px] pr-[12px] md:text-[15px] text-[13px] text-n600"
                   placeholder="Search members"
-                  /*  onChange={(e) => {
-                        setSearchQueryCoord(e.target.value);
-                      }}
-                      onFocus={handleFocusMailedUsersInput} */
+                  onChange={(e) => {
+                    setSearchQueryCoord(e.target.value);
+                  }}
+                  onFocus={() => {
+                    setIsFocusedMailInput(true);
+                    setFormErrs((prevErrs) => ({
+                      ...prevErrs,
+                      emails: "",
+                    }));
+                  }}
                 />
                 <svg
                   className="absolute left-[14px] top-[50%] translate-y-[-50%]"
@@ -495,7 +879,7 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                   )}
                 </div>
 
-                {/* isFocusedMailInput && searchQueryCoord !== "" ? (
+                {isFocusedMailInput && searchQueryCoord !== "" ? (
                   <div className="rounded-[20px] py-[18px] z-40 bg-white absolute w-full shadow-md flex flex-col gap-[12px]">
                     {loaderCoordSearch ? (
                       <div className="w-full px-[18px] py-[10px] flex items-center justify-center">
@@ -531,7 +915,7 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                             }}
                           >
                             <img
-                              src="avatar.png"
+                              src="/avatar.png"
                               alt="avatar"
                               className="w-[35px]"
                             />
@@ -554,7 +938,7 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                             }}
                           >
                             <img
-                              src="avatar.png"
+                              src="/avatar.png"
                               alt="avatar"
                               className="w-[35px]"
                             />
@@ -577,8 +961,41 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                       Getting group members ...
                     </div>
                   )
-                )  */}
+                )}
               </div>
+              {formErrs.emails !== "" && formErrs.emails !== undefined ? (
+                <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
+                  {formErrs.emails}
+                </span>
+              ) : (
+                selectedCoord && (
+                  <div className="flex items-center gap-[5px] pl-4">
+                    {selectedCoord.map((coord, index) => {
+                      return (
+                        <div className="relative group" key={index}>
+                          <img
+                            src="/avatar1.png"
+                            alt="avatar"
+                            className="w-[35px]"
+                          />
+                          <span
+                            className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
+                            onClick={() => {
+                              removeCoord(coord);
+                            }}
+                          >
+                            🗙
+                          </span>
+                          {/* Tooltip */}
+                          <div className="absolute left-[%65] transform -translate-x-1/3 bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-60">
+                            {coord}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              )}
             </div>
 
             <div
@@ -653,45 +1070,6 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
                   </div>
                 )
               : null  */}
-
-            <div className="items-center gap-[7px] sm:hidden flex">
-              <input
-                type="checkbox"
-                id="acceptance"
-                className="hidden peer"
-                /* checked={formValues.require_acceptence ? true : false}
-                onChange={(e) => {
-                  setformValues((prev) => ({
-                    ...prev,
-                    require_acceptence: e.target.checked,
-                  }));
-                }}  */
-              />
-              <label
-                htmlFor="acceptance"
-                className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-550 flex items-center justify-center cursor-pointer"
-              >
-                <svg
-                  className="text-white hidden"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="12"
-                  height="10"
-                  viewBox="0 0 12 10"
-                  fill="none"
-                >
-                  <path
-                    d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
-                    fill="white"
-                  />
-                </svg>
-              </label>
-              <label
-                htmlFor="acceptance"
-                className="text-550 text-[14px] leading-[20px] font-medium"
-              >
-                Require acceptance
-              </label>
-            </div>
           </div>
 
           <div className="flex items-center gap-[6px]">
@@ -707,9 +1085,9 @@ const LosPopup = forwardRef<HTMLDialogElement>((_, ref) => {
               className={`text-white sm:px-[42px] px-[36px] sm:py-[10px] py-[7px]  font-semibold rounded-[86px] sm:text-[15px] text-[13px] ${
                 isLoading ? "bg-n600 cursor-not-allowed" : "bg-primary"
               }`}
-              /* onClick={(e) => {
+              onClick={(e) => {
                 handleSecondSubmit(e);
-              }}  */
+              }}
               disabled={isLoading ? true : false}
             >
               {isLoading ? (

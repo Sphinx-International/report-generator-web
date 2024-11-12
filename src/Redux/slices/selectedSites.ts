@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface SelectedSites {
-  SitesTab: string[];
+  SitesTab: number[];
 }
 
 const initialState: SelectedSites = {
@@ -15,7 +15,7 @@ const selectedSitesSlice = createSlice({
     deleteSelectedSites(state) {
       state.SitesTab = [];
     },
-    toggleSitesInTab(state, action: PayloadAction<string>) {
+    toggleSitesInTab(state, action: PayloadAction<number>) {
       const site = action.payload;
       const siteIndex = state.SitesTab.indexOf(site);
       if (siteIndex !== -1) {

@@ -2,16 +2,21 @@ import { forwardRef, useState, MouseEvent } from "react";
 import { useDispatch } from "react-redux";
 import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
 import { deleteSelectedExtantions } from "../Redux/slices/selectedExtantionsSlice";
+import { deleteSelectedSites } from "../Redux/slices/selectedSites";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 
 interface DeletePopUpProps {
-  page: "workorders" | "accounts" | "modernisation" | "new site";
+  page: "workorders" | "accounts" | "modernisation" | "new site" | "sites";
   deleteItems: number[] | string[];
-  deleteUrl: string
-  jsonTitle:string
+  deleteUrl: string;
+  jsonTitle: string;
   fetchUrl: string;
-  fetchFunc: (offset: number, limit: number,status?:string) => Promise<{ total: number; current_offset: number} | undefined>;
+  fetchFunc: (
+    offset: number,
+    limit: number,
+    status?: string
+  ) => Promise<{ total: number; current_offset: number } | undefined>;
   currentPage: number;
   setCurrentPage: (page: number) => void;
   limit: number;
@@ -19,7 +24,6 @@ interface DeletePopUpProps {
 
 const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
   (props, ref) => {
-
     const dispatch = useDispatch<AppDispatch>();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -36,32 +40,36 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
 
     const handleDeleteItems = async (e: React.FormEvent) => {
       e.preventDefault();
-    
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
         console.error("No token found");
         return;
       }
       setIsLoading(true);
-    
+
       try {
         // Fetch current users to determine if deletion will empty the current page
-        const initialResponse = await fetch(`${props.fetchUrl}?offset=${(props.currentPage - 1) * props.limit}&limit=${props.limit}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-        });
-    
+        const initialResponse = await fetch(
+          `${props.fetchUrl}?offset=${
+            (props.currentPage - 1) * props.limit
+          }&limit=${props.limit}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Token ${token}`,
+            },
+          }
+        );
+
         if (!initialResponse.ok) {
-          console.error("Failed to fetch users before deletion");
-          throw new Error("Failed to fetch users before deletion");
+          console.error(`Failed to fetch ${props.page} before deletion`);
         }
-    
+
         const initialData = await initialResponse.json();
         const initialUserCount = initialData.data.length;
-    
 
         // Perform deletion
         const response = await fetch(`${props.deleteUrl}`, {
@@ -74,49 +82,81 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
             [props.jsonTitle]: props.deleteItems,
           }),
         });
-    
+
         if (!response.ok) {
-          console.error("Error deleting users:", await response.text());
-          alert("Failed to delete users");
+          console.error("Error deleting items:", await response.text());
+          alert("Failed to delete items");
           return;
-        }    
+        }
         // Determine if the current page is empty after deletion
         const newUserCount = initialUserCount - props.deleteItems.length;
         if (props.page !== "accounts") {
-          if (localStorage.getItem("selectedFilterForWorkorders") === "all" || !localStorage.getItem("selectedFilterForWorkorders") ) {
+          if (
+            localStorage.getItem("selectedFilterForWorkorders") === "all" ||
+            !localStorage.getItem("selectedFilterForWorkorders")
+          ) {
             if (newUserCount === 0 && props.currentPage > 1) {
-              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit);
+              await props.fetchFunc(
+                (props.currentPage - 2) * props.limit,
+                props.limit
+              );
               props.setCurrentPage(props.currentPage - 1);
             } else {
-              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit);
+              await props.fetchFunc(
+                (props.currentPage - 1) * props.limit,
+                props.limit
+              );
             }
-          }else{
+          } else {
             if (newUserCount === 0 && props.currentPage > 1) {
-              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit,localStorage.getItem("selectedFilterForWorkorders")!);
+              await props.fetchFunc(
+                (props.currentPage - 2) * props.limit,
+                props.limit,
+                localStorage.getItem("selectedFilterForWorkorders")!
+              );
               props.setCurrentPage(props.currentPage - 1);
             } else {
-              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilterForWorkorders")!);
+              await props.fetchFunc(
+                (props.currentPage - 1) * props.limit,
+                props.limit,
+                localStorage.getItem("selectedFilterForWorkorders")!
+              );
             }
           }
         } else {
-          if (localStorage.getItem("selectedFilterForUsers") === "all" || !localStorage.getItem("selectedFilterForUsers") ) {
+          if (
+            localStorage.getItem("selectedFilterForUsers") === "all" ||
+            !localStorage.getItem("selectedFilterForUsers")
+          ) {
             if (newUserCount === 0 && props.currentPage > 1) {
-              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit);
+              await props.fetchFunc(
+                (props.currentPage - 2) * props.limit,
+                props.limit
+              );
               props.setCurrentPage(props.currentPage - 1);
             } else {
-              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit);
+              await props.fetchFunc(
+                (props.currentPage - 1) * props.limit,
+                props.limit
+              );
             }
-          }else{
+          } else {
             if (newUserCount === 0 && props.currentPage > 1) {
-              await props.fetchFunc((props.currentPage - 2) * props.limit, props.limit,localStorage.getItem("selectedFilterForUsers")!);
+              await props.fetchFunc(
+                (props.currentPage - 2) * props.limit,
+                props.limit,
+                localStorage.getItem("selectedFilterForUsers")!
+              );
               props.setCurrentPage(props.currentPage - 1);
             } else {
-              await props.fetchFunc((props.currentPage - 1) * props.limit, props.limit,localStorage.getItem("selectedFilterForUsers")!);
+              await props.fetchFunc(
+                (props.currentPage - 1) * props.limit,
+                props.limit,
+                localStorage.getItem("selectedFilterForUsers")!
+              );
             }
           }
         }
-
-
       } catch (error) {
         console.error("Error deleting users:", error);
         alert("Failed to delete items");
@@ -125,10 +165,10 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         closeDialog(e);
         dispatch(deleteSelectedUsers());
         dispatch(deleteSelectedExtantions());
-
+        dispatch(deleteSelectedSites());
       }
     };
-    
+
     return (
       <dialog
         ref={ref}
@@ -149,7 +189,11 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
             />
           </svg>
           <p className="sm:text-[18px] text-[15px] font-semibold text-center text-[#25282B]">
-            Are you sure you want to delete this {props.jsonTitle} {props.jsonTitle ==="accounts" ? "and their associated workorders" :null}?
+            Are you sure you want to delete this {props.jsonTitle}{" "}
+            {props.jsonTitle === "accounts"
+              ? "and their associated workorders"
+              : null}
+            ?
           </p>
         </div>
         <div className="flex items-center gap-[6px]">
@@ -159,8 +203,11 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
               handleDeleteItems(e);
             }}
           >
-            {isLoading ? <RotatingLines strokeColor="white" width="20"/> : "Yes"}
-            
+            {isLoading ? (
+              <RotatingLines strokeColor="white" width="20" />
+            ) : (
+              "Yes"
+            )}
           </button>
           <button
             className="text-n600 sm:px-[56px] sm:py-[12.5px] px-[40px] py-[8px] rounded-[86px] bg-n300 text-[14px] border-[1px] border-n400"
