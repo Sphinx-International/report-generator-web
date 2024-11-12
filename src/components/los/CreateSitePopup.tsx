@@ -1015,9 +1015,9 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     options={[
                       "Building Rooftop (RT)",
                       "Wall Tower (WT)",
-                      "MICRO",
-                      "Ground Floor (GF)",
-                      "Small Mast (SM)",
+                      "Microcell (MICRO)",
+                      "Greenfield (GF)",
+                      "Mobile Station (MS)"
                     ]}
                     setState={setSiteType}
                   />

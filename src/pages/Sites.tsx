@@ -98,7 +98,7 @@ const Sites = () => {
           {
             const data = await response.json();
             setSites(data.data);
-            console.log(data)
+            console.log(data);
             // setTotalWorkorders(data.total);
             return { total: data.total, current_offset: offset };
           }
@@ -217,13 +217,23 @@ const Sites = () => {
                             {site.state}
                           </span>
                           <span className="w-[16%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            4°44’19.0"
+                            {site.location.longitude}
                           </span>
                           <span className="w-[16%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            36°04’21.2"
+                            {site.location.latitude}
                           </span>
                           <span className="w-[22%] text-center leading-[18px] text-[11px] text-n800 font-medium">
-                            Building Rooftop (RT)
+                            {site.location.type === 1
+                              ? "Building Rooftop (RT)"
+                              : site.location.type === 2
+                              ? "Wall Tower (WT)"
+                              : site.location.type === 3
+                              ? "Microcell (MICRO)"
+                              : site.location.type === 4
+                              ? "Greenfield (GF)"
+                              : site.location.type === 5
+                              ? "Mobile Station (MS)"
+                              : null}
                           </span>
                           <span className="w-[14%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
                             <Link to={`/edit-site/{user.email}`}>

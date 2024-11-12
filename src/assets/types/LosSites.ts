@@ -11,8 +11,22 @@ export interface ReqSite {
   longitude: number | null;
 }
 
+export interface ResLocation {
+  id: number;
+  district: string;
+  municipality: string;
+  type: 1 | 2 | 3 | 4 | 5;
+  building_height: number;
+  site_height: number;
+  latitude: number;
+  longitude: number;
+  updated_at: Date;
+  site: number;
+}
+
 export interface ResSite {
   id: number;
+  location: ResLocation;
   code: string;
   region: 1 | 2 | 3;
   state: string;
