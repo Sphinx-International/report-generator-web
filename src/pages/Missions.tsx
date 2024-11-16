@@ -66,7 +66,6 @@ const Missions = () => {
     if (selectedWorkorders.length === 0) {
       return;
     }
-    // Perform the action when users are selected
     const dialog = deleteDialogRef.current;
     if (dialog) {
       dialog.style.display = "flex";
@@ -184,13 +183,6 @@ const Missions = () => {
       setIsLoading(false);
     }
   };
-
-  const handleFirstPage = () => setCurrentPage(1);
-  const handlePreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleLastPage = () => setCurrentPage(totalPages);
 
   useEffect(() => {
     const filter = localStorage.getItem("selectedFilterForWorkorders");
@@ -626,11 +618,8 @@ const Missions = () => {
                     buttonTitle="Add workorder"
                     buttonFunc={handladdMissionButtonClick}
                     currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
                     totalPages={totalPages}
-                    onFirstPage={handleFirstPage}
-                    onPreviousPage={handlePreviousPage}
-                    onNextPage={handleNextPage}
-                    onLastPage={handleLastPage}
                   />
                 </div>
               </div>

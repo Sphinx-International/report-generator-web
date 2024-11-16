@@ -9,6 +9,12 @@ import {
   validateForm2,
 } from "../../func/los/validation/Validation";
 import { RotatingLines } from "react-loader-spinner";
+import {
+  updateDMSFromDecimal,
+  handleDMSChange,
+  handleDMSDirectionChange,
+  DimensionDMS,
+} from "../../func/los/Dms_Decimal";
 
 interface CreateSitePopupProps {
   fetchSites: () => void;
@@ -21,13 +27,6 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
     const [regionNumber, setRegionNumber] = useState<1 | 2 | 3>(1);
     const [siteType, setSiteType] = useState<1 | 2 | 3 | 4 | 5>(1);
     const [validationErrors, setvalidationErrors] = useState<SiteFormErrors>();
-
-    type DimensionDMS = {
-      degrees: number | null;
-      minutes: number | null;
-      seconds: number | string | null;
-      direction: "N" | "S" | "E" | "W";
-    };
 
     const [latitude, setLatitude] = useState<DimensionDMS>({
       degrees: null,
@@ -56,8 +55,6 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
       longitude: null,
     });
 
-    console.log(formValue.latitude);
-
     const [loading, setloading] = useState<boolean>(false);
 
     const updateFormValue = <K extends keyof ReqSite>(
@@ -73,7 +70,6 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = event.target;
 
-      // Casting `value` based on the key type
       if (
         name === "region" ||
         name === "type" ||
@@ -92,135 +88,6 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
       } else {
         updateFormValue(name as keyof ReqSite, value);
       }
-    };
-
-    const decimalToDMS = (decimal: number, isLatitude: boolean = true) => {
-      const degrees = Math.floor(Math.abs(decimal));
-      const minutesDecimal = (Math.abs(decimal) - degrees) * 60;
-      const minutes = Math.floor(minutesDecimal);
-      const seconds = ((minutesDecimal - minutes) * 60).toFixed(8);
-
-      const direction = isLatitude
-        ? decimal >= 0
-          ? "N"
-          : "S"
-        : decimal >= 0
-        ? "E"
-        : "W";
-
-      return {
-        degrees: degrees,
-        minutes: minutes,
-        seconds: parseFloat(seconds),
-        direction: direction as "N" | "S" | "E" | "W",
-      };
-    };
-
-    const updateDMSFromDecimal = (
-      decimal: string,
-      setDMS: React.Dispatch<
-        React.SetStateAction<{
-          degrees: number | null;
-          minutes: number | null;
-          seconds: number | string | null;
-          direction: "N" | "S" | "E" | "W";
-        }>
-      >,
-      isLatitude: boolean
-    ) => {
-      const { degrees, minutes, seconds, direction } = decimalToDMS(
-        Number(decimal),
-        isLatitude
-      );
-
-      setDMS({
-        degrees: degrees ?? null,
-        minutes: minutes ?? null,
-        seconds: seconds ?? null,
-        direction: direction as "N" | "S" | "E" | "W",
-      });
-
-      // Update formValue with the decimal value
-      setFormValue((prevFormValue) => ({
-        ...prevFormValue,
-        [isLatitude ? "latitude" : "longitude"]: decimal,
-      }));
-    };
-
-    function DMSToDecimal(
-      degrees: number,
-      minutes: number,
-      seconds: number,
-      direction: "N" | "S" | "E" | "W"
-    ): number {
-      let decimal =
-        Number(degrees) + Number(minutes) / 60 + Number(seconds) / 3600;
-
-      // Make decimal negative if direction is S (south) or W (west)
-      if (direction === "S" || direction === "W") {
-        decimal = -decimal;
-      }
-
-      return decimal;
-    }
-
-    const handleDMSChange = (
-      e: React.ChangeEvent<HTMLInputElement>,
-      setDMS: React.Dispatch<React.SetStateAction<DimensionDMS>>,
-      isLatitude: boolean
-    ) => {
-      const { name, value } = e.target;
-
-      setDMS((prevState) => {
-        const updatedState = {
-          ...prevState,
-          [name]: value === "" ? null : value,
-        };
-
-        // Determine the direction based on isLatitude flag
-        const decimalValue = DMSToDecimal(
-          updatedState.degrees || 0, // Use 0 if null for calculation
-          updatedState.minutes || 0,
-          Number(updatedState.seconds) || 0,
-          updatedState.direction
-        );
-
-        setFormValue((prevFormValue) => ({
-          ...prevFormValue,
-          [isLatitude ? "latitude" : "longitude"]: decimalValue,
-        }));
-
-        return updatedState;
-      });
-    };
-
-    const handleDMSDirectionChange = (
-      e: React.ChangeEvent<HTMLInputElement>,
-      setDMS: React.Dispatch<React.SetStateAction<DimensionDMS>>,
-      isLatitude: boolean
-    ) => {
-      const { value } = e.target;
-
-      setDMS((prevState) => {
-        const updatedState = {
-          ...prevState,
-          direction: value as "N" | "S" | "E" | "W",
-        };
-
-        const decimalValue = DMSToDecimal(
-          updatedState.degrees || 0,
-          updatedState.minutes || 0,
-          Number(updatedState.seconds) || 0,
-          updatedState.direction
-        );
-
-        setFormValue((prevFormValue) => ({
-          ...prevFormValue,
-          [isLatitude ? "latitude" : "longitude"]: decimalValue,
-        }));
-
-        return updatedState;
-      });
     };
 
     const handleFirstSubmit = (
@@ -511,7 +378,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           parseInt(value, 10) >= 0 &&
                           parseInt(value, 10) <= 90)
                       ) {
-                        handleDMSChange(e, setLatitude, true);
+                        handleDMSChange(e, setLatitude, true, setFormValue);
                       }
                     }}
                   />
@@ -533,7 +400,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           parseInt(value, 10) >= 0 &&
                           parseInt(value, 10) <= 59)
                       ) {
-                        handleDMSChange(e, setLatitude, true);
+                        handleDMSChange(e, setLatitude, true, setFormValue);
                       }
                     }}
                   />
@@ -565,7 +432,12 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           },
                         } as React.ChangeEvent<HTMLInputElement>;
 
-                        handleDMSChange(modifiedEvent, setLatitude, true);
+                        handleDMSChange(
+                          modifiedEvent,
+                          setLatitude,
+                          true,
+                          setFormValue
+                        );
                       }
                     }}
                     onInput={(e) => {
@@ -596,7 +468,12 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           value="N"
                           checked={latitude.direction === "N"}
                           onChange={(e) =>
-                            handleDMSDirectionChange(e, setLatitude, true)
+                            handleDMSDirectionChange(
+                              e,
+                              setLatitude,
+                              true,
+                              setFormValue
+                            )
                           }
                         />
                         <label
@@ -621,7 +498,12 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           className="hidden peer"
                           checked={latitude.direction === "S"}
                           onChange={(e) =>
-                            handleDMSDirectionChange(e, setLatitude, true)
+                            handleDMSDirectionChange(
+                              e,
+                              setLatitude,
+                              true,
+                              setFormValue
+                            )
                           }
                         />
                         <label
@@ -639,29 +521,44 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   </div>
                 </div>
                 <input
-                  type="text" // Change type to "text" to allow commas and signs
+                  type="text"
                   id="dec-latitude"
                   name="latitude"
-                  value={formValue.latitude ? formValue.latitude : ""}
+                  value={formValue.latitude || ""}
                   placeholder="Decimal"
                   className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
                   onChange={(e) => {
-                    const target = e.target;
-                    const value = target.value.replace(",", "."); // Replace comma with dot
+                    let value = e.target.value.replace(",", "."); // Replace comma with dot
+
+                    if (value.startsWith("-")) {
+                      value = "-" + value.slice(1).replace(/[^0-9.]/g, "");
+                    } else {
+                      value = value.replace(/[^0-9.]/g, "");
+                    }
+
+                    if (value.split(".").length > 2) {
+                      value = value.slice(0, -1);
+                    }
 
                     if (
-                      value === "" ||
-                      (/^[-+]?\d*\.?\d*$/.test(value) &&
+                      value === "" || // Allow clearing the input
+                      value === "-" || // Allow just a minus sign initially
+                      (/^-?\d*\.?\d*$/.test(value) &&
                         parseFloat(value) >= -90 &&
                         parseFloat(value) <= 90)
                     ) {
-                      updateDMSFromDecimal(value, setLatitude, true);
+                      updateDMSFromDecimal(
+                        value,
+                        setLatitude,
+                        true,
+                        setFormValue
+                      );
                     }
                   }}
                   onInput={(e) => {
                     const target = e.target as HTMLInputElement;
-                    // Allow digits, commas, and dots
-                    target.value = target.value.replace(/[^\d,.]/g, "");
+                    // Allow only digits, commas, dots, and one minus sign at the beginning
+                    target.value = target.value.replace(/(?!^-)[^\d,.]/g, "");
                   }}
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     const target = e.currentTarget;
@@ -669,7 +566,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       (e.key === "," || e.key === ".") &&
                       (target.value.includes(",") || target.value.includes("."))
                     ) {
-                      e.preventDefault();
+                      e.preventDefault(); // Prevent multiple decimal points
                     }
                   }}
                 />
@@ -725,7 +622,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           parseInt(value, 10) >= 0 &&
                           parseInt(value, 10) <= 180)
                       ) {
-                        handleDMSChange(e, setLongitude, false);
+                        handleDMSChange(e, setLongitude, false, setFormValue);
                       }
                     }}
                     value={longitude.degrees ? longitude.degrees : ""}
@@ -747,7 +644,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           parseInt(value, 10) >= 0 &&
                           parseInt(value, 10) <= 59)
                       ) {
-                        handleDMSChange(e, setLongitude, false);
+                        handleDMSChange(e, setLongitude, false, setFormValue);
                       }
                     }}
                     value={longitude.minutes ? longitude.minutes : ""}
@@ -776,7 +673,12 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                             value: value,
                           },
                         } as React.ChangeEvent<HTMLInputElement>;
-                        handleDMSChange(modifiedEvent, setLongitude, false);
+                        handleDMSChange(
+                          modifiedEvent,
+                          setLongitude,
+                          false,
+                          setFormValue
+                        );
                       }
                     }}
                     onInput={(e: React.FormEvent<HTMLInputElement>) => {
@@ -808,7 +710,12 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           value="E"
                           checked={longitude.direction === "E"}
                           onChange={(e) =>
-                            handleDMSDirectionChange(e, setLongitude, false)
+                            handleDMSDirectionChange(
+                              e,
+                              setLongitude,
+                              false,
+                              setFormValue
+                            )
                           }
                         />
                         <label
@@ -833,7 +740,12 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                           value="W"
                           checked={longitude.direction === "W"}
                           onChange={(e) =>
-                            handleDMSDirectionChange(e, setLongitude, false)
+                            handleDMSDirectionChange(
+                              e,
+                              setLongitude,
+                              false,
+                              setFormValue
+                            )
                           }
                         />
                         <label
@@ -854,26 +766,44 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   type="text"
                   name="longitude"
                   id="longitude"
-                  value={formValue.longitude ? formValue.longitude : ""}
+                  value={formValue.longitude || ""}
                   placeholder="Decimal"
                   className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
                   onChange={(e) => {
-                    const target = e.target;
-                    const value = target.value.replace(",", ".");
+                    let value = e.target.value.replace(",", "."); // Replace comma with dot
 
+                    // Allow only a minus at the beginning, numbers, and a single dot
+                    if (value.startsWith("-")) {
+                      value = "-" + value.slice(1).replace(/[^0-9.]/g, "");
+                    } else {
+                      value = value.replace(/[^0-9.]/g, "");
+                    }
+
+                    // Ensure only one decimal point
+                    if (value.split(".").length > 2) {
+                      value = value.slice(0, -1); // Remove extra dots
+                    }
+
+                    // Allow an empty string, a single "-", or values within range -180 to 180
                     if (
-                      value === "" ||
-                      (/^[-+]?\d*\.?\d*$/.test(value) &&
+                      value === "" || // Allow clearing the input
+                      value === "-" || // Allow just a minus sign initially
+                      (/^-?\d*\.?\d*$/.test(value) &&
                         parseFloat(value) >= -180 &&
                         parseFloat(value) <= 180)
                     ) {
-                      updateDMSFromDecimal(value, setLongitude, false);
+                      updateDMSFromDecimal(
+                        value,
+                        setLongitude,
+                        false,
+                        setFormValue
+                      );
                     }
                   }}
                   onInput={(e) => {
                     const target = e.target as HTMLInputElement;
-                    // Allow digits, commas, and dots
-                    target.value = target.value.replace(/[^\d,.]/g, "");
+                    // Allow only digits, commas, dots, and one minus sign at the beginning
+                    target.value = target.value.replace(/(?!^-)[^\d,.]/g, "");
                   }}
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     const target = e.currentTarget;
@@ -881,7 +811,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       (e.key === "," || e.key === ".") &&
                       (target.value.includes(",") || target.value.includes("."))
                     ) {
-                      e.preventDefault();
+                      e.preventDefault(); // Prevent multiple decimal points
                     }
                   }}
                 />
@@ -989,7 +919,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       htmlFor="site_height"
                       className="text-[15px] text-550 leading-[20px] font-medium"
                     >
-                      Site height
+                      Structure height
                     </label>
                   </div>
                   <input
@@ -1017,7 +947,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       "Wall Tower (WT)",
                       "Microcell (MICRO)",
                       "Greenfield (GF)",
-                      "Mobile Station (MS)"
+                      "Mobile Station (MS)",
                     ]}
                     setState={setSiteType}
                   />

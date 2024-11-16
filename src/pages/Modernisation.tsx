@@ -193,12 +193,6 @@ const Modernisation = () => {
     }
   };
 
-  const handleFirstPage = () => setCurrentPage(1);
-  const handlePreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleLastPage = () => setCurrentPage(totalPages);
 
   useEffect(() => {
     const filter = localStorage.getItem("selectedFilterForWorkorders");
@@ -638,11 +632,8 @@ const Modernisation = () => {
                     buttonTitle="Add modernisations"
                     buttonFunc={handladdMissionButtonClick}
                     currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
                     totalPages={totalPages}
-                    onFirstPage={handleFirstPage}
-                    onPreviousPage={handlePreviousPage}
-                    onNextPage={handleNextPage}
-                    onLastPage={handleLastPage}
                   />
                 </div>
               </div>

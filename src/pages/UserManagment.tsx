@@ -167,13 +167,6 @@ const UserManagment = () => {
 
   const totalPages = Math.ceil(total / limit);
 
-  const handleFirstPage = () => setCurrentPage(1);
-  const handlePreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleLastPage = () => setCurrentPage(totalPages);
-
   const handleSpanClick = () => {
     if (selectedUsers.length === 0) {
       return;
@@ -443,11 +436,8 @@ const UserManagment = () => {
               buttonTitle="add user +"
               buttonFunc={handleAddUserButtonClick}
               currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
               totalPages={totalPages}
-              onFirstPage={handleFirstPage}
-              onPreviousPage={handlePreviousPage}
-              onNextPage={handleNextPage}
-              onLastPage={handleLastPage}
             />
           </div>
         </Main>

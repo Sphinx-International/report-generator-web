@@ -3,11 +3,18 @@ import { useDispatch } from "react-redux";
 import { deleteSelectedUsers } from "../Redux/slices//selectedUsersSlice";
 import { deleteSelectedExtantions } from "../Redux/slices/selectedExtantionsSlice";
 import { deleteSelectedSites } from "../Redux/slices/selectedSites";
+import { deleteSelectedLosOrders } from "../Redux/slices/selectedLosOrders";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 
 interface DeletePopUpProps {
-  page: "workorders" | "accounts" | "modernisation" | "new site" | "sites";
+  page:
+    | "workorders"
+    | "accounts"
+    | "modernisation"
+    | "new site"
+    | "sites"
+    | "los orders";
   deleteItems: number[] | string[];
   deleteUrl: string;
   jsonTitle: string;
@@ -166,6 +173,7 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         dispatch(deleteSelectedUsers());
         dispatch(deleteSelectedExtantions());
         dispatch(deleteSelectedSites());
+        dispatch(deleteSelectedLosOrders());
       }
     };
 

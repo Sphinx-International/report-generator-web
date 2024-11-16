@@ -19,10 +19,23 @@ export const validateForm1 = (formValues: ReqSite): SiteFormErrors => {
   if (formValues.district === "") formErrors.daira = "Daira is required";
   if (formValues.municipality === "")
     formErrors.baladia = "Baladia is required";
-  if (formValues.latitude === 0 || formValues.latitude === null)
+  if (
+    formValues.latitude === 0 ||
+    formValues.latitude === null ||
+    String(formValues.latitude) === ""
+  )
     formErrors.latitude = "Latitude is required";
-  if (formValues.longitude === 0 || formValues.longitude === null)
+
+  if (String(formValues.latitude) === "-")
+    formErrors.latitude = "Enter valid latitude value";
+  if (
+    formValues.longitude === 0 ||
+    formValues.longitude === null ||
+    String(formValues.longitude) === ""
+  )
     formErrors.longitude = "Longitude is required";
+  if (String(formValues.longitude) === "-")
+    formErrors.longitude = "Enter valid longitude value";
   return formErrors;
 };
 
@@ -119,7 +132,10 @@ export const validateLosForm1 = (formValues: reqOrders): LosFormErrors => {
   const formErrors: LosFormErrors = {};
   if (formValues.near_end_location === null)
     formErrors.siteNE = "Choose a near end location";
-  if (formValues.alternative_far_ends === null || formValues.alternative_far_ends.length === 0)
+  if (
+    formValues.alternative_far_ends === null ||
+    formValues.alternative_far_ends.length === 0
+  )
     formErrors.alternatives = "At least choose one alt";
   return formErrors;
 };

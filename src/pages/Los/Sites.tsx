@@ -1,19 +1,19 @@
-import SideBar from "../components/SideBar";
-import Header from "../components/Header";
+import SideBar from "../../components/SideBar";
+import Header from "../../components/Header";
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { RotatingLines } from "react-loader-spinner";
-import SearchBar from "../components/searchBar";
+import SearchBar from "../../components/searchBar";
 import { useDispatch } from "react-redux";
-import { toggleSitesInTab } from "../Redux/slices/selectedSites";
-import { AppDispatch } from "../Redux/store";
+import { toggleSitesInTab } from "../../Redux/slices/selectedSites";
+import { AppDispatch } from "../../Redux/store";
 import { useSelector } from "react-redux";
-import { RootState } from "../Redux/store";
-import EmptyData from "../components/EmptyData";
-import CreateSitePopup from "../components/los/CreateSitePopup";
-import { ResSite } from "../assets/types/LosSites";
-import DeletePopup from "../components/DeletePopup";
-import { handleOpenDialog } from "../func/openDialog";
+import { RootState } from "../../Redux/store";
+import EmptyData from "../../components/EmptyData";
+import CreateSitePopup from "../../components/los/CreateSitePopup";
+import { ResSite } from "../../assets/types/LosSites";
+import DeletePopup from "../../components/DeletePopup";
+import { handleOpenDialog } from "../../func/openDialog";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const titlesRow = [
@@ -368,12 +368,9 @@ const Sites = () => {
           {/*  <Pagination
               buttonTitle="add user +"
               buttonFunc={handleAddUserButtonClick}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onFirstPage={handleFirstPage}
-              onPreviousPage={handlePreviousPage}
-              onNextPage={handleNextPage}
-              onLastPage={handleLastPage}
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    totalPages={totalPages}
             /> */}
         </div>
         <CreateSitePopup ref={createSite} fetchSites={fetchSites} />

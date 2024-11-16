@@ -465,7 +465,10 @@ const ModernisationDetails = () => {
     <div className="w-full flex h-[100vh]">
       <SideBar />
       <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[26px] w-full md:h-[100vh] overflow-y-auto">
-        <Header pageSentence="Here is workorder details" searchBar={false} />
+        <Header
+          pageSentence="Here is the modernisation details"
+          searchBar={false}
+        />
         {modernisation && (
           <div className="flex flex-col items-end gap-[40px] w-full sm:px-[25px] px-[14px]">
             <div className="flex flex-col w-full gap-[31px] ">

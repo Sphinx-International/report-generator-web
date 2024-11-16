@@ -13,7 +13,7 @@ type Functionalities = {
 };
 
 interface MainProps {
-  page: "workorders" | "accounts" | "modernisation" | "new site";
+  page: "workorders" | "accounts" | "modernisation" | "new site" | "los orders";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
   subFilterFunc?: (
@@ -58,6 +58,8 @@ const Main: React.FC<MainProps> = (props) => {
     const storedFilter =
       props.page === "accounts"
         ? localStorage.getItem("selectedFilterForUsers")
+        : props.page === "los orders"
+        ? localStorage.getItem("selectedFilterForLos")
         : localStorage.getItem("selectedFilterForWorkorders");
     if (storedFilter) {
       return storedFilter;
@@ -72,6 +74,8 @@ const Main: React.FC<MainProps> = (props) => {
       ? state.selectedExtantions.modernisationsTab
       : props.page === "new site"
       ? state.selectedExtantions.newSitesTab
+      : props.page === "los orders"
+      ? state.selectedLosOrders.OrdersTab
       : null
   );
   const [selectedFilter, setSelectedFilter] =
@@ -101,6 +105,8 @@ const Main: React.FC<MainProps> = (props) => {
     }
     props.page === "accounts"
       ? localStorage.setItem("selectedFilterForUsers", item.toLowerCase())
+      : props.page === "los orders"
+      ? localStorage.setItem("selectedFilterForLos", item.toLowerCase())
       : item === "Missing reports" ||
         item === "Missing acceptance certificate" ||
         item === "Missing return voucher"

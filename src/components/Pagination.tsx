@@ -1,17 +1,21 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 
 interface PaginationProps {
   buttonTitle: string;
   buttonFunc: () => void;
   currentPage: number;
+  setCurrentPage: Dispatch<SetStateAction<number>>;
   totalPages: number;
-  onFirstPage: () => void;
-  onPreviousPage: () => void;
-  onNextPage: () => void;
-  onLastPage: () => void;
 }
 
 const Pagination: React.FC<PaginationProps> = (props) => {
+  const handleFirstPage = () => props.setCurrentPage(1);
+  const handlePreviousPage = () =>
+    props.setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () =>
+    props.setCurrentPage((prev) => Math.min(prev + 1, props.totalPages));
+  const handleLastPage = () => props.setCurrentPage(props.totalPages);
+
   return (
     <div className="md:relative z-20 sticky bottom-0 bg-white sm:p-[20px] py-[20px] md:p-0 w-full flex flex-col gap-[20.5px] items-center ">
       <div className="flex items-center lg:gap-[36px] sm:gap-[26px] gap-[21px] ">
@@ -21,7 +25,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
               ? "opacity-50 cursor-not-allowed"
               : "cursor-pointer"
           }`}
-          onClick={props.onFirstPage}
+          onClick={handleFirstPage}
         >
           {"<< First"}
         </span>
@@ -32,7 +36,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
                 ? "opacity-50 cursor-not-allowed"
                 : "cursor-pointer"
             }`}
-            onClick={props.onPreviousPage}
+            onClick={handlePreviousPage}
           >
             {"< Previous"}
           </span>
@@ -45,7 +49,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
                 ? "opacity-50 cursor-not-allowed"
                 : "cursor-pointer"
             }`}
-            onClick={props.onNextPage}
+            onClick={handleNextPage}
           >
             {"Next >"}
           </span>
@@ -56,7 +60,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
               ? "opacity-50 cursor-not-allowed"
               : "cursor-pointer"
           }`}
-          onClick={props.onLastPage}
+          onClick={handleLastPage}
         >
           {"Last >>"}
         </span>

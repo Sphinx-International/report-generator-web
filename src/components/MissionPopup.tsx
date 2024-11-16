@@ -552,7 +552,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       handleChange(e, setformValues);
                     }}
                   />
-                  {formErrs.id !== "" && formErrs.title !== undefined && (
+                  {formErrs.id !== "" && formErrs.id !== undefined && (
                     <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
                       {formErrs.id}
                     </span>

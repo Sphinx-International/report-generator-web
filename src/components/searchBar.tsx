@@ -5,27 +5,29 @@ import useWebSocketSearch from "../hooks/useWebSocketSearch";
 interface SearchBarProps {
   openDialogRef: React.RefObject<HTMLDialogElement>;
   page: string;
-  wsUrl:string;
+  wsUrl: string;
   setSearchResult: Dispatch<SetStateAction<any[] | null>>;
   setLoaderSearch: Dispatch<SetStateAction<boolean>>;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ openDialogRef, page, wsUrl, setSearchResult,setLoaderSearch }) => {
-
-
+const SearchBar: React.FC<SearchBarProps> = ({
+  openDialogRef,
+  page,
+  wsUrl,
+  setSearchResult,
+  setLoaderSearch,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-    
-    if (wsUrl) {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      useWebSocketSearch({
-        searchQuery: searchQuery,
-        endpointPath: wsUrl,
-        setResults: setSearchResult,
-        setLoader: setLoaderSearch,
-      });
-    }
-
+  if (wsUrl) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useWebSocketSearch({
+      searchQuery: searchQuery,
+      endpointPath: wsUrl,
+      setResults: setSearchResult,
+      setLoader: setLoaderSearch,
+    });
+  }
 
   return (
     <div className="w-full flex items-center gap-[8px]">
@@ -36,7 +38,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ openDialogRef, page, wsUrl, setSe
           id=""
           className="w-full h-[44px] rounded-[40px] border-[1px] border-n300 shadow-md md:px-[54px] pl-[54px] pr-[15px] md:text-[14px] text-[12px]"
           placeholder={`Search for ${page}`}
-          onChange={(e) => { setSearchQuery(e.target.value)  }}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+          }}
           value={searchQuery}
         />
         <svg
@@ -64,13 +68,22 @@ const SearchBar: React.FC<SearchBarProps> = ({ openDialogRef, page, wsUrl, setSe
         </svg>
       </div>
       <button
-        className="rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[12px] font-medium"
+        className={`${
+          page === "los orders" ? "hidden md:flex" : "flex"
+        }  rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[12px] font-medium`}
         onClick={() => {
           handleOpenDialog(openDialogRef);
         }}
       >
-        {page === "groups" ?"Create group" : page === "mails" ?"Add email": page === "Sites"? "Add Site" : page === "Los"? "New CMD LOS" :null}
-        
+        {page === "groups"
+          ? "Create group"
+          : page === "mails"
+          ? "Add email"
+          : page === "Sites"
+          ? "Add Site"
+          : page === "los orders"
+          ? "New LOS Order "
+          : null}
       </button>
     </div>
   );

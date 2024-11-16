@@ -1,27 +1,44 @@
-import SideBar from "../components/SideBar";
-import Header from "../components/Header";
-import Main from "../components/Main";
-import WorkOrderStatus from "../components/workorder/WorkOrderStatus";
-import WorkOrderpriority from "../components/workorder/WorkOrderPriorities";
+import SideBar from "../../components/SideBar";
+import Header from "../../components/Header";
+import Main from "../../components/Main";
+import WorkOrderStatus from "../../components/workorder/WorkOrderStatus";
+import WorkOrderpriority from "../../components/workorder/WorkOrderPriorities";
 import { useState, useRef, useEffect } from "react";
-//import { useNavigate } from "react-router-dom";
-import LosPopup from "../components/los/LosPopup";
-import SearchBar from "../components/searchBar";
-import { resOrders } from "../assets/types/LosCommands";
-import EmptyData from "../components/EmptyData";
+import { useNavigate } from "react-router-dom";
+import LosPopup from "../../components/los/LosPopup";
+import SearchBar from "../../components/searchBar";
+import { resOrders } from "../../assets/types/LosCommands";
+import EmptyData from "../../components/EmptyData";
 import { RotatingLines } from "react-loader-spinner";
+import { useDispatch } from "react-redux";
+import { toggleLosOrdersInTab } from "../../Redux/slices/selectedLosOrders";
+import { AppDispatch } from "../../Redux/store";
+import { RootState } from "../../Redux/store";
+import { useSelector } from "react-redux";
+import DeletePopup from "../../components/DeletePopup";
+import Pagination from "../../components/Pagination";
+import { handleOpenDialog } from "../../func/openDialog";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const LosCommands = () => {
- // const navigate = useNavigate();
+  const navigate = useNavigate();
+
+  const selecteOrders = useSelector(
+    (state: RootState) => state.selectedLosOrders.OrdersTab
+  );
+  const dispatch = useDispatch<AppDispatch>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [totalWorkorders, setTotalWorkorders] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  console.log(currentPage)
+  const limit = 6;
+  const totalPages = Math.ceil(totalWorkorders / limit);
+
   const [orders, setOrders] = useState<resOrders[] | null>(null);
   const losRef = useRef<HTMLDialogElement>(null);
+  const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
   const fetchOrders = async (offset = 0, limit = 6, status?: string) => {
     const token =
@@ -36,7 +53,6 @@ const LosCommands = () => {
     const url = status
       ? `${baseUrl}/line-of-sight/get-line-of-sights/${status}?offset=${offset}&limit=${limit}`
       : `${baseUrl}/line-of-sight/get-line-of-sights?offset=${offset}&limit=${limit}`;
-    console.log(url);
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -53,15 +69,13 @@ const LosCommands = () => {
       }
 
       switch (response.status) {
-        case 200:
-          {
-            const data = await response.json();
-            setOrders(data.data);
-            // console.log(data)
-            // setTotalWorkorders(data.total);
-            return { total: data.total, current_offset: offset };
-          }
-          break;
+        case 200: {
+          const data = await response.json();
+          console.log(data.data);
+          setOrders(data.data);
+          setTotalWorkorders(data.total);
+          return { total: data.total, current_offset: offset };
+        }
 
         case 204:
           setOrders(null);
@@ -78,9 +92,32 @@ const LosCommands = () => {
     }
   };
 
+  const handleCheckboxChange = (siteId: number) => {
+    dispatch(toggleLosOrdersInTab(siteId));
+  };
+
+  const handleDeleteButtonClick = () => {
+    if (selecteOrders.length === 0) {
+      return;
+    }
+    // Perform the action when users are selected
+    const dialog = deleteDialogRef.current;
+    if (dialog) {
+      dialog.style.display = "flex";
+      deleteDialogRef.current?.showModal();
+    }
+  };
+
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    const offset = (currentPage - 1) * limit;
+    const filter = localStorage.getItem("selectedFilterForLos");
+
+    if (filter === "all" || !filter) {
+      fetchOrders(offset, limit);
+    } else {
+      fetchOrders(offset, limit, filter);
+    }
+  }, [currentPage]);
 
   return (
     <div className="w-full flex md:h-[100vh]">
@@ -89,13 +126,13 @@ const LosCommands = () => {
         <Header pageSentence="Here are all  los commands" searchBar={false} />
         <SearchBar
           openDialogRef={losRef}
-          page="Los"
+          page="los orders"
           wsUrl=""
           setSearchResult={setOrders}
           setLoaderSearch={setIsLoading}
         />
         <Main
-          page="workorders"
+          page="los orders"
           flitration={[
             "All",
             "Created",
@@ -104,13 +141,13 @@ const LosCommands = () => {
             "Rejected",
             "Approved",
           ]}
-          // FiltrationFunc={fetchWorkOrders}
-          /* functionalties={{
-            primaryFunc: { name: "Add workorder" },
+          FiltrationFunc={fetchOrders}
+          functionalties={{
+            // primaryFunc: { name: "Add workorder" },
             secondaryFuncs: [{ name: "Delete" }],
-          }} */
+          }}
           // handleAddPrimaryButtonClick={handladdMissionButtonClick}
-          // handleSecondaryButtonClick={handleDeleteButtonClick}
+          handleSecondaryButtonClick={handleDeleteButtonClick}
           setCurrentPage={setCurrentPage}
         >
           {!isLoading ? (
@@ -124,13 +161,9 @@ const LosCommands = () => {
                     >
                       <div
                         className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
-                        /*   onClick={() =>
-                              navigate(
-                                `/workorders/${encodeURIComponent(
-                                  "workorder.id"
-                                )}`
-                              )
-                            } */
+                        onClick={() =>
+                          navigate(`${encodeURIComponent(`${order.id}`)}`)
+                        }
                       >
                         <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
                           {order.near_end_location.site_code}
@@ -143,40 +176,44 @@ const LosCommands = () => {
                             WebkitBoxOrient: "vertical",
                           }}
                         >
-                          BJ0501 TO BJ0606 TO BJ0609 TO BJ0607
+                          {order.type.name}
                         </p>
                         <div className="flex items-center gap-[8px]">
                           <WorkOrderStatus
-                            status={2}
-                            styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            status={order.status}
+                            styles={{ fontSize: 10, px: 6, py: 5 }}
                           />
                           <WorkOrderpriority
-                            priority={1}
-                            styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            priority={order.priority}
+                            styles={{ fontSize: 10, px: 6, py: 5 }}
                           />
                         </div>
                       </div>
 
                       <div className="w-full h-[65px] flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px] px-[24px] py-[16px]">
-                        <div className="w-full flex items-center gap-[5px]">
-                          <img
-                            src="/avatar1.png"
-                            alt="avatar"
-                            className="sm:w-[29px] w-[26px]"
-                          />
-                          <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
-                            Mariem Boukennouche
-                          </span>
-                        </div>
+                        {order.assigned_to && (
+                          <div className="w-full flex items-center gap-[5px]">
+                            <img
+                              src="/avatar1.png"
+                              alt="avatar"
+                              className="sm:w-[29px] w-[26px]"
+                            />
+                            <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
+                              {order.assigned_to.first_name}{" "}
+                              {order.assigned_to.last_name}
+                            </span>
+                          </div>
+                        )}
+
                         {localStorage.getItem("role") === "0" && (
                           <input
                             type="checkbox"
-                            name="select-workOrder"
+                            name="select-los"
                             id={`${index}`}
                             className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
                             onClick={(e) => {
                               e.stopPropagation();
-                              //   handleCheckboxChange(`${workorder.id}`);
+                              handleCheckboxChange(order.id);
                             }}
                           />
                         )}
@@ -188,6 +225,16 @@ const LosCommands = () => {
                     </div>
                   ))}
                 </div>
+
+                <Pagination
+                  buttonTitle="Add New LOS Order"
+                  buttonFunc={() => {
+                    handleOpenDialog(losRef);
+                  }}
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  totalPages={totalPages}
+                />
               </>
             ) : (
               <EmptyData data="orders" />
@@ -199,6 +246,18 @@ const LosCommands = () => {
           )}
         </Main>
         <LosPopup ref={losRef} fetchOrders={fetchOrders} />
+        <DeletePopup
+          page="los orders"
+          ref={deleteDialogRef}
+          deleteItems={selecteOrders}
+          deleteUrl={`${baseUrl}/line-of-sight/delete-line-of-sights`}
+          jsonTitle="line_of_sights"
+          fetchFunc={fetchOrders}
+          fetchUrl={`${baseUrl}/line-of-sight/get-line-of-sights`}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          limit={limit}
+        />
       </div>{" "}
     </div>
   );

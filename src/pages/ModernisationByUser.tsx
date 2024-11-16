@@ -101,13 +101,6 @@ const ModernisationByUser = () => {
     }
   };
 
-  const handleFirstPage = () => setCurrentPage(1);
-  const handlePreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleLastPage = () => setCurrentPage(totalPages);
-
   return (
     <div className="flex w-full md:h-[100vh]">
       <SideBar />
@@ -223,11 +216,8 @@ const ModernisationByUser = () => {
                   buttonTitle="Add modernisation"
                   buttonFunc={handladdMissionButtonClick}
                   currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
                   totalPages={totalPages}
-                  onFirstPage={handleFirstPage}
-                  onPreviousPage={handlePreviousPage}
-                  onNextPage={handleNextPage}
-                  onLastPage={handleLastPage}
                 />
               </div>
             </>

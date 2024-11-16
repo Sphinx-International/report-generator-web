@@ -7,6 +7,7 @@ import uploadedAttachOnCreationReducer from "./slices/uploadAttachOnCreation";
 import selectedIndividualsReducer from "./slices/selectedIndividuals";
 import notificationCountReducer from "./slices/notificationCountSlice";
 import selectedSitesReducer from "./slices/selectedSites";
+import SelectedLosOrdersReducer from "./slices/selectedLosOrders";
 
 
 export const store = configureStore({
@@ -19,6 +20,8 @@ export const store = configureStore({
     selectedIndividuals: selectedIndividualsReducer,
     notificationCount: notificationCountReducer,
     selectedSites: selectedSitesReducer,
+    selectedLosOrders: SelectedLosOrdersReducer,
+
   },
 });
 
