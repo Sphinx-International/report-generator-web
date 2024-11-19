@@ -235,7 +235,6 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
           className="absolute top-6 right-6 text-[#111111] cursor-pointer"
           onClick={() => {
             handleCloseDialog(ref);
-            setCurrentReportTypeIndex(1);
           }}
         >
           🗙
