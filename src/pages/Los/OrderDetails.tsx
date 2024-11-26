@@ -17,6 +17,8 @@ import {
   handleAssingLos,
   handleExecuteLos,
   losResult,
+  updateLosResult,
+  addOrDeleteAlt,
 } from "../../func/los/orders";
 import { losOrdersTabHeader } from "../../assets/los";
 import {
@@ -25,6 +27,7 @@ import {
 } from "../../func/los/geographicFunctions";
 import { handleOpenDialog } from "../../func/openDialog";
 import LosExcutionPopup from "../../components/los/LosExecutionPopup";
+import { ResSite } from "../../assets/types/LosSites";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const OrderDetails = () => {
@@ -46,39 +49,25 @@ const OrderDetails = () => {
     title: "",
     id: null,
   });
-  const [altCodes, setAltCodes] = useState<string[]>([]);
   const [order, setOrder] = useState<resOfOneOrder | null>(null);
   const [visibleEngPopup, setVisibleEngPopup] = useState<boolean>(false);
   const [visibleCoordPopup, setVisibleCoordPopup] = useState<boolean>(false);
   const [searchQueryEng, setSearchQueryEng] = useState<string>("");
-  const [searchQueryCoord, setSearchQueryCoord] = useState<string>("");
+  const [searchQuerySite, setSearchQuerySite] = useState<string>("");
 
   const [searchEngs, setSearchEngs] = useState<User[]>([]);
-  const [searchCoords, setSearchCoords] = useState<
-    { email: string; id: number; name: string }[]
-  >([]);
+  const [searchSites, setSearchSites] = useState<ResSite[]>([]);
 
   const [selectedEng, setSelectedEng] = useState<User | null>(null);
 
   const [loaderAssignSearch, setLoaderAssignSearch] = useState(false);
-  const [loaderCoordSearch, setLoaderCoordSearch] = useState(false);
-
-  const [typeOfSearchPopupVisible, setTypeOfSearchPopupVisible] =
-    useState<boolean>(false);
-  const [typeOfSearchForCoord, setTypeOfSearchForCoord] = useState<
-    "Emails" | "Groupes"
-  >("Emails");
-  const [selectedMembersFromGroup, setSelectedMembersFromGroup] = useState<
-    string[]
-  >([]);
-  const [loaderGettingGroupMembers, setLoaderGettingGroupMembers] =
-    useState(false);
+  const [loaderSiteSearch, setLoaderSiteSearch] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isLoadingMainButton, setIsLoadingMainButton] = useState(false);
 
-  const [isLoadingMaildPersons, setIsLoadingMaildPersons] = useState(false);
+  const [isLoadingAltSites, setIsLoadingAltSites] = useState(false);
   const [isLoadingDeleteFile, setIsLoadingDeleteFile] = useState(false);
   const [isLoadingCancelUpload, setIsLoadingCancelUpload] = useState(false);
   const [isLoadingAttach, setIsLoadingAttach] = useState(false);
@@ -89,15 +78,23 @@ const OrderDetails = () => {
     null
   );
   const [isLosStatusLoading, setIsLosStatusLoading] = useState(false);
-
-  const [selectedAltForExe, setSelectedAltForExe] = useState<number | null>(
-    null
-  );
-  const [selectedLosTypeForExe, setSelectedLosTypeForExe] = useState<
-    1 | 2 | null
-  >(null);
-  const [selectedSiteName, setSelectedSiteName] = useState<string | null>(null);
-
+  const [selectedSiteInfo, setSelectedSiteInfo] = useState<{
+    losId: number | null;
+    altId: number | null;
+    site_type: 1 | 2 | null;
+    site_name: string;
+    losStatus: 1 | 2 | 3 | null;
+    accessibility: boolean;
+    image_count: number | null;
+  }>({
+    losId: null,
+    altId: null,
+    site_type: null,
+    site_name: "",
+    losStatus: null,
+    accessibility: true,
+    image_count: null,
+  });
   const handleDropdownToggle = (index: number) => {
     // Toggle the dropdown for the clicked item
     setOpenDropdownIndex(openDropdownIndex === index ? null : index);
@@ -131,20 +128,6 @@ const OrderDetails = () => {
             setbasicDataOrder({
               title: data.line_of_sight.near_end_location.site_code,
               id: data.line_of_sight.id,
-            });
-            // Extract and set site codes from alternative_far_ends
-            setAltCodes(() => {
-              const siteCodes = data.alternative_far_ends.map(
-                (item) => item.site_location.site_code
-              );
-              return siteCodes;
-            });
-            setSelectedMembersFromGroup(() => {
-              const newEmails = data.mails.map(
-                (mail: { id: number; workorder: number; email: string }) =>
-                  mail.email
-              );
-              return [newEmails];
             });
             if (spanRef.current) {
               setInputWidth(spanRef.current.offsetWidth + 45);
@@ -189,11 +172,10 @@ const OrderDetails = () => {
   });
 
   useWebSocketSearch({
-    searchQuery: searchQueryCoord,
-    endpointPath:
-      typeOfSearchForCoord === "Emails" ? "search-mail" : "search-group",
-    setResults: setSearchCoords,
-    setLoader: setLoaderCoordSearch,
+    searchQuery: searchQuerySite,
+    endpointPath: "search-site",
+    setResults: setSearchSites,
+    setLoader: setLoaderSiteSearch,
   });
 
   if (!HaveAccess) {
@@ -213,6 +195,8 @@ const OrderDetails = () => {
       </div>
     );
   }
+
+  console.log(order);
 
   return (
     <div className="w-full flex h-[100vh]">
@@ -254,6 +238,159 @@ const OrderDetails = () => {
                   </div>
 
                   <div className="w-full flex flex-col items-start gap-[15px]">
+                    <div
+                      className="w-fit"
+                      /* onChange={(e) => {
+                      handleChange(e, setbasicDataOrder);
+                    }}  */
+                    >
+                      <div className="flex items-center gap-x-10 gap-y-4 flex-wrap">
+                        {order.alternative_far_ends.map((alt, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 sm:text-[17px] text-[14px] text-n600 leading-[27px]"
+                          >
+                            <div className="relative group w-fit">
+                              <img
+                                src="/site.png"
+                                alt="site"
+                                className="rounded-full transition duration-300 ease-in-out group-hover:blur-[2px]"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-full opacity-0 transition duration-300 ease-in-out group-hover:opacity-100">
+                                <button
+                                  className="text-red-500 text-xl font-bold"
+                                  onClick={() =>
+                                    addOrDeleteAlt(
+                                      alt.id,
+                                      "delete",
+                                      setIsLoadingAltSites,
+                                      fetchOneLOS
+                                    )
+                                  }
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+
+                            <span>{alt.site_location.site_code}</span>
+                          </div>
+                        ))}
+                        <div className="relative z-50">
+                          {order.line_of_sight.status < 2 && (
+                            <span
+                              className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
+                              onClick={() => {
+                                setVisibleCoordPopup(!visibleCoordPopup);
+                              }}
+                            >
+                              +
+                            </span>
+                          )}
+
+                          {visibleCoordPopup && (
+                            <div className="sm:w-[400px] w-[280px] max-h-[300px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 right-0 ">
+                              <div className=" relative w-full">
+                                <input
+                                  type="search"
+                                  name=""
+                                  id=""
+                                  value={searchQuerySite}
+                                  onChange={(eo) => {
+                                    setSearchQuerySite(eo.target.value);
+                                  }}
+                                  className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
+                                  placeholder="Search"
+                                />
+                                <svg
+                                  className="absolute left-[14px] top-[50%] translate-y-[-50%]"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="15"
+                                  height="15"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
+                                    stroke="#6F6C8F"
+                                    strokeWidth="1.5"
+                                    fillOpacity="round"
+                                    strokeLinejoin="round"
+                                  />
+                                  <path
+                                    d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
+                                    stroke="#6F6C8F"
+                                    strokeWidth="1.5"
+                                    fillOpacity="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </div>
+                              <div className="flex flex-col items-start gap-[12px] w-full  overflow-auto">
+                                {loaderSiteSearch ? (
+                                  <div className="w-full py-[10px] flex items-center justify-center">
+                                    <RotatingLines
+                                      strokeWidth="4"
+                                      strokeColor="#4A3AFF"
+                                      width="20"
+                                    />
+                                  </div>
+                                ) : searchQuerySite !== "" ? (
+                                  searchSites !== null &&
+                                  searchSites.length > 0 ? (
+                                    searchSites.map((site, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                        onClick={() => {
+                                          // Check if the site exist
+                                          const codesExists =
+                                            order.alternative_far_ends.some(
+                                              (alt) =>
+                                                alt.site_location.site_code ===
+                                                site.code
+                                            );
+
+                                          if (!codesExists) {
+                                            addOrDeleteAlt(
+                                              order.line_of_sight.id,
+                                              "add",
+                                              setIsLoadingAltSites,
+                                              fetchOneLOS,
+                                              site.id
+                                            );
+                                          }
+                                          setSearchQuerySite("");
+                                          setVisibleCoordPopup(false);
+                                        }}
+                                      >
+                                        <img
+                                          src="/site.png"
+                                          alt="site"
+                                          className="w-[31px] rounded-[50%]"
+                                        />
+                                        <span className="text-[14px] text-n600">
+                                          {site.code}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <span className="text-n700 w-full flex justify-center text-[14px]">
+                                      no result founded
+                                    </span>
+                                  )
+                                ) : (
+                                  <span className="text-n700 w-full flex justify-center text-[14px]">
+                                    Search for a site
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
                     {order?.line_of_sight.assigned_to !== null ? (
                       <div className="flex items-center gap-[12px] relative">
                         <div
@@ -659,307 +796,7 @@ const OrderDetails = () => {
                         )}
                       </div>
                     )}
-                    <div className="flex flex-col gap-[10px] items-start w-full">
-                      <div
-                        className={` rounded-[20px] py-[7px] w-full ${
-                          isEditing_desc
-                            ? "border-n300 border-[1px] shadow-md px-[15px]"
-                            : "bg-white"
-                        }`}
-                        /* onChange={(e) => {
-                      handleChange(e, setbasicDataOrder);
-                    }}  */
-                      >
-                        <div className="flex items-center gap-9">
-                          <div className="flex items-center gap-3">
-                            {altCodes.map((alt, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-3 sm:text-[17px] text-[14px] text-n600 leading-[27px]"
-                              >
-                                <span>{alt}</span>
-                                {index < altCodes.length - 1 && (
-                                  <span> | </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          {!isEditing_desc && getRole() !== 2 && (
-                            <svg
-                              onClick={() => {
-                                setIsEditing_desc(true);
-                              }}
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="18"
-                              height="18"
-                              viewBox="0 0 18 18"
-                              fill="none"
-                              className="cursor-pointer"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M16.0909 4.06248C16.1622 4.17064 16.1939 4.30007 16.1808 4.42892C16.1677 4.55778 16.1105 4.67815 16.0189 4.76973L9.12418 11.6637C9.05364 11.7342 8.96564 11.7847 8.86918 11.81L5.99743 12.56C5.9025 12.5847 5.80275 12.5842 5.70807 12.5585C5.6134 12.5328 5.52709 12.4828 5.45772 12.4134C5.38835 12.3441 5.33833 12.2578 5.31262 12.1631C5.28692 12.0684 5.28642 11.9687 5.31118 11.8737L6.06118 9.00273C6.08307 8.91655 6.12437 8.83651 6.18193 8.76873L13.1022 1.85298C13.2076 1.74764 13.3506 1.68848 13.4997 1.68848C13.6487 1.68848 13.7917 1.74764 13.8972 1.85298L16.0189 3.97398C16.0458 4.00099 16.07 4.03064 16.0909 4.06248ZM14.8257 4.37148L13.4997 3.04623L7.11118 9.43473L6.64243 11.2295L8.43718 10.7607L14.8257 4.37148Z"
-                                fill="#514F6E"
-                                fillOpacity="0.75"
-                              />
-                              <path
-                                d="M14.7302 12.8697C14.9352 11.1176 15.0006 9.35208 14.9259 7.58967C14.9243 7.54815 14.9313 7.50674 14.9464 7.46803C14.9615 7.42931 14.9844 7.39413 15.0137 7.36467L15.7517 6.62667C15.7718 6.60639 15.7974 6.59236 15.8254 6.58628C15.8533 6.58019 15.8824 6.58231 15.9092 6.59237C15.936 6.60243 15.9593 6.62 15.9763 6.64299C15.9933 6.66597 16.0034 6.69338 16.0052 6.72192C16.1441 8.81535 16.0914 10.9171 15.8477 13.0009C15.6707 14.5174 14.4527 15.7062 12.9429 15.8749C10.3219 16.1652 7.67692 16.1652 5.05593 15.8749C3.54693 15.7062 2.32818 14.5174 2.15118 13.0009C1.84023 10.3425 1.84023 7.65686 2.15118 4.99842C2.32818 3.48192 3.54618 2.29317 5.05593 2.12442C7.04521 1.90383 9.04948 1.8504 11.0477 1.96467C11.0763 1.96672 11.1037 1.97693 11.1267 1.99408C11.1496 2.01123 11.1672 2.0346 11.1773 2.06144C11.1874 2.08827 11.1896 2.11743 11.1837 2.14548C11.1777 2.17352 11.1638 2.19927 11.1437 2.21967L10.3989 2.96367C10.3698 2.99273 10.335 3.01551 10.2966 3.0306C10.2583 3.04569 10.2173 3.05278 10.1762 3.05142C8.50875 2.99474 6.8394 3.05866 5.18118 3.24267C4.69664 3.2963 4.24432 3.51171 3.8973 3.85411C3.55027 4.19651 3.32881 4.64589 3.26868 5.12967C2.96797 7.70091 2.96797 10.2984 3.26868 12.8697C3.32881 13.3535 3.55027 13.8028 3.8973 14.1452C4.24432 14.4876 4.69664 14.703 5.18118 14.7567C7.69743 15.0379 10.3014 15.0379 12.8184 14.7567C13.303 14.703 13.7553 14.4876 14.1023 14.1452C14.4493 13.8028 14.6701 13.3535 14.7302 12.8697Z"
-                                fill="#514F6E"
-                                fillOpacity="0.75"
-                              />
-                            </svg>
-                          )}
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-[4px]">
-                      <div className="relative">
-                        {getRole() !== 2 && (
-                          <span
-                            className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
-                            onClick={() => {
-                              setVisibleCoordPopup(!visibleCoordPopup);
-                            }}
-                          >
-                            +
-                          </span>
-                        )}
-
-                        {visibleCoordPopup && (
-                          <div className="sm:w-[400px] w-[280px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 left-4 ">
-                            <div className=" relative w-full">
-                              <input
-                                type="search"
-                                name=""
-                                id=""
-                                value={searchQueryCoord!}
-                                onChange={(eo) => {
-                                  setSearchQueryCoord(eo.target.value);
-                                }}
-                                className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
-                                placeholder="Search"
-                              />
-                              <svg
-                                className="absolute left-[14px] top-[50%] translate-y-[-50%]"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="15"
-                                height="15"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                              >
-                                <path
-                                  d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
-                                  stroke="#6F6C8F"
-                                  strokeWidth="1.5"
-                                  fillOpacity="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
-                                  stroke="#6F6C8F"
-                                  strokeWidth="1.5"
-                                  fillOpacity="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                              <div className="absolute right-[14px] top-[50%] translate-y-[-50%] z-50">
-                                <svg
-                                  className="cursor-pointer"
-                                  onClick={() => {
-                                    setTypeOfSearchPopupVisible(
-                                      !typeOfSearchPopupVisible
-                                    );
-                                  }}
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="18"
-                                  height="16"
-                                  viewBox="0 0 18 16"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M16.7077 8.00023H6.41185M2.77768 8.00023H1.29102M2.77768 8.00023C2.77768 7.51842 2.96908 7.05635 3.30977 6.71566C3.65046 6.37497 4.11254 6.18357 4.59435 6.18357C5.07616 6.18357 5.53824 6.37497 5.87893 6.71566C6.21962 7.05635 6.41102 7.51842 6.41102 8.00023C6.41102 8.48204 6.21962 8.94412 5.87893 9.28481C5.53824 9.6255 5.07616 9.8169 4.59435 9.8169C4.11254 9.8169 3.65046 9.6255 3.30977 9.28481C2.96908 8.94412 2.77768 8.48204 2.77768 8.00023ZM16.7077 13.5061H11.9177M11.9177 13.5061C11.9177 13.988 11.7258 14.4506 11.3851 14.7914C11.0443 15.1321 10.5821 15.3236 10.1002 15.3236C9.61837 15.3236 9.1563 15.1313 8.81561 14.7906C8.47491 14.45 8.28352 13.9879 8.28352 13.5061M11.9177 13.5061C11.9177 13.0241 11.7258 12.5624 11.3851 12.2216C11.0443 11.8808 10.5821 11.6894 10.1002 11.6894C9.61837 11.6894 9.1563 11.8808 8.81561 12.2215C8.47491 12.5622 8.28352 13.0243 8.28352 13.5061M8.28352 13.5061H1.29102M16.7077 2.4944H14.1202M10.486 2.4944H1.29102M10.486 2.4944C10.486 2.01259 10.6774 1.55051 11.0181 1.20982C11.3588 0.869133 11.8209 0.677734 12.3027 0.677734C12.5412 0.677734 12.7775 0.724724 12.9979 0.81602C13.2183 0.907316 13.4186 1.04113 13.5873 1.20982C13.756 1.37852 13.8898 1.57878 13.9811 1.79919C14.0724 2.0196 14.1193 2.25583 14.1193 2.4944C14.1193 2.73297 14.0724 2.9692 13.9811 3.18961C13.8898 3.41002 13.756 3.61028 13.5873 3.77898C13.4186 3.94767 13.2183 4.08149 12.9979 4.17278C12.7775 4.26408 12.5412 4.31107 12.3027 4.31107C11.8209 4.31107 11.3588 4.11967 11.0181 3.77898C10.6774 3.43829 10.486 2.97621 10.486 2.4944Z"
-                                    stroke="#A0A3BD"
-                                    strokeWidth="1.25"
-                                    strokeMiterlimit="10"
-                                    strokeLinecap="round"
-                                  />
-                                </svg>
-                                {typeOfSearchPopupVisible && (
-                                  <div className="bg-white shadow-xl shadow-slate-400 p-[17px] rounded-[10px] flex flex-col items-start gap-[14px] absolute right-1">
-                                    <span className="text-[13px] text-n700 font-medium">
-                                      Search by :{" "}
-                                    </span>
-                                    <div className="flex items-center gap-[4px]">
-                                      <button
-                                        className={`px-[20px] py-[5px] rounded-[26px] border-[1px]  text-[12px] leading-[18px]  font-medium ${
-                                          typeOfSearchForCoord === "Emails"
-                                            ? "text-primary border-primary"
-                                            : "text-n600 border-n400"
-                                        }`}
-                                        onClick={() => {
-                                          setTypeOfSearchForCoord("Emails");
-                                        }}
-                                      >
-                                        Emails
-                                      </button>
-                                      <button
-                                        className={`px-[20px] py-[5px] rounded-[26px] border-[1px] text-[12px] leading-[18px] font-medium ${
-                                          typeOfSearchForCoord === "Groupes"
-                                            ? "text-primary border-primary"
-                                            : "text-n600 border-n400"
-                                        }`}
-                                        onClick={() => {
-                                          setTypeOfSearchForCoord("Groupes");
-                                        }}
-                                      >
-                                        Groupes
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-start gap-[12px] w-full">
-                              {loaderCoordSearch ? (
-                                <div className="w-full py-[10px] flex items-center justify-center">
-                                  <RotatingLines
-                                    strokeWidth="4"
-                                    strokeColor="#4A3AFF"
-                                    width="20"
-                                  />
-                                </div>
-                              ) : searchQueryCoord !== "" ? (
-                                searchCoords !== null &&
-                                searchCoords.length > 0 ? (
-                                  typeOfSearchForCoord === "Emails" ? (
-                                    searchCoords.map((user, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                        onClick={() => {
-                                          // Check if the email exists in modernisation.mail_to
-                                          /*  const emailExists = modernisation?.mails.some(
-                                (mailTo) => mailTo.email === user.email
-                              );
-
-                                if (!emailExists) {
-                             handle_add_or_delete_mailedPerson(
-                                  modernisation.line_of_sight.id,
-                                  user.email,
-                                  "add",
-                                  "modernisation",
-                                  setIsLoadingMaildPersons,
-                                  setVisibleCoordPopup,
-                                  fetchOneModernisation
-                                );
-                              }  */
-                                          setVisibleCoordPopup(false);
-                                        }}
-                                      >
-                                        <img
-                                          src="/avatar.png"
-                                          alt="avatar"
-                                          className="w-[31px] rounded-[50%]"
-                                        />
-                                        <span className="text-[14px] text-n600">
-                                          {user.email}
-                                        </span>
-                                      </div>
-                                    ))
-                                  ) : loaderGettingGroupMembers ? (
-                                    <span className="text-primary w-full flex justify-center text-[14px]">
-                                      Getting group members ...
-                                    </span>
-                                  ) : (
-                                    searchCoords.map((user, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                        /* onClick={async () => {
-                              await fetchGroupMembersThenAddThemToWorkorder(
-                                modernisation.line_of_sight.id,
-                                user.id,
-                                selectedMembersFromGroup,
-                                setLoaderGettingGroupMembers,
-                                fetchOneModernisation
-                              );
-                              setVisibleCoordPopup(false);
-                            }}  */
-                                      >
-                                        <img
-                                          src="/avatar.png"
-                                          alt="avatar"
-                                          className="w-[31px] rounded-[50%]"
-                                        />
-                                        <span className="text-[14px] text-n600">
-                                          {user.name}
-                                        </span>
-                                      </div>
-                                    ))
-                                  )
-                                ) : (
-                                  <span className="text-n700 w-full flex justify-center text-[14px]">
-                                    no result founded
-                                  </span>
-                                )
-                              ) : (
-                                <span className="text-n700 w-full flex justify-center text-[14px]">
-                                  Search for a coordianter
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {order?.mails &&
-                        order.mails.map((mail, index) => {
-                          return (
-                            <div className="relative group" key={index}>
-                              <img
-                                src="/avatar1.png"
-                                alt="avatar"
-                                className="w-[40px] rounded-[50%]"
-                              />
-                              {getRole() !== 2 && (
-                                <span
-                                  className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
-                                  /* onClick={() => {
-                       handle_add_or_delete_mailedPerson(
-                          modernisation.line_of_sight.id,
-                          mail.id,
-                          "delete",
-                          "modernisation",
-                          setIsLoadingMaildPersons,
-                          setVisibleCoordPopup,
-                          fetchOneModernisation
-                        );
-                      }}  */
-                                >
-                                  🗙
-                                </span>
-                              )}
-
-                              {isLoadingMaildPersons && (
-                                <span className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-n400 bg-opacity-95 z-20 cursor-not-allowed rounded-[50%]">
-                                  <RotatingLines
-                                    visible={true}
-                                    width="20"
-                                    strokeWidth="3"
-                                    strokeColor="#4A3AFF"
-                                  />
-                                </span>
-                              )}
-                              {/* Tooltip */}
-                              <div className="absolute left-[%65] transform -translate-x-1/3 bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-60">
-                                {mail.email}
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
                     <div className="flex items-center gap-2">
                       <WorkOrderStatus
                         status={order.line_of_sight.status}
@@ -1529,35 +1366,6 @@ const OrderDetails = () => {
                       </>
                     </div>
                   </div>
-                  {isEditing_desc && (
-                    <div className="flex items-center justify-end gap-[6px] w-full">
-                      <button
-                        className="px-[23px] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] border-[1.2px] border-n600 text-n600"
-                        onClick={() => {
-                          setIsEditing_desc(false);
-                          setbasicDataOrder((prev) => ({
-                            ...prev,
-                            title:
-                              order.line_of_sight.near_end_location.site_code,
-                            id: order.line_of_sight.id,
-                          }));
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="px-[25px] py-[5px] text-[11px] font-semibold leading-[20px] rounded-[20px] bg-primary text-white"
-                        /* onClick={() => {
-              handleEditWorkorder({
-                title: basicDataOrder.title,
-                id: basicDataOrder.id,
-              });
-            }}   */
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
               {order.line_of_sight.status < 3 && (
@@ -1605,7 +1413,25 @@ const OrderDetails = () => {
                   ) : order.line_of_sight.status === 1 ? (
                     "Execute"
                   ) : order.line_of_sight.status === 2 ? (
-                    "continue execution ->"
+                    (order.line_of_sight.execute_with_all_alternatives &&
+                      order.alternative_far_ends.every(
+                        (alt) => alt.executed.near_end && alt.executed.far_end
+                      )) ||
+                    (!order.line_of_sight.execute_with_all_alternatives &&
+                      order.alternative_far_ends.every(
+                        (alt) => alt.executed.near_end && alt.executed.far_end
+                      )) ||
+                      (!order.line_of_sight.execute_with_all_alternatives &&
+                        order.alternative_far_ends.some(
+                          (alt) =>
+                            alt.los_status === 1 &&
+                            alt.executed.near_end &&
+                            alt.executed.far_end
+                        )) ? (
+                      "Finish"
+                    ) : (
+                      "continue execution ->"
+                    )
                   ) : null}
                 </button>
               )}
@@ -1630,17 +1456,47 @@ const OrderDetails = () => {
                   return (
                     <div
                       key={index}
-                      className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4"
+                      className={`flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4 ${
+                        !order.line_of_sight.execute_with_all_alternatives &&
+                        index !== 0 &&
+                        (order.alternative_far_ends[index - 1].los_status ===
+                          null ||
+                          order.alternative_far_ends[index - 1].los_status ===
+                            1)
+                          ? "cursor-not-allowed pointer-events-none"
+                          : ""
+                      }`}
                     >
                       <div className="w-[17%] flex items-center justify-center">
                         <span
-                          className="rounded-[25px] px-[22px] py-[5px] bg-[#48C1B521] text-[14px] text-[#48C1B5] cursor-pointer"
+                          className={`rounded-[25px] px-[22px] py-[5px]  text-[14px]  ${
+                            !order.line_of_sight
+                              .execute_with_all_alternatives &&
+                            index !== 0 &&
+                            (order.alternative_far_ends[index - 1]
+                              .los_status === null ||
+                              order.alternative_far_ends[index - 1]
+                                .los_status === 1)
+                              ? "bg-n300 text-n500"
+                              : order.line_of_sight.near_end_accessibility
+                              ? alt.executed.near_end
+                                ? "bg-[#48C1B521] text-[#48C1B5] cursor-pointer"
+                                : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
+                              : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
+                          }`}
                           onClick={() => {
-                            setSelectedAltForExe(alt.id);
-                            setSelectedLosTypeForExe(1);
-                            setSelectedSiteName(
-                              order.line_of_sight.near_end_location.site_code
-                            );
+                            setSelectedSiteInfo(() => ({
+                              losId: order.line_of_sight.id,
+                              altId: alt.id,
+                              site_type: 1,
+                              site_name:
+                                order.line_of_sight.near_end_location.site_code,
+                              losStatus: alt.los_status,
+                              accessibility:
+                                order.line_of_sight.near_end_accessibility,
+                              image_count: alt.image_count.near_end,
+                            }));
+
                             handleOpenDialog(executeLosPopupRef);
                           }}
                         >
@@ -1649,11 +1505,31 @@ const OrderDetails = () => {
                       </div>
                       <div className="w-[17%] flex items-center justify-center">
                         <span
-                          className="rounded-[25px] px-[22px] py-[5px] bg-[#EDEBFF] text-[14px] text-primary cursor-pointer"
+                          className={`rounded-[25px] px-[22px] py-[5px]  text-[14px]  ${
+                            !order.line_of_sight
+                              .execute_with_all_alternatives &&
+                            index !== 0 &&
+                            (order.alternative_far_ends[index - 1]
+                              .los_status === null ||
+                              order.alternative_far_ends[index - 1]
+                                .los_status === 1)
+                              ? "bg-n300 text-n500"
+                              : alt.far_end_accessibility
+                              ? alt.executed.far_end
+                                ? "bg-[#48C1B521] text-[#48C1B5] cursor-pointer"
+                                : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
+                              : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
+                          }`}
                           onClick={() => {
-                            setSelectedAltForExe(alt.id);
-                            setSelectedLosTypeForExe(2);
-                            setSelectedSiteName(alt.site_location.site_code);
+                            setSelectedSiteInfo(() => ({
+                              losId: order.line_of_sight.id,
+                              altId: alt.id,
+                              site_type: 2,
+                              site_name: alt.site_location.site_code,
+                              losStatus: alt.los_status,
+                              accessibility: alt.far_end_accessibility,
+                              image_count: alt.image_count.far_end,
+                            }));
                             handleOpenDialog(executeLosPopupRef);
                           }}
                         >
@@ -1678,7 +1554,7 @@ const OrderDetails = () => {
                             ? "Critical"
                             : alt.los_status === 3
                             ? "Negative"
-                            : "unkonw"}
+                            : "unknown"}
                         </span>
                         <div className="relative">
                           <svg
@@ -1710,13 +1586,23 @@ const OrderDetails = () => {
                                 <span
                                   className="text-[14px] text-[#48C1B5] cursor-pointer"
                                   onClick={() => {
-                                    losResult(
-                                      alt.id,
-                                      1,
-                                      setIsLosStatusLoading,
-                                      setOpenDropdownIndex,
-                                      fetchOneLOS
-                                    );
+                                    {
+                                      alt.los_status
+                                        ? updateLosResult(
+                                            alt.id,
+                                            1,
+                                            setIsLosStatusLoading,
+                                            setOpenDropdownIndex,
+                                            fetchOneLOS
+                                          )
+                                        : losResult(
+                                            alt.id,
+                                            1,
+                                            setIsLosStatusLoading,
+                                            setOpenDropdownIndex,
+                                            fetchOneLOS
+                                          );
+                                    }
                                   }}
                                 >
                                   Positive
@@ -1726,13 +1612,23 @@ const OrderDetails = () => {
                                 <span
                                   className="text-[14px] text-[#F5A623] cursor-pointer"
                                   onClick={() => {
-                                    losResult(
-                                      alt.id,
-                                      2,
-                                      setIsLosStatusLoading,
-                                      setOpenDropdownIndex,
-                                      fetchOneLOS
-                                    );
+                                    {
+                                      alt.los_status
+                                        ? updateLosResult(
+                                            alt.id,
+                                            2,
+                                            setIsLosStatusLoading,
+                                            setOpenDropdownIndex,
+                                            fetchOneLOS
+                                          )
+                                        : losResult(
+                                            alt.id,
+                                            2,
+                                            setIsLosStatusLoading,
+                                            setOpenDropdownIndex,
+                                            fetchOneLOS
+                                          );
+                                    }
                                   }}
                                 >
                                   Critical
@@ -1742,13 +1638,23 @@ const OrderDetails = () => {
                                 <span
                                   className="text-[14px] text-[#DB2C2C] cursor-pointer"
                                   onClick={() => {
-                                    losResult(
-                                      alt.id,
-                                      3,
-                                      setIsLosStatusLoading,
-                                      setOpenDropdownIndex,
-                                      fetchOneLOS
-                                    );
+                                    {
+                                      alt.los_status
+                                        ? updateLosResult(
+                                            alt.id,
+                                            3,
+                                            setIsLosStatusLoading,
+                                            setOpenDropdownIndex,
+                                            fetchOneLOS
+                                          )
+                                        : losResult(
+                                            alt.id,
+                                            3,
+                                            setIsLosStatusLoading,
+                                            setOpenDropdownIndex,
+                                            fetchOneLOS
+                                          );
+                                    }
                                   }}
                                 >
                                   Negative
@@ -1759,7 +1665,19 @@ const OrderDetails = () => {
                         </div>
                       </div>
                       <div className="w-[16%] flex items-center justify-center">
-                        <span className="text-[14px] text-n800">
+                        <span
+                          className={`text-[14px]  ${
+                            !order.line_of_sight
+                              .execute_with_all_alternatives &&
+                            index !== 0 &&
+                            (order.alternative_far_ends[index - 1]
+                              .los_status === null ||
+                              order.alternative_far_ends[index - 1]
+                                .los_status === 1)
+                              ? "text-n500"
+                              : "text-n800"
+                          }`}
+                        >
                           {
                             calculateAzimuths(
                               {
@@ -1780,7 +1698,20 @@ const OrderDetails = () => {
                         </span>
                       </div>
                       <div className="w-[16%] flex items-center justify-center">
-                        <span className="text-[14px] text-n800">
+                        <span
+                          className={`text-[14px]  ${
+                            !order.line_of_sight
+                              .execute_with_all_alternatives &&
+                            index !== 0 &&
+                            (order.alternative_far_ends[index - 1]
+                              .los_status === null ||
+                              order.alternative_far_ends[index - 1]
+                                .los_status === 1)
+                              ? "text-n500"
+                              : "text-n800"
+                          }`}
+                        >
+                          {" "}
                           {
                             calculateAzimuths(
                               {
@@ -1801,7 +1732,20 @@ const OrderDetails = () => {
                         </span>
                       </div>
                       <div className="w-[16%] flex items-center justify-center">
-                        <span className="text-[14px] text-n800">
+                        <span
+                          className={`text-[14px]  ${
+                            !order.line_of_sight
+                              .execute_with_all_alternatives &&
+                            index !== 0 &&
+                            (order.alternative_far_ends[index - 1]
+                              .los_status === null ||
+                              order.alternative_far_ends[index - 1]
+                                .los_status === 1)
+                              ? "text-n500"
+                              : "text-n800"
+                          }`}
+                        >
+                          {" "}
                           {calculateDistance(
                             {
                               latitude: alt.site_location.latitude,
@@ -1826,9 +1770,9 @@ const OrderDetails = () => {
       </div>
       <LosExcutionPopup
         ref={executeLosPopupRef}
-        altId={selectedAltForExe!}
-        site_name={selectedSiteName!}
-        site_type={selectedLosTypeForExe!}
+        siteInfo={selectedSiteInfo!}
+        setSelectedSiteInfo={setSelectedSiteInfo}
+        fetchOrder={fetchOneLOS}
       />
     </div>
   );

@@ -7,8 +7,8 @@ import {
 import {
   validateForm1,
   ExectionPopupErrors,
+  validateEditing,
 } from "../../func/los/validation/validateExectionPopup";
-import { handleCreateOrder } from "../../func/los/orders";
 import { handleCloseDialog } from "../../func/openDialog";
 import handleChange from "../../func/handleChangeFormsInput";
 import {
@@ -17,27 +17,63 @@ import {
   handleDMSDirectionChange,
   DimensionDMS,
 } from "../../func/los/Dms_Decimal";
-import { siteResult, fetchSiteResult } from "../../func/los/orders";
+import {
+  siteResult,
+  fetchSiteResult,
+  updateAccessStatus,
+  updateSiteResult,
+} from "../../func/los/orders";
 import { RotatingLines } from "react-loader-spinner";
+import SiteLocationPopup from "./SiteLocationPopup";
+import SitePositionPopup from "./SitePositionPopup";
+import SiteAdditionalPicsPopup from "./SiteAdditionalPics";
 
 interface LosPopupProps {
-  altId: number;
-  site_type: 1 | 2;
-  site_name: string;
-  fetchOrders?: () => void;
+  siteInfo: {
+    losId: number | null;
+    altId: number | null;
+    site_type: 1 | 2 | null;
+    site_name: string;
+    losStatus: 1 | 2 | 3 | null;
+    accessibility: boolean;
+    image_count: number | null;
+  };
+
+  setSelectedSiteInfo: React.Dispatch<
+    React.SetStateAction<{
+      losId: number | null;
+      altId: number | null;
+      site_type: 1 | 2 | null;
+      site_name: string;
+      losStatus: 1 | 2 | 3 | null;
+      accessibility: boolean;
+      image_count: number | null;
+    }>
+  >;
+
+  fetchOrder: () => void;
 }
-
 const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
-  ({ altId, site_type, site_name, fetchOrders }, ref) => {
-    const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2>(1);
-
+  ({ siteInfo, fetchOrder, setSelectedSiteInfo }, ref) => {
+    const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2 | 3 | 4>(
+      1
+    );
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [loadingFirstSubmit, setLoadingFirstSubmit] =
       useState<boolean>(false);
-
     const [formValues, setformValues] = useState<ReqLosExecution>({
-      los_result: altId,
-      site_type,
+      los_result: null,
+      site_type: null,
+      hba: null,
+      longitude: null,
+      latitude: null,
+    });
+
+    const [editingFormValues, setEditingFormValues] = useState<{
+      hba: number | null;
+      longitude: number | null;
+      latitude: number | null;
+    }>({
       hba: null,
       longitude: null,
       latitude: null,
@@ -59,19 +95,69 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
       direction: "E",
     });
 
+    const [editingLatitude, setEditingLatitude] = useState<DimensionDMS>({
+      degrees: null,
+      minutes: null,
+      seconds: null,
+      direction: "N",
+    });
+
+    const [editingLongitude, setEditingLongitude] = useState<DimensionDMS>({
+      degrees: null,
+      minutes: null,
+      seconds: null,
+      direction: "E",
+    });
+
     const [site, setSite] = useState<ResLosExecution | null>(null);
+    const [isLoadingAccCheckBox, setIsLoadingAccCheckBox] =
+      useState<boolean>(false);
+    const [errorUpdatingAccess, setErrorUpdatingAccess] =
+      useState<boolean>(false);
+    const [editing, setEditing] = useState<boolean>(false);
 
     const handleFirst = (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
     ) => {
       e.preventDefault();
       if (site) {
-        setCurrentSliderIndex(2);
+        if (!editing) {
+          setCurrentSliderIndex(2);
+        } else {
+          setFormErrs({});
+          setErrorUpdatingAccess(false);
+          const formErrors = validateEditing(editingFormValues);
+          if (Object.keys(formErrors).length === 0) {
+            updateSiteResult(
+              editingFormValues,
+              site.id,
+              setLoadingFirstSubmit,
+              setSite,
+              setFormErrs
+            );
+            setFormErrs({});
+            setEditingFormValues({
+              hba: null,
+              longitude: null,
+              latitude: null,
+            });
+            setEditing(false);
+          } else {
+            setFormErrs(formErrors);
+          }
+        }
       } else {
         setFormErrs({});
+        setErrorUpdatingAccess(false);
         const formErrors = validateForm1(formValues);
         if (Object.keys(formErrors).length === 0) {
-          siteResult(formValues, setLoadingFirstSubmit, setCurrentSliderIndex);
+          siteResult(
+            formValues,
+            setLoadingFirstSubmit,
+            setCurrentSliderIndex,
+            setSite,
+            setFormErrs
+          );
           setFormErrs({});
         } else {
           setFormErrs(formErrors);
@@ -79,47 +165,71 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
       }
     };
 
-    const handleSecondSubmit = (
-      e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
-    ) => {
-      e.preventDefault();
-      // setFormErrs({});
-      const formErrors = validateLosForm2(formValues);
-
-      if (Object.keys(formErrors).length === 0) {
-        handleCreateOrder(formValues, setIsLoading, ref, props.fetchOrders);
-        //  setFormErrs({});
-      } else {
-        // setFormErrs(formErrors);
-      }
-    };
-
-    const handleCancel = () => {
+    const handleClose = () => {
       handleCloseDialog(ref);
       setCurrentSliderIndex(1);
       setFormErrs({});
+      setErrorUpdatingAccess(false);
     };
 
-    /* useWebSocketSearch({
-    searchQuery: searchQueryEng,
-    endpointPath: "search-account/engineer",
-    setResults: setSearchEngs,
-    setLoader: setLoaderAssignSearch,
-  });
+    const handleSeconderyButton = () => {
+      setEditing(!editing);
+      if (editing) {
+        setEditingFormValues({
+          hba: null,
+          longitude: null,
+          latitude: null,
+        });
+        setEditingLatitude({
+          degrees: null,
+          minutes: null,
+          seconds: null,
+          direction: "E",
+        });
+        setEditingLongitude({
+          degrees: null,
+          minutes: null,
+          seconds: null,
+          direction: "N",
+        });
+      } else {
+        setEditingFormValues({
+          hba: formValues.hba,
+          latitude: formValues.latitude,
+          longitude: formValues.longitude,
+        });
+        setEditingLatitude({
+          degrees: latitude.degrees,
+          minutes: latitude.minutes,
+          seconds: latitude.seconds,
+          direction: latitude.direction,
+        });
 
-  useWebSocketSearch({
-    searchQuery: searchQueryCoord,
-    endpointPath:
-      typeOfSearchForCoord === "Emails" ? "search-mail" : "search-group",
-    setResults: setSearchCoords,
-    setLoader: setLoaderCoordSearch,
-  });
-  });  */
+        setEditingLongitude({
+          degrees: longitude.degrees,
+          minutes: longitude.minutes,
+          seconds: longitude.seconds,
+          direction: longitude.direction,
+        });
+      }
+    };
 
     useEffect(() => {
-      setformValues((prev) => ({ ...prev, site_type, los_result: altId }));
-      fetchSiteResult(setSite, setIsLoading, altId, site_type);
-    }, [site_type, altId]);
+      setformValues((prev) => ({
+        ...prev,
+        site_type: siteInfo.site_type,
+        los_result: siteInfo.altId,
+      }));
+      fetchSiteResult(
+        setSite,
+        setIsLoading,
+        siteInfo.altId,
+        siteInfo.site_type
+      );
+      if (siteInfo.losStatus === 3) {
+        setformValues((prev) => ({ ...prev, hba: 0 }));
+      }
+    }, [siteInfo]);
 
     useEffect(() => {
       if (site) {
@@ -144,9 +254,9 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
         );
       } else {
         setformValues({
-          los_result: altId,
-          site_type,
-          hba: null,
+          los_result: siteInfo.altId,
+          site_type: siteInfo.site_type,
+          hba: siteInfo.losStatus === 3 ? 0 : null,
           longitude: null,
           latitude: null,
         });
@@ -163,7 +273,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
           direction: "E",
         });
       }
-    }, [site, altId, site_type]);
+    }, [site, siteInfo]);
 
     return (
       <dialog
@@ -180,30 +290,9 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
         ) : currentSliderIndex === 1 ? (
           <>
             <div className="flex flex-col items-start gap-[22px] w-full">
-              <div className="flex w-full items-center justify-between">
-                <h3 className="text-[19px] text-primary font-medium">
-                  Execution of {site_name}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <label
-                    htmlFor="access"
-                    className="font-medium text-n600 cursor-pointer"
-                  >
-                    No access{" "}
-                  </label>
-
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      id="access"
-                      name="access"
-                      type="checkbox"
-                      className="sr-only peer"
-                      onChange={(e) => {}}
-                    />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 dark:peer-focus:ring-n700 rounded-full peer dark:bg-n500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4A3AFF]"></div>
-                  </label>
-                </div>
-              </div>
+              <h3 className="text-[19px] text-primary font-medium">
+                Execution of {siteInfo.site_name}
+              </h3>
               <div className="flex flex-col items-start gap-[18px] w-full">
                 <div className="flex flex-col items-start gap-2 w-full">
                   <div className="flex items-center">
@@ -244,10 +333,29 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     placeholder="Enter hba"
                     className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
                     onChange={(e) => {
-                      handleChange(e, setformValues);
+                      if (editing) {
+                        handleChange(e, setEditingFormValues);
+                      } else {
+                        handleChange(e, setformValues);
+                      }
                     }}
-                    value={formValues.hba ?? ""}
-                    disabled={site ? true : false}
+                    value={
+                      siteInfo.losStatus === 3
+                        ? 0
+                        : editing
+                        ? editingFormValues.hba ?? ""
+                        : formValues.hba ?? ""
+                    }
+                    disabled={
+                      editing && siteInfo.losStatus !== 3
+                        ? false
+                        : Boolean(
+                            site ||
+                              siteInfo.losStatus === 3 ||
+                              !siteInfo.losStatus ||
+                              !siteInfo.accessibility
+                          )
+                    }
                   />
                 </div>
 
@@ -292,7 +400,11 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       min={0}
                       max={90}
                       name="degrees"
-                      value={latitude.degrees ?? ""}
+                      value={
+                        editing
+                          ? editingLatitude.degrees ?? ""
+                          : latitude.degrees ?? ""
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         if (
@@ -301,10 +413,32 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             parseInt(value, 10) >= 0 &&
                             parseInt(value, 10) <= 90)
                         ) {
-                          handleDMSChange(e, setLatitude, true, setformValues);
+                          if (editing) {
+                            handleDMSChange(
+                              e,
+                              setEditingLatitude,
+                              true,
+                              setEditingFormValues
+                            );
+                          } else {
+                            handleDMSChange(
+                              e,
+                              setLatitude,
+                              true,
+                              setformValues
+                            );
+                          }
                         }
                       }}
-                      disabled={site ? true : false}
+                      disabled={
+                        editing
+                          ? false
+                          : Boolean(
+                              site ||
+                                !siteInfo.losStatus ||
+                                !siteInfo.accessibility
+                            )
+                      }
                     />
                     <input
                       type="text"
@@ -315,7 +449,11 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       max={59}
                       maxLength={2}
                       name="minutes"
-                      value={latitude.minutes ?? ""}
+                      value={
+                        editing
+                          ? editingLatitude.minutes ?? ""
+                          : latitude.minutes ?? ""
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         if (
@@ -324,10 +462,32 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             parseInt(value, 10) >= 0 &&
                             parseInt(value, 10) <= 59)
                         ) {
-                          handleDMSChange(e, setLatitude, true, setformValues);
+                          if (editing) {
+                            handleDMSChange(
+                              e,
+                              setEditingLatitude,
+                              true,
+                              setEditingFormValues
+                            );
+                          } else {
+                            handleDMSChange(
+                              e,
+                              setLatitude,
+                              true,
+                              setformValues
+                            );
+                          }
                         }
                       }}
-                      disabled={site ? true : false}
+                      disabled={
+                        editing
+                          ? false
+                          : Boolean(
+                              site ||
+                                !siteInfo.losStatus ||
+                                !siteInfo.accessibility
+                            )
+                      }
                     />
                     <input
                       type="text" // Change type to "text" to allow commas
@@ -338,8 +498,20 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       max={59.99}
                       maxLength={12}
                       name="seconds"
-                      value={latitude.seconds ?? ""}
-                      disabled={site ? true : false}
+                      value={
+                        editing
+                          ? editingLatitude.seconds ?? ""
+                          : latitude.seconds ?? ""
+                      }
+                      disabled={
+                        editing
+                          ? false
+                          : Boolean(
+                              site ||
+                                !siteInfo.losStatus ||
+                                !siteInfo.accessibility
+                            )
+                      }
                       onChange={(e) => {
                         const target = e.target;
                         const value = target.value.replace(",", "."); // Replace comma with dot
@@ -349,21 +521,21 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                           value === "" ||
                           (parseFloat(value) >= 0 && parseFloat(value) <= 59.99)
                         ) {
-                          const modifiedEvent = {
-                            ...e,
-                            target: {
-                              ...target,
-                              name: target.name,
-                              value: value,
-                            },
-                          } as React.ChangeEvent<HTMLInputElement>;
-
-                          handleDMSChange(
-                            modifiedEvent,
-                            setLatitude,
-                            true,
-                            setformValues
-                          );
+                          if (editing) {
+                            handleDMSChange(
+                              e,
+                              setEditingLatitude,
+                              true,
+                              setEditingFormValues
+                            );
+                          } else {
+                            handleDMSChange(
+                              e,
+                              setLatitude,
+                              true,
+                              setformValues
+                            );
+                          }
                         }
                       }}
                       onInput={(e) => {
@@ -392,16 +564,37 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             className="hidden peer"
                             name="direction"
                             value="N"
-                            checked={latitude.direction === "N"}
-                            disabled={site ? true : false}
-                            onChange={(e) =>
-                              handleDMSDirectionChange(
-                                e,
-                                setLatitude,
-                                true,
-                                setformValues
-                              )
+                            checked={
+                              editing
+                                ? editingLatitude.direction === "N"
+                                : latitude.direction === "N"
                             }
+                            disabled={
+                              editing
+                                ? false
+                                : Boolean(
+                                    site ||
+                                      !siteInfo.losStatus ||
+                                      !siteInfo.accessibility
+                                  )
+                            }
+                            onChange={(e) => {
+                              if (editing) {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setEditingLatitude,
+                                  true,
+                                  setEditingFormValues
+                                );
+                              } else {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setLatitude,
+                                  true,
+                                  setformValues
+                                );
+                              }
+                            }}
                           />
                           <label
                             htmlFor="north"
@@ -423,16 +616,37 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             id="south"
                             value="S"
                             className="hidden peer"
-                            checked={latitude.direction === "S"}
-                            disabled={site ? true : false}
-                            onChange={(e) =>
-                              handleDMSDirectionChange(
-                                e,
-                                setLatitude,
-                                true,
-                                setformValues
-                              )
+                            checked={
+                              editing
+                                ? editingLatitude.direction === "S"
+                                : latitude.direction === "S"
                             }
+                            disabled={
+                              editing
+                                ? false
+                                : Boolean(
+                                    site ||
+                                      !siteInfo.losStatus ||
+                                      !siteInfo.accessibility
+                                  )
+                            }
+                            onChange={(e) => {
+                              if (editing) {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setLatitude,
+                                  true,
+                                  setEditingFormValues
+                                );
+                              } else {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setLatitude,
+                                  true,
+                                  setformValues
+                                );
+                              }
+                            }}
                           />
                           <label
                             htmlFor="south"
@@ -452,10 +666,22 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     type="text"
                     id="dec-latitude"
                     name="latitude"
-                    value={formValues.latitude ?? ""}
+                    value={
+                      editing
+                        ? editingFormValues.latitude ?? ""
+                        : formValues.latitude ?? ""
+                    }
                     placeholder="Decimal"
                     className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
-                    disabled={site ? true : false}
+                    disabled={
+                      editing
+                        ? false
+                        : Boolean(
+                            site ||
+                              !siteInfo.losStatus ||
+                              !siteInfo.accessibility
+                          )
+                    }
                     onChange={(e) => {
                       let value = e.target.value.replace(",", ".");
 
@@ -476,12 +702,21 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                           parseFloat(value) >= -90 &&
                           parseFloat(value) <= 90)
                       ) {
-                        updateDMSFromDecimal(
-                          value,
-                          setLatitude,
-                          true,
-                          setformValues
-                        );
+                        if (editing) {
+                          updateDMSFromDecimal(
+                            value,
+                            setEditingLatitude,
+                            true,
+                            setEditingFormValues
+                          );
+                        } else {
+                          updateDMSFromDecimal(
+                            value,
+                            setLatitude,
+                            true,
+                            setformValues
+                          );
+                        }
                       }
                     }}
                     onInput={(e) => {
@@ -543,7 +778,15 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       max={180}
                       maxLength={3}
                       name="degrees"
-                      disabled={site ? true : false}
+                      disabled={
+                        editing
+                          ? false
+                          : Boolean(
+                              site ||
+                                !siteInfo.losStatus ||
+                                !siteInfo.accessibility
+                            )
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         if (
@@ -552,15 +795,28 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             parseInt(value, 10) >= 0 &&
                             parseInt(value, 10) <= 180)
                         ) {
-                          handleDMSChange(
-                            e,
-                            setLongitude,
-                            false,
-                            setformValues
-                          );
+                          if (editing) {
+                            handleDMSChange(
+                              e,
+                              setEditingLongitude,
+                              false,
+                              setEditingFormValues
+                            );
+                          } else {
+                            handleDMSChange(
+                              e,
+                              setLongitude,
+                              false,
+                              setformValues
+                            );
+                          }
                         }
                       }}
-                      value={longitude.degrees ? longitude.degrees : ""}
+                      value={
+                        editing
+                          ? editingLongitude.degrees ?? ""
+                          : longitude.degrees ?? ""
+                      }
                     />
                     <input
                       type="text"
@@ -571,7 +827,15 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       max={59}
                       maxLength={2}
                       name="minutes"
-                      disabled={site ? true : false}
+                      disabled={
+                        editing
+                          ? false
+                          : Boolean(
+                              site ||
+                                !siteInfo.losStatus ||
+                                !siteInfo.accessibility
+                            )
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         if (
@@ -580,15 +844,28 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             parseInt(value, 10) >= 0 &&
                             parseInt(value, 10) <= 59)
                         ) {
-                          handleDMSChange(
-                            e,
-                            setLongitude,
-                            false,
-                            setformValues
-                          );
+                          if (editing) {
+                            handleDMSChange(
+                              e,
+                              setEditingLongitude,
+                              false,
+                              setEditingFormValues
+                            );
+                          } else {
+                            handleDMSChange(
+                              e,
+                              setLongitude,
+                              false,
+                              setformValues
+                            );
+                          }
                         }
                       }}
-                      value={longitude.minutes ? longitude.minutes : ""}
+                      value={
+                        editing
+                          ? editingLongitude.minutes ?? ""
+                          : longitude.minutes ?? ""
+                      }
                     />
                     <input
                       type="text"
@@ -597,7 +874,15 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       placeholder="Second"
                       name="seconds"
                       maxLength={12}
-                      disabled={site ? true : false}
+                      disabled={
+                        editing
+                          ? false
+                          : Boolean(
+                              site ||
+                                !siteInfo.losStatus ||
+                                !siteInfo.accessibility
+                            )
+                      }
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const target = e.target as HTMLInputElement;
                         const value = target.value.replace(",", "."); // Replace comma with dot
@@ -607,27 +892,32 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                           value === "" ||
                           (parseFloat(value) >= 0 && parseFloat(value) <= 59.99)
                         ) {
-                          const modifiedEvent = {
-                            ...e,
-                            target: {
-                              ...target,
-                              name: target.name,
-                              value: value,
-                            },
-                          } as React.ChangeEvent<HTMLInputElement>;
-                          handleDMSChange(
-                            modifiedEvent,
-                            setLongitude,
-                            false,
-                            setformValues
-                          );
+                          if (editing) {
+                            handleDMSChange(
+                              e,
+                              setEditingLongitude,
+                              false,
+                              setEditingFormValues
+                            );
+                          } else {
+                            handleDMSChange(
+                              e,
+                              setLongitude,
+                              false,
+                              setformValues
+                            );
+                          }
                         }
                       }}
                       onInput={(e: React.FormEvent<HTMLInputElement>) => {
                         const target = e.target as HTMLInputElement;
                         target.value = target.value.replace(/[^\d,.]/g, "");
                       }}
-                      value={longitude.seconds ? longitude.seconds : ""}
+                      value={
+                        editing
+                          ? editingLongitude.seconds ?? ""
+                          : longitude.seconds ?? ""
+                      }
                       onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                         const target = e.currentTarget;
                         if (
@@ -649,16 +939,37 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             className="hidden peer"
                             name="direction"
                             value="E"
-                            checked={longitude.direction === "E"}
-                            disabled={site ? true : false}
-                            onChange={(e) =>
-                              handleDMSDirectionChange(
-                                e,
-                                setLongitude,
-                                false,
-                                setformValues
-                              )
+                            checked={
+                              editing
+                                ? editingLongitude.direction === "E"
+                                : longitude.direction === "E"
                             }
+                            disabled={
+                              editing
+                                ? false
+                                : Boolean(
+                                    site ||
+                                      !siteInfo.losStatus ||
+                                      !siteInfo.accessibility
+                                  )
+                            }
+                            onChange={(e) => {
+                              if (editing) {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setEditingLongitude,
+                                  false,
+                                  setEditingFormValues
+                                );
+                              } else {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setLongitude,
+                                  false,
+                                  setformValues
+                                );
+                              }
+                            }}
                           />
                           <label
                             htmlFor="east"
@@ -680,16 +991,37 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                             className="hidden peer"
                             name="direction"
                             value="W"
-                            checked={longitude.direction === "W"}
-                            disabled={site ? true : false}
-                            onChange={(e) =>
-                              handleDMSDirectionChange(
-                                e,
-                                setLongitude,
-                                false,
-                                setformValues
-                              )
+                            checked={
+                              editing
+                                ? editingLongitude.direction === "W"
+                                : longitude.direction === "W"
                             }
+                            disabled={
+                              editing
+                                ? false
+                                : Boolean(
+                                    site ||
+                                      !siteInfo.losStatus ||
+                                      !siteInfo.accessibility
+                                  )
+                            }
+                            onChange={(e) => {
+                              if (editing) {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setEditingLongitude,
+                                  false,
+                                  setEditingFormValues
+                                );
+                              } else {
+                                handleDMSDirectionChange(
+                                  e,
+                                  setLongitude,
+                                  false,
+                                  setformValues
+                                );
+                              }
+                            }}
                           />
                           <label
                             htmlFor="west"
@@ -709,10 +1041,22 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     type="text"
                     name="longitude"
                     id="longitude"
-                    value={formValues.longitude || ""}
+                    value={
+                      editing
+                        ? editingFormValues.longitude ?? ""
+                        : formValues.longitude ?? ""
+                    }
                     placeholder="Decimal"
                     className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
-                    disabled={site ? true : false}
+                    disabled={
+                      editing
+                        ? false
+                        : Boolean(
+                            site ||
+                              !siteInfo.losStatus ||
+                              !siteInfo.accessibility
+                          )
+                    }
                     onChange={(e) => {
                       let value = e.target.value.replace(",", ".");
 
@@ -735,12 +1079,21 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                           parseFloat(value) >= -180 &&
                           parseFloat(value) <= 180)
                       ) {
-                        updateDMSFromDecimal(
-                          value,
-                          setLongitude,
-                          false,
-                          setformValues
-                        );
+                        if (editing) {
+                          updateDMSFromDecimal(
+                            value,
+                            setEditingLongitude,
+                            false,
+                            setEditingFormValues
+                          );
+                        } else {
+                          updateDMSFromDecimal(
+                            value,
+                            setLongitude,
+                            false,
+                            setformValues
+                          );
+                        }
                       }
                     }}
                     onInput={(e) => {
@@ -761,117 +1114,157 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-[6px]">
-              <button
-                className="rounded-[86px] px-[45px] py-[10px] bg-n300 text-[14px] text-n600 font-semibold border-[1px] border-n400"
-                onClick={handleCancel}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-[86px] px-[45px] py-[10px] bg-primary text-[14px] text-white font-semibold border-[1px] border-primary flex items-center justify-center"
-                onClick={handleFirst}
-              >
-                {loadingFirstSubmit ? (
-                  <RotatingLines strokeColor="white" width="20" />
-                ) : (
-                  "Next"
-                )}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex flex-col items-start gap-[24px] w-full">
-              <h3 className="text-[19px] text-primary font-medium">
-                Site Location NE
-              </h3>
-              <div className="flex flex-col items-start gap-[18px] w-full">
+            <div className="flex w-full items-center justify-between">
+              <div className="flex items-center">
+                <div className="relative inline-block">
+                  {errorUpdatingAccess && (
+                    <>
+                      <div className="relative group inline-block">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-[16px] h-[16px] text-red-500 inline-block mr-2 cursor-pointer"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-10.5a.75.75 0 011.5 0v4a.75.75 0 01-1.5 0v-4zm.75 7a1 1 0 110-2 1 1 0 010 2z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <div className="absolute left-[50%] top-1/2 transform -translate-y-1/2 ml-2 hidden group-hover:flex bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-40">
+                          {
+                            "This site already execute, you cant update it accessibility"
+                          }
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
                 <div
-                  className="w-full"
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const files = e.dataTransfer.files;
-
-                    // Ensure files are not null and handle each file
-                    if (files) {
-                      Array.from(files).forEach(async (file) => {
-                        /*  await handleFileChange(
-              dispatch,
-              props.workorderId!,
-              "certificate",
-              props.extantionType,
-              file,
-              setIsLoading,
-              props.fetchOneWorkOrder,
-              undefined,
-              certType
-            );
-            setFile({ file: file, progress: 0 });  */
-                      });
-                    }
-                  }}
+                  className={`flex flex-row-reverse items-center gap-2 ml-2`}
+                  title={site ? "This site already executed" : undefined}
                 >
-                  <input
-                    type="file"
-                    name="site-location"
-                    id="site-location"
-                    accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files ? e.target.files[0] : null;
-                      if (file) {
-                        /* await handleFileChange(
-              dispatch,
-              props.workorderId!,
-              "certificate",
-              props.extantionType,
-              file,
-              setIsLoading,
-              props.fetchOneWorkOrder,
-              undefined,
-              certType
-            );
-            setFile({ file: file, progress: 0 }); */
-                      }
-                    }}
-                  />
                   <label
-                    htmlFor="site-location"
-                    className="cursor-pointer w-full py-[18px] px-[45px] flex items-center justify-center bg-white border-dashed border-[1px] border-n500 rounded-[15px]"
+                    htmlFor="access"
+                    className={`font-medium text-n600  ${
+                      site ? "cursor-not-allowed" : "cursor-pointer"
+                    }`}
                   >
-                    <span className="text-[14px] text-n600 font-medium leading-[15px] py-[38px] px-[5px] text-center flex flex-col items-center ">
-                      Drag & drop your file here <br /> or
-                      <span className="text-primary"> chooses file</span>
-                    </span>
+                    No access{" "}
+                  </label>
+
+                  <label
+                    className={`relative inline-flex items-center ${
+                      site ? "cursor-not-allowed" : "cursor-pointer"
+                    }`}
+                  >
+                    <input
+                      id="access"
+                      name="access"
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={!siteInfo.accessibility}
+                      onChange={(e) => {
+                        if (!isLoadingAccCheckBox && !site) {
+                          // Prevent changing the toggle when loading is true
+
+                          if (e.target.checked) {
+                            updateAccessStatus(
+                              siteInfo.site_type === 1
+                                ? siteInfo.losId!
+                                : siteInfo.altId!,
+                              "POST",
+                              siteInfo.site_type!,
+                              setIsLoadingAccCheckBox,
+                              setSelectedSiteInfo,
+                              setErrorUpdatingAccess,
+                              fetchOrder!
+                            );
+                          } else {
+                            updateAccessStatus(
+                              siteInfo.site_type === 1
+                                ? siteInfo.losId!
+                                : siteInfo.altId!,
+                              "DELETE",
+                              siteInfo.site_type!,
+                              setIsLoadingAccCheckBox,
+                              setSelectedSiteInfo,
+                              setErrorUpdatingAccess,
+                              fetchOrder!
+                            );
+                          }
+                        }
+                      }}
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 dark:peer-focus:ring-n700 rounded-full peer dark:bg-n500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4A3AFF]"></div>
                   </label>
                 </div>
-                <textarea
-                  name="comment"
-                  id="comment"
-                  placeholder="Add Comment"
-                  className="rounded-[19px] border-[2px] border-n300 p-4 w-full shadow-[#7090B008] text-[14px] font-medium max-h-[180px]"
-                />
               </div>
-            </div>
-            <div className="flex items-center gap-[6px]">
-              <button
-                className="rounded-[86px] px-[45px] py-[10px] bg-n300 text-[14px] text-n600 font-semibold border-[1px] border-n400"
-                onClick={handleCancel}
-              >
-                Cancel
-              </button>
-              <button className="rounded-[86px] px-[45px] py-[10px] bg-primary text-[14px] text-white font-semibold border-[1px] border-primary flex items-center justify-center">
-                Next
-              </button>
-            </div>
+              <div className="flex items-center gap-2">
+                {site && (
+                  <button
+                    className={`rounded-[86px] px-[45px] py-[10px]  text-[14px]  font-semibold border-[1px]  flex items-center justify-center border-n400 bg-n300 text-n600`}
+                    onClick={handleSeconderyButton}
+                    disabled={!site}
+                  >
+                    {loadingFirstSubmit ? (
+                      <RotatingLines strokeColor="white" width="20" />
+                    ) : editing ? (
+                      "Cancel"
+                    ) : (
+                      "Edit"
+                    )}
+                  </button>
+                )}
+
+                <button
+                  className={`rounded-[86px] px-[45px] py-[10px]  text-[14px]  font-semibold border-[1px]  flex items-center justify-center ${
+                    siteInfo.losStatus
+                      ? "border-primary bg-primary text-white"
+                      : "border-n400 bg-n400 text-n500"
+                  }`}
+                  onClick={handleFirst}
+                  disabled={!siteInfo.losStatus}
+                >
+                  {loadingFirstSubmit ? (
+                    <RotatingLines strokeColor="white" width="20" />
+                  ) : editing ? (
+                    "Save"
+                  ) : (
+                    "Next"
+                  )}
+                </button>
+              </div>
+            </div>{" "}
           </>
+        ) : currentSliderIndex === 2 ? (
+          <SiteLocationPopup
+            setCurrentSliderIndex={setCurrentSliderIndex}
+            site={site}
+          />
+        ) : currentSliderIndex === 3 ? (
+          <SitePositionPopup
+            setCurrentSliderIndex={setCurrentSliderIndex}
+            site={site}
+          />
+        ) : (
+          <SiteAdditionalPicsPopup
+            ref={ref}
+            setCurrentSliderIndex={setCurrentSliderIndex}
+            site={site}
+            image_count={siteInfo.image_count}
+            fetchOneOrder={fetchOrder}
+          />
         )}
+
+        <button
+          className="close-button absolute top-4 right-8 text-[30px] text-550 hover:-rotate-3 transition-transform duration-300 hover:text-n600"
+          aria-label="Close"
+          onClick={handleClose}
+        >
+          &times;
+        </button>
       </dialog>
     );
   }

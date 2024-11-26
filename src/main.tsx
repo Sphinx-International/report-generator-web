@@ -22,7 +22,7 @@ import ModernisationByUser from "./pages/ModernisationByUser.tsx";
 import NewSites from "./pages/newSites.tsx";
 import NewSiteDetails from "./pages/newSiteDetails.tsx";
 import NewSitesByUser from "./pages/newSitesByUser.tsx";
-import OrderDetails from "./pages/Los/orderDetails.tsx";
+import OrderDetails from "./pages/Los/OrderDetails.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";

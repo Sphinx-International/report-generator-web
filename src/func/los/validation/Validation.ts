@@ -92,8 +92,8 @@ export const validateForm2 = (formValues: ReqSite): SiteFormErrors => {
       }
       if (formValues.site_height === null) {
         formErrors.siteHeight = "Site height is required";
-      } else if (formValues.site_height < 10 || formValues.site_height > 90) {
-        formErrors.siteHeight = "Site height must be between [10-90]";
+      } else if (formValues.site_height < 10 || formValues.site_height > 150) {
+        formErrors.siteHeight = "Site height must be between [10-150]";
       }
 
       break;

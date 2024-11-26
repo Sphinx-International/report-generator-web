@@ -45,9 +45,17 @@ type MailTo = {
 type FarEndAlt = {
   id: number;
   far_end_accessibility: boolean;
-  los_status: 1 | 2 | 3; // will chnage this later inshalh
+  los_status: 1 | 2 | 3;
   line_of_sight: number;
   site_location: NearEndLocation;
+  executed: {
+    near_end: boolean;
+    far_end: boolean;
+  };
+  image_count: {
+    near_end: number;
+    far_end: number;
+  };
 };
 
 export interface resOfOneOrder {
@@ -72,8 +80,8 @@ export interface resOfOneOrder {
 }
 
 export interface ReqLosExecution {
-  los_result: number;
-  site_type: 1 | 2;
+  los_result: number | null;
+  site_type: 1 | 2 | null;
   hba: number | null;
   longitude: number | null;
   latitude: number | null;
@@ -86,4 +94,10 @@ export interface ResLosExecution {
   hba: number;
   longitude: number;
   latitude: number;
+}
+
+export interface ReqUploadSiteLocation {
+  site_result: number | null;
+  image: number | null | undefined;
+  comment: string | null;
 }
