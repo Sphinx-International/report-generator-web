@@ -10,7 +10,7 @@ export const validateForm1 = (
   formValues: ReqLosExecution
 ): ExectionPopupErrors => {
   const formErrors: ExectionPopupErrors = {};
-  if (formValues.hba === null) formErrors.hba = "HBA is required";
+  if (formValues.hba === null || formValues.hba === undefined || String(formValues.hba) === "") formErrors.hba = "HBA is required";
   if (
     formValues.latitude === 0 ||
     formValues.latitude === null ||

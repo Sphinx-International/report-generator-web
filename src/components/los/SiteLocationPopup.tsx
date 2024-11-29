@@ -1,6 +1,5 @@
 import { forwardRef, useState, FormEvent, MouseEvent, useEffect } from "react";
 import "../../styles/PrioritySelector.css";
-import { handleCloseDialog } from "../../func/openDialog";
 import handleChange from "../../func/handleChangeFormsInput";
 import { uploadSiteImages } from "../../func/los/orders";
 import { RotatingLines } from "react-loader-spinner";
@@ -46,7 +45,7 @@ const SiteLocationPopup = forwardRef<HTMLDialogElement, SiteLocationPopupProps>(
             secondFormValues,
             setIsLoadingSubmit,
             "site-location",
-            setCurrentSliderIndex,
+            setCurrentSliderIndex
           );
           setFileErr(false);
         }
@@ -66,7 +65,12 @@ const SiteLocationPopup = forwardRef<HTMLDialogElement, SiteLocationPopupProps>(
     }, [site, file?.id]);
 
     useEffect(() => {
-      downloadSiteImages(site?.id, setDownloadImg, setIsLoadingDownload,"site-location");
+      downloadSiteImages(
+        site?.id,
+        setDownloadImg,
+        setIsLoadingDownload,
+        "site-location"
+      );
     }, [site]);
 
     return (

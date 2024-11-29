@@ -17,10 +17,10 @@ import { handleCreateOrder } from "../../func/los/orders";
 import { fetchProjectTypes } from "../../func/los/orders";
 
 interface LosPopupProps {
-  fetchOrders: ()=> void
+  fetchOrders: () => void;
 }
 
-const LosPopup = forwardRef<HTMLDialogElement,LosPopupProps>((props, ref) => {
+const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
   const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2>(1);
 
   const priorities = ["Low", "Medium", "High", "Urgent"];
@@ -250,32 +250,38 @@ const LosPopup = forwardRef<HTMLDialogElement,LosPopupProps>((props, ref) => {
                             <RotatingLines strokeColor="#4A3AFF" width="20" />
                           </div>
                         ) : searchSitesNE && searchSitesNE.length > 0 ? (
-                          searchSitesNE.map((site, index) => {
-                            return (
-                              <div
-                                key={index}
-                                className="w-full px-4 flex items-center gap-2 hover:bg-slate-200 cursor-pointer"
-                                onClick={() => {
-                                  setformValues((prev) => ({
-                                    ...prev,
-                                    near_end_location: site.id,
-                                  }));
-                                  setSelectedSitesNE(site);
-                                  setSearchQueryNE("");
-                                }}
-                              >
-                                {" "}
-                                <img
-                                  src="/site.png"
-                                  alt="avatar"
-                                  className="w-[35px]"
-                                />
-                                <span className="text-550 text-[14px]">
-                                  {site.code}
-                                </span>
-                              </div>
-                            );
-                          })
+                          searchSitesNE
+                            .filter((site) => {
+                              return !selectedAlt.some(
+                                (selectedSite) => selectedSite.id === site.id
+                              );
+                            })
+                            .map((site, index) => {
+                              return (
+                                <div
+                                  key={index}
+                                  className="w-full px-4 flex items-center gap-2 hover:bg-slate-200 cursor-pointer"
+                                  onClick={() => {
+                                    setformValues((prev) => ({
+                                      ...prev,
+                                      near_end_location: site.id,
+                                    }));
+                                    setSelectedSitesNE(site);
+                                    setSearchQueryNE("");
+                                  }}
+                                >
+                                  {" "}
+                                  <img
+                                    src="/site.png"
+                                    alt="avatar"
+                                    className="w-[35px]"
+                                  />
+                                  <span className="text-550 text-[14px]">
+                                    {site.code}
+                                  </span>
+                                </div>
+                              );
+                            })
                         ) : (
                           <span className="text-primary font-medium flex items-center justify-center w-full">
                             no result founded..
@@ -322,7 +328,9 @@ const LosPopup = forwardRef<HTMLDialogElement,LosPopupProps>((props, ref) => {
                       setOpenProjectTypesOptions(!openProjectTypesOptions)
                     }
                   >
-                    {selectedProjectType ? selectedProjectType.name : "Still there is no LOS type yet !"}
+                    {selectedProjectType
+                      ? selectedProjectType.name
+                      : "Still there is no LOS type yet !"}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -607,47 +615,57 @@ const LosPopup = forwardRef<HTMLDialogElement,LosPopupProps>((props, ref) => {
                         <RotatingLines strokeColor="#4A3AFF" width="20" />
                       </div>
                     ) : searchSitesAlt && searchSitesAlt.length > 0 ? (
-                      searchSitesAlt.map((site, index) => {
-                        return (
-                          <div
-                            key={index}
-                            className="w-full px-4 flex items-center gap-2 hover:bg-slate-200 cursor-pointer"
-                            onClick={() => {
-                              setformValues((prev) => {
-                                if (
-                                  !prev.alternative_far_ends.includes(site.id!)
-                                ) {
-                                  return {
-                                    ...prev,
-                                    alternative_far_ends: [
-                                      ...prev.alternative_far_ends,
-                                      site.id,
-                                    ],
-                                  };
-                                }
-                                return prev;
-                              });
-                              setSelectedAlt((prev) => {
-                                if (!prev.find((item) => item.id === site.id)) {
-                                  return [...prev, site];
-                                }
-                                return prev;
-                              });
-                              setSearchQueryAlt("");
-                            }}
-                          >
-                            {" "}
-                            <img
-                              src="/site.png"
-                              alt="site icon"
-                              className="w-[35px]"
-                            />
-                            <span className="text-550 text-[14px]">
-                              {site.code}
-                            </span>
-                          </div>
-                        );
-                      })
+                      searchSitesAlt
+                        .filter((site) => {
+                          return !(
+                            selectedSitesNE && site.id === selectedSitesNE.id
+                          );
+                        })
+                        .map((site, index) => {
+                          return (
+                            <div
+                              key={index}
+                              className="w-full px-4 flex items-center gap-2 hover:bg-slate-200 cursor-pointer"
+                              onClick={() => {
+                                setformValues((prev) => {
+                                  if (
+                                    !prev.alternative_far_ends.includes(
+                                      site.id!
+                                    )
+                                  ) {
+                                    return {
+                                      ...prev,
+                                      alternative_far_ends: [
+                                        ...prev.alternative_far_ends,
+                                        site.id,
+                                      ],
+                                    };
+                                  }
+                                  return prev;
+                                });
+                                setSelectedAlt((prev) => {
+                                  if (
+                                    !prev.find((item) => item.id === site.id)
+                                  ) {
+                                    return [...prev, site];
+                                  }
+                                  return prev;
+                                });
+                                setSearchQueryAlt("");
+                              }}
+                            >
+                              {" "}
+                              <img
+                                src="/site.png"
+                                alt="site icon"
+                                className="w-[35px]"
+                              />
+                              <span className="text-550 text-[14px]">
+                                {site.code}
+                              </span>
+                            </div>
+                          );
+                        })
                     ) : (
                       <span className="text-primary font-medium flex items-center justify-center w-full">
                         no result founded..

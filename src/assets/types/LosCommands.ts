@@ -92,8 +92,8 @@ export interface ResLosExecution {
   los_result: number;
   site_type: 1 | 2;
   hba: number;
-  longitude: number;
-  latitude: number;
+  longitude: number | null;
+  latitude: number | null;
 }
 
 export interface ReqUploadSiteLocation {

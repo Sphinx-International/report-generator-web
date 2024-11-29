@@ -10,7 +10,7 @@ import CircularProgress from "../../components/CircleProgress";
 import Header from "../../components/Header";
 import SideBar from "../../components/SideBar";
 import { User } from "../../assets/types/User";
-import WorkOrderStatus from "../../components/workorder/WorkOrderStatus";
+import LosStatus from "../../components/los/losStatus";
 import WorkOrderpriority from "../../components/workorder/WorkOrderPriorities";
 import useWebSocketSearch from "../../hooks/useWebSocketSearch";
 import {
@@ -19,8 +19,9 @@ import {
   losResult,
   updateLosResult,
   addOrDeleteAlt,
+  handleFinishLos,
 } from "../../func/los/orders";
-import { losOrdersTabHeader } from "../../assets/los";
+import { losAltTabHeader, losOrdersTabHeader } from "../../assets/los";
 import {
   calculateAzimuths,
   calculateDistance,
@@ -28,10 +29,12 @@ import {
 import { handleOpenDialog } from "../../func/openDialog";
 import LosExcutionPopup from "../../components/los/LosExecutionPopup";
 import { ResSite } from "../../assets/types/LosSites";
+import { useSnackbar } from "notistack";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const OrderDetails = () => {
   const { id } = useParams();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [HaveAccess, setHaveAccess] = useState(true);
@@ -39,7 +42,6 @@ const OrderDetails = () => {
   const [inputWidth, setInputWidth] = useState(380);
   const spanRef = useRef<HTMLSpanElement>(null);
   const executeLosPopupRef = useRef<HTMLDialogElement>(null);
-  const [isEditing_desc, setIsEditing_desc] = useState(false);
   const [showPriority, setShowPriority] = useState(false);
 
   const [basicDataOrder, setbasicDataOrder] = useState<{
@@ -86,6 +88,7 @@ const OrderDetails = () => {
     losStatus: 1 | 2 | 3 | null;
     accessibility: boolean;
     image_count: number | null;
+    siteIndex?: number;
   }>({
     losId: null,
     altId: null,
@@ -159,7 +162,7 @@ const OrderDetails = () => {
       setIsPageLoading(false);
     }
   }, [id]);
-
+console.log(order)
   useEffect(() => {
     fetchOneLOS();
   }, [fetchOneLOS]);
@@ -195,8 +198,6 @@ const OrderDetails = () => {
       </div>
     );
   }
-
-  console.log(order);
 
   return (
     <div className="w-full flex h-[100vh]">
@@ -798,7 +799,7 @@ const OrderDetails = () => {
                     )}
 
                     <div className="flex items-center gap-2">
-                      <WorkOrderStatus
+                      <LosStatus
                         status={order.line_of_sight.status}
                         styles={{ fontSize: 13, px: 22, py: 8.5 }}
                       />
@@ -1368,7 +1369,7 @@ const OrderDetails = () => {
                   </div>
                 </div>
               </div>
-              {order.line_of_sight.status < 3 && (
+              {order.line_of_sight.status < 4 && (
                 <button
                   className={`${
                     order.line_of_sight.status === 0
@@ -1394,7 +1395,8 @@ const OrderDetails = () => {
                           setCurrentSlide,
                           fetchOneLOS
                         )
-                      : order.line_of_sight.status === 2
+                      : order.line_of_sight.status === 2 ||
+                        order.line_of_sight.status === 3
                       ? setCurrentSlide(2)
                       : null;
                   }}
@@ -1413,27 +1415,132 @@ const OrderDetails = () => {
                   ) : order.line_of_sight.status === 1 ? (
                     "Execute"
                   ) : order.line_of_sight.status === 2 ? (
-                    (order.line_of_sight.execute_with_all_alternatives &&
-                      order.alternative_far_ends.every(
-                        (alt) => alt.executed.near_end && alt.executed.far_end
-                      )) ||
-                    (!order.line_of_sight.execute_with_all_alternatives &&
-                      order.alternative_far_ends.every(
-                        (alt) => alt.executed.near_end && alt.executed.far_end
-                      )) ||
-                      (!order.line_of_sight.execute_with_all_alternatives &&
-                        order.alternative_far_ends.some(
-                          (alt) =>
-                            alt.los_status === 1 &&
-                            alt.executed.near_end &&
-                            alt.executed.far_end
-                        )) ? (
-                      "Finish"
-                    ) : (
-                      "continue execution ->"
-                    )
-                  ) : null}
+                    "continue execution ->"
+                  ) : (
+                    "Open exection"
+                  )}
                 </button>
+              )}
+              {order.line_of_sight.status === 3 && getRole() !== 2 && (
+                <div className="w-full flex flex-col md:border-[1px] md:border-n400 rounded-[20px] md:p-[20px]">
+                  <div className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4">
+                    {losOrdersTabHeader.map((header, index) => {
+                      return (
+                        <span
+                          key={index}
+                          className={`flex items-center justify-center text-[13px] text-n800 font-medium `}
+                          style={{ width: `${header.width}` }}
+                        >
+                          {header.title}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  {order.alternative_far_ends.map((alt, index) => {
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4"
+                      >
+                        <div className="w-[10%] flex items-center justify-center">
+                          <span className="text-[12px] text-n800">
+                            {alt.site_location.site_code}
+                          </span>
+                        </div>
+                        <div className="w-[14%] flex items-center justify-center">
+                          <span className="text-[12px] text-n800">
+                            {alt.site_location.longitude}
+                          </span>
+                        </div>
+                        <div className="w-[14%] flex items-center justify-center">
+                          <span className="text-[12px] text-n800">
+                            {alt.site_location.latitude}
+                          </span>
+                        </div>
+                        <div className="w-[14%] flex items-center justify-center">
+                          <span className="text-[12px] text-n800">
+                            {alt.site_location.longitude}
+                          </span>
+                        </div>
+                        <div className="w-[14%] flex items-center justify-center">
+                          <span className="text-[12px] text-n800">
+                            {alt.site_location.latitude}
+                          </span>
+                        </div>
+
+                        <div className="w-[10%] flex items-center justify-center">
+                          <span className="text-[12px] text-n800">
+                            {calculateDistance(
+                              {
+                                latitude: alt.site_location.latitude,
+                                longitude: alt.site_location.longitude,
+                              },
+                              {
+                                latitude:
+                                  order.line_of_sight.near_end_location
+                                    .latitude,
+                                longitude:
+                                  order.line_of_sight.near_end_location
+                                    .longitude,
+                              }
+                            ).toFixed(2)}
+                            km
+                          </span>
+                        </div>
+                        <div className="w-[10%] flex items-center justify-center">
+                          <span className="p-[7px] rounded-full bg-sec cursor-pointer">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 16 16"
+                              fill="none"
+                            >
+                              <path
+                                d="M14 2.23438L13.297 2.54688L9.9845 3.96837L6.172 2.53087L5.9845 2.46837L5.797 2.54688L2.297 4.04688L2 4.17188V13.7649L2.703 13.4524L6.0155 12.0309L9.828 13.4684L10.0155 13.5309L10.203 13.4524L13.703 11.9524L14 11.8274V2.23438ZM6.5 3.71837L9.5 4.84338V12.2814L6.5 11.1564V3.71837ZM5.5 3.74988V11.1719L3 12.2499V4.82788L5.5 3.74988ZM13 3.74988V11.1719L10.5 12.2499V4.82788L13 3.74988Z"
+                                fill="#4A3AFF"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <div className="w-[14%] flex gap-[6px] items-center justify-center">
+                          <span className="px-[7px] py-[8px] rounded-full bg-[#48C1B53B] cursor-pointer">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="11"
+                              viewBox="0 0 14 11"
+                              fill="none"
+                            >
+                              <path
+                                d="M1.42188 4.9917L4.97656 8.54639L12.0859 1.43701"
+                                stroke="#48C1B5"
+                                stroke-width="3"
+                              />
+                            </svg>
+                          </span>
+                          <span className="p-[8px] rounded-full bg-[#DB2C2C1A] cursor-pointer">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 12 12"
+                              fill="none"
+                            >
+                              <path
+                                d="M1.33203 10.6668L5.9987 6.00016M5.9987 6.00016L10.6654 1.3335M5.9987 6.00016L1.33203 1.3335M5.9987 6.00016L10.6654 10.6668"
+                                stroke="#DB2C2C"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           ) : (
@@ -1441,7 +1548,7 @@ const OrderDetails = () => {
               <h2 className="text-[20px] font-semibold text-n800">Los order</h2>
               <div className="flex flex-col w-full px-[25px]">
                 <div className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4">
-                  {losOrdersTabHeader.map((header, index) => {
+                  {losAltTabHeader.map((header, index) => {
                     return (
                       <span
                         key={index}
@@ -1481,8 +1588,8 @@ const OrderDetails = () => {
                               : order.line_of_sight.near_end_accessibility
                               ? alt.executed.near_end
                                 ? "bg-[#48C1B521] text-[#48C1B5] cursor-pointer"
-                                : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
-                              : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
+                                : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
+                              : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
                           }`}
                           onClick={() => {
                             setSelectedSiteInfo(() => ({
@@ -1495,6 +1602,7 @@ const OrderDetails = () => {
                               accessibility:
                                 order.line_of_sight.near_end_accessibility,
                               image_count: alt.image_count.near_end,
+                              siteIndex: index,
                             }));
 
                             handleOpenDialog(executeLosPopupRef);
@@ -1517,8 +1625,8 @@ const OrderDetails = () => {
                               : alt.far_end_accessibility
                               ? alt.executed.far_end
                                 ? "bg-[#48C1B521] text-[#48C1B5] cursor-pointer"
-                                : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
-                              : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
+                                : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
+                              : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
                           }`}
                           onClick={() => {
                             setSelectedSiteInfo(() => ({
@@ -1765,6 +1873,50 @@ const OrderDetails = () => {
                   );
                 })}
               </div>
+              {(order.line_of_sight.execute_with_all_alternatives &&
+                order.alternative_far_ends.every(
+                  (alt) => alt.executed.near_end && alt.executed.far_end
+                )) ||
+                (!order.line_of_sight.execute_with_all_alternatives &&
+                  order.alternative_far_ends.every(
+                    (alt) => alt.executed.near_end && alt.executed.far_end
+                  )) ||
+                (!order.line_of_sight.execute_with_all_alternatives &&
+                  order.alternative_far_ends.some(
+                    (alt) =>
+                      alt.los_status === 1 &&
+                      alt.executed.near_end &&
+                      alt.executed.far_end
+                  ) && (
+                    <div className="w-full sm:w-[97%] flex items-center justify-end">
+                      {" "}
+                      <button
+                        type="button"
+                        className="flex items-center justify-center text-white bg-primary text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px]"
+                        onClick={() => {
+                          handleFinishLos(
+                            order.line_of_sight.id,
+                            setIsLoadingMainButton,
+                            setCurrentSlide,
+                            (message, options) =>
+                              enqueueSnackbar(message, { ...options }),
+                            fetchOneLOS
+                          );
+                        }}
+                      >
+                        {isLoadingMainButton ? (
+                          <RotatingLines
+                            visible={true}
+                            width="20"
+                            strokeWidth="3"
+                            strokeColor={"#FFF"}
+                          />
+                        ) : (
+                          "Submit"
+                        )}
+                      </button>
+                    </div>
+                  ))}
             </div>
           ))}
       </div>

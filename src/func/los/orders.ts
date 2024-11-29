@@ -330,10 +330,155 @@ export const updateLosResult = async (
   }
 };
 
-export const siteResult = async (
+export const setSiteHba = async (
   result: ReqLosExecution,
+  losId: number | null,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setCurrSlide: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>,
+  setSite: React.Dispatch<React.SetStateAction<ResLosExecution | null>>,
+  setFormErrs: React.Dispatch<React.SetStateAction<ExectionPopupErrors>>,
+  fecthOneOrder?: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+
+  console.log("seeeet HBA");
+
+  const requestBody = JSON.stringify(result);
+
+  try {
+    const response = await fetch(`${baseUrl}/line-of-sight/add-site-result`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+      body: requestBody,
+    });
+
+    if (response) {
+      const data = await response.json();
+      switch (response.status) {
+        case 200:
+          if (fecthOneOrder) {
+            fecthOneOrder();
+          }
+          setSite((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              hba: data.hba,
+            };
+          });
+
+          await setCGPS(result, losId, setSite);
+          setCurrSlide(2);
+          setFormErrs({});
+          break;
+        case 400:
+          console.log("Verify your data");
+          setFormErrs({});
+          break;
+
+        case 409:
+          setCurrSlide(2);
+          break;
+        case 422:
+          setFormErrs({
+            hba: "Please enter HBA between [0 - structure height]",
+          });
+          break;
+        default:
+          console.log("An unexpected error occurred");
+          setFormErrs({});
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const setCGPS = async (
+  result: ReqLosExecution,
+  losId: number | null,
+  setSite: React.Dispatch<React.SetStateAction<ResLosExecution | null>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  console.log("seeeet CGPS");
+
+  const requestBody = JSON.stringify({
+    [result.site_type === 1 ? "line_of_sight" : "alternative"]:
+      result.site_type === 1 ? losId : result.los_result,
+    latitude: result.latitude,
+    longitude: result.longitude,
+  });
+  console.log(requestBody);
+  try {
+    const response = await fetch(
+      result.site_type === 1
+        ? `${baseUrl}/line-of-sight/add-near-end-cgps`
+        : `${baseUrl}/line-of-sight/add-alternative-far-end-cgps`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: requestBody,
+      }
+    );
+
+    if (response) {
+      const data = await response.json();
+      switch (response.status) {
+        case 200:
+          setSite((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              longitude: data.longitude,
+              latitude: data.latitude,
+            };
+          });
+          break;
+        case 400:
+          console.log("Verify your data");
+          break;
+        default:
+          console.log("An unexpected error occurred");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
+  }
+};
+
+export const updateHba = async (
+  result: {
+    hba: number | null;
+    longitude: number | null;
+    latitude: number | null;
+  },
+  site_result_id: number,
+  losId: number,
+  altId: number,
+  site_type: 1 | 2,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setSite: React.Dispatch<React.SetStateAction<ResLosExecution | null>>,
   setFormErrs: React.Dispatch<React.SetStateAction<ExectionPopupErrors>>,
   fecthOneOrder?: () => void
@@ -349,23 +494,34 @@ export const siteResult = async (
   const requestBody = JSON.stringify(result);
 
   try {
-    const response = await fetch(`${baseUrl}/line-of-sight/add-site-result`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${token}`,
-      },
-      body: requestBody,
-    });
+    const response = await fetch(
+      `${baseUrl}/line-of-sight/update-site-result/${site_result_id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: requestBody,
+      }
+    );
 
     if (response) {
+      const data = await response.json();
       switch (response.status) {
         case 200:
           if (fecthOneOrder) {
             fecthOneOrder();
           }
-          setCurrSlide(2);
-          setSite(await response.json());
+
+          setSite((prev) => {
+            if (!prev) return data;
+            return {
+              ...prev,
+              hba: data.hba,
+            };
+          });
+          updateCGPS(result, losId, altId, site_type, setSite);
           setFormErrs({});
           break;
         case 400:
@@ -391,17 +547,16 @@ export const siteResult = async (
   }
 };
 
-export const updateSiteResult = async (
+export const updateCGPS = async (
   result: {
     hba: number | null;
     longitude: number | null;
     latitude: number | null;
   },
-  site_result_id:number,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  setSite: React.Dispatch<React.SetStateAction<ResLosExecution | null>>,
-  setFormErrs: React.Dispatch<React.SetStateAction<ExectionPopupErrors>>,
-  fecthOneOrder?: () => void
+  losId: number,
+  altId: number,
+  site_type: 1 | 2,
+  setSite: React.Dispatch<React.SetStateAction<ResLosExecution | null>>
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -409,51 +564,52 @@ export const updateSiteResult = async (
     console.error("No token found");
     return;
   }
-  setIsLoading(true);
 
-  const requestBody = JSON.stringify(result);
+  const requestBody = JSON.stringify({
+    longitude: result.longitude,
+    latitude: result.latitude,
+  });
 
   console.log(requestBody)
 
   try {
-    const response = await fetch(`${baseUrl}/line-of-sight/update-site-result/${site_result_id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${token}`,
-      },
-      body: requestBody,
-    });
+    const response = await fetch(
+      site_type === 1
+        ? `${baseUrl}/line-of-sight/update-near-end-cgps/${losId}`
+        : `${baseUrl}/line-of-sight/update-alternative-far-end-cgps/${altId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: requestBody,
+      }
+    );
 
     if (response) {
+      const data = await response.json();
       switch (response.status) {
         case 200:
-          if (fecthOneOrder) {
-            fecthOneOrder();
-          }
-          setSite(await response.json());
-          setFormErrs({});
+          setSite((prev) => {
+            if (!prev) return data;
+            return {
+              ...prev,
+              latitude: data.latitude,
+              longitude: data.longitude,
+            };
+          });
           break;
         case 400:
           console.log("Verify your data");
-          setFormErrs({});
-          break;
-        case 422:
-          setFormErrs({
-            hba: "Please enter HBA between [0 - structure height]",
-          });
           break;
         default:
           console.log("An unexpected error occurred");
-          setFormErrs({});
           break;
       }
     }
   } catch (err) {
     console.error("Error submitting form", err);
-    setFormErrs({});
-  } finally {
-    setIsLoading(false);
   }
 };
 
@@ -476,6 +632,8 @@ export const uploadSiteImages = async (
   setIsLoading(true);
 
   const requestBody = JSON.stringify(result);
+
+  console.log(requestBody);
 
   try {
     const response = await fetch(
@@ -513,11 +671,12 @@ export const uploadSiteImages = async (
   return false;
 };
 
-export const fetchSiteResult = async (
+export const getHbaSiteResult = async (
   setData: React.Dispatch<React.SetStateAction<ResLosExecution | null>>,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   altId: number | null,
-  site_type: 1 | 2 | null
+  site_type: 1 | 2 | null,
+  losId: number | null
   // fecthOneOrder?: () => void
 ) => {
   const token =
@@ -527,7 +686,6 @@ export const fetchSiteResult = async (
     return;
   }
   setIsLoading(true);
-
   try {
     const response = await fetch(
       `${baseUrl}/line-of-sight/get-site-result/${altId}/${site_type}`,
@@ -541,15 +699,19 @@ export const fetchSiteResult = async (
     );
 
     if (response) {
+      const data = await response.json();
       switch (response.status) {
         case 200:
-          setData(await response.json());
+          setData(data);
           break;
         case 400:
           console.log("verify your data");
           break;
         case 404:
-          setData(null);
+          setData((prev) => {
+            if (!prev) return null;
+            return { ...prev };
+          });
           break;
         default:
           console.log("error");
@@ -559,7 +721,67 @@ export const fetchSiteResult = async (
   } catch (err) {
     console.error("Error submitting form", err);
   } finally {
+    await getCGPS(setData, losId, altId, site_type!);
     setIsLoading(false);
+  }
+};
+
+export const getCGPS = async (
+  setData: React.Dispatch<React.SetStateAction<ResLosExecution | null>>,
+  losId: number | null,
+  altId: number | null,
+  site_type: 1 | 2
+  // fecthOneOrder?: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  try {
+    const response = await fetch(
+      site_type === 1
+        ? `${baseUrl}/line-of-sight/get-near-end-cgps/${losId}`
+        : `${baseUrl}/line-of-sight/get-alternative-far-end-cgps/${altId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+
+    if (response) {
+      const data = await response.json();
+      switch (response.status) {
+        case 200:
+          setData((prev) => {
+            if (!prev) return data;
+            return {
+              ...prev,
+              longitude: data.longitude,
+              latitude: data.latitude,
+            };
+          });
+          break;
+        case 400:
+          console.log("verify your data");
+          break;
+        case 404:
+          setData((prev) => {
+            if (!prev) return null;
+            return { ...prev };
+          });
+          break;
+        default:
+          console.log("error");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
   }
 };
 
@@ -786,6 +1008,62 @@ export const addOrDeleteAlt = async (
     }
   } catch (err) {
     console.error("Error during request", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const handleFinishLos = async (
+  line_of_sight_id: number,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setCurrSlide: React.Dispatch<React.SetStateAction<1 | 2>>,
+  enqueueSnackbar: (message: string, options?: any) => void,
+  fecthOneOrder?: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/line-of-sight/finish-line-of-sight-execution/${line_of_sight_id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+
+    if (response) {
+      switch (response.status) {
+        case 200:
+          if (fecthOneOrder) {
+            fecthOneOrder();
+          }
+          setCurrSlide(1);
+          break;
+        case 400:
+          console.log("verify your data");
+          break;
+        case 406:
+          enqueueSnackbar("Not all sites informations are filled.", {
+            variant: "error",
+            autoHideDuration: 3000,
+          });
+          break;
+        default:
+          console.log("error");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
   } finally {
     setIsLoading(false);
   }

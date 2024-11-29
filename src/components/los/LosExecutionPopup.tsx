@@ -18,10 +18,10 @@ import {
   DimensionDMS,
 } from "../../func/los/Dms_Decimal";
 import {
-  siteResult,
-  fetchSiteResult,
+  setSiteHba,
+  getHbaSiteResult,
   updateAccessStatus,
-  updateSiteResult,
+  updateHba,
 } from "../../func/los/orders";
 import { RotatingLines } from "react-loader-spinner";
 import SiteLocationPopup from "./SiteLocationPopup";
@@ -37,6 +37,7 @@ interface LosPopupProps {
     losStatus: 1 | 2 | 3 | null;
     accessibility: boolean;
     image_count: number | null;
+    siteIndex?: number;
   };
 
   setSelectedSiteInfo: React.Dispatch<
@@ -48,6 +49,7 @@ interface LosPopupProps {
       losStatus: 1 | 2 | 3 | null;
       accessibility: boolean;
       image_count: number | null;
+      siteIndex?: number;
     }>
   >;
 
@@ -115,12 +117,11 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
     const [errorUpdatingAccess, setErrorUpdatingAccess] =
       useState<boolean>(false);
     const [editing, setEditing] = useState<boolean>(false);
-
     const handleFirst = (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
     ) => {
       e.preventDefault();
-      if (site) {
+      if (site?.hba || site?.hba === 0) {
         if (!editing) {
           setCurrentSliderIndex(2);
         } else {
@@ -128,9 +129,12 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
           setErrorUpdatingAccess(false);
           const formErrors = validateEditing(editingFormValues);
           if (Object.keys(formErrors).length === 0) {
-            updateSiteResult(
+            updateHba(
               editingFormValues,
               site.id,
+              siteInfo.losId!,
+              siteInfo.altId!,
+              siteInfo.site_type!,
               setLoadingFirstSubmit,
               setSite,
               setFormErrs
@@ -151,8 +155,9 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
         setErrorUpdatingAccess(false);
         const formErrors = validateForm1(formValues);
         if (Object.keys(formErrors).length === 0) {
-          siteResult(
+          setSiteHba(
             formValues,
+            siteInfo.losId,
             setLoadingFirstSubmit,
             setCurrentSliderIndex,
             setSite,
@@ -170,6 +175,14 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
       setCurrentSliderIndex(1);
       setFormErrs({});
       setErrorUpdatingAccess(false);
+      setformValues({
+        los_result: null,
+        site_type: null,
+        hba: null,
+        longitude: null,
+        latitude: null,
+      });
+      setSite(null);
     };
 
     const handleSeconderyButton = () => {
@@ -220,11 +233,12 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
         site_type: siteInfo.site_type,
         los_result: siteInfo.altId,
       }));
-      fetchSiteResult(
+      getHbaSiteResult(
         setSite,
         setIsLoading,
         siteInfo.altId,
-        siteInfo.site_type
+        siteInfo.site_type,
+        siteInfo.losId
       );
       if (siteInfo.losStatus === 3) {
         setformValues((prev) => ({ ...prev, hba: 0 }));
@@ -235,11 +249,10 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
       if (site) {
         setformValues((prev) => ({
           ...prev,
-          hba: site.hba,
-          latitude: site.latitude,
+          hba: siteInfo.losStatus === 3 ? 0 : site.hba,
           longitude: site.longitude,
+          latitude: site.latitude,
         }));
-
         updateDMSFromDecimal(
           String(site.latitude),
           setLatitude,
@@ -350,7 +363,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       editing && siteInfo.losStatus !== 3
                         ? false
                         : Boolean(
-                            site ||
+                            site?.hba ||
                               siteInfo.losStatus === 3 ||
                               !siteInfo.losStatus ||
                               !siteInfo.accessibility
@@ -1202,7 +1215,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {site && (
+                {site?.hba && (
                   <button
                     className={`rounded-[86px] px-[45px] py-[10px]  text-[14px]  font-semibold border-[1px]  flex items-center justify-center border-n400 bg-n300 text-n600`}
                     onClick={handleSeconderyButton}
