@@ -53,7 +53,7 @@ export const updateDMSFromDecimal = (
   });
 
   // Update formValue with the decimal value
-  setFormValue((prevFormValue) => ({
+  setFormValue((prevFormValue:any) => ({
     ...prevFormValue,
     [isLatitude ? "latitude" : "longitude"]: decimal,
   }));
@@ -97,7 +97,7 @@ export const handleDMSChange = (
       updatedState.direction
     );
 
-    setFormValue((prevFormValue) => ({
+    setFormValue((prevFormValue:any) => ({
       ...prevFormValue,
       [isLatitude ? "latitude" : "longitude"]: decimalValue,
     }));
@@ -127,7 +127,7 @@ export const handleDMSDirectionChange = (
       updatedState.direction
     );
 
-    setFormValue((prevFormValue) => ({
+    setFormValue((prevFormValue:any) => ({
       ...prevFormValue,
       [isLatitude ? "latitude" : "longitude"]: decimalValue,
     }));

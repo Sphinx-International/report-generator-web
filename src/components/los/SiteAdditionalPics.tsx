@@ -45,6 +45,10 @@ const SiteAdditionalPicsPopup = forwardRef<
   const [isLoadingDownload, setIsLoadingDownload] = useState<boolean>(false);
 
   const [imgIndex, setImgIndex] = useState<number | null>(null);
+  const [metadata, setMetadata] = useState<{
+    title?: string | null;
+    comment?: string | null;
+  }>({});
 
   const handleFourthSubmit = async (
     e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
@@ -138,72 +142,95 @@ const SiteAdditionalPicsPopup = forwardRef<
   }, [image_count]);
 
   useEffect(() => {
-    downloadSiteImages(
-      site?.id,
-      setDownloadImg,
-      setIsLoadingDownload,
-      "additional-picture",
-      imgIndex
-    );
+    if (imgIndex !== null && imgIndex !== undefined && site?.id) {
+      downloadSiteImages(
+        site.id,
+        setDownloadImg,
+        setMetadata,
+        setIsLoadingDownload,
+        "additional-picture",
+        imgIndex
+      );
+    }
   }, [site, imgIndex]);
 
   return (
     <>
       <div className="flex flex-col items-start gap-[24px] w-full">
-        <div className="w-[90%] relative">
-          <input
-            type="text"
-            name="title"
-            id="title"
-            value={fourthFormValues.title}
-            required={true}
-            className="text-[17px] text-primary font-medium px-[18px] py-3 rounded-[19px] border-[2px] border-n300 w-full "
-            placeholder="Enter a title.."
-            onChange={(e) => {
-              handleChange(e, setFourthFormValues);
-            }}
-          />
-          <div className="absolute inline-block right-2 top-[50%] -translate-y-[50%]">
-            {titleErr && (
-              <>
-                <div className="relative group inline-block">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-[16px] h-[16px] text-red-500 inline-block mr-2 cursor-pointer"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-10.5a.75.75 0 011.5 0v4a.75.75 0 01-1.5 0v-4zm.75 7a1 1 0 110-2 1 1 0 010 2z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <div className="absolute right-6 top-1/2 transform -translate-y-1/2 ml-2 hidden group-hover:flex bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                    Title is Requierd
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
         {isLoadingDownload ? (
           <div className="w-full flex items-center justify-center">
             <RotatingLines strokeColor="#4A3AFF" width="40" />
           </div>
         ) : downloadImg ? (
-          <div className="w-full max-w-lg mx-auto bg-gray-100 p-4 rounded-lg shadow-md overflow-hidden">
-            <div className="relative w-full max-h-[300px] overflow-auto">
-              <img
-                src={downloadImg}
-                alt="Site position"
-                className="w-auto max-h-[300px] mx-auto object-contain"
-              />
+          <div className="flex flex-col items-start w-full gap-[18px]">
+            <div className="w-[90%] ">
+              <h3 className="text-[19px] text-primary font-medium">
+                {metadata.title}
+              </h3>
+            </div>
+            <div className="w-full max-w-lg mx-auto bg-gray-100 p-4 rounded-lg shadow-md overflow-hidden">
+              {/* Image Container */}
+              <div className="relative w-full max-h-[300px] overflow-auto mb-4">
+                <img
+                  src={downloadImg}
+                  alt="Site location"
+                  className="w-auto max-h-[300px] mx-auto object-contain"
+                />
+              </div>
+
+              <div className="w-full text-n800 text-sm bg-gray-200 p-2 rounded-lg shadow-inner">
+                {metadata.comment || "No comment available."}
+              </div>
+
+              {/*  <div className="mt-4 text-right">
+<button
+  onClick={() => handleEdit(metadata)} // Example: placeholder function for future edit logic
+  className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
+>
+  Edit Metadata
+</button>
+</div> */}
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-start gap-[18px] w-full">
+            <div className="w-[90%] relative">
+              <input
+                type="text"
+                name="title"
+                id="title"
+                value={fourthFormValues.title}
+                required={true}
+                className="text-[17px] text-primary font-medium px-[18px] py-3 rounded-[19px] border-[2px] border-n300 w-full "
+                placeholder="Enter a title.."
+                onChange={(e) => {
+                  handleChange(e, setFourthFormValues);
+                }}
+              />
+              <div className="absolute inline-block right-2 top-[50%] -translate-y-[50%]">
+                {titleErr && (
+                  <>
+                    <div className="relative group inline-block">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-[16px] h-[16px] text-red-500 inline-block mr-2 cursor-pointer"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-10.5a.75.75 0 011.5 0v4a.75.75 0 01-1.5 0v-4zm.75 7a1 1 0 110-2 1 1 0 010 2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <div className="absolute right-6 top-1/2 transform -translate-y-1/2 ml-2 hidden group-hover:flex bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                        Title is Requierd
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
             <div className="flex flex-col items-start gap-2 w-full">
               {isLoading ? (
                 <div className="w-full flex items-center justify-center">
@@ -241,8 +268,8 @@ const SiteAdditionalPicsPopup = forwardRef<
 
                     // Ensure files are not null and handle each file
                     if (files) {
-                      Array.from(files).forEach(async (file) => {
-                        /*  await handleFileChange(
+                     /* Array.from(files).forEach(async (file) => {
+                          await handleFileChange(
       dispatch,
       props.workorderId!,
       "certificate",
@@ -253,8 +280,8 @@ const SiteAdditionalPicsPopup = forwardRef<
       undefined,
       certType
     );
-    setFile({ file: file, progress: 0 });  */
-                      });
+    setFile({ file: file, progress: 0 });  
+                      });*/
                     }
                   }}
                 >

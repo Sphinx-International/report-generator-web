@@ -62,7 +62,7 @@ export const losOrdersTabHeader: TabHeader[] = [
   },
 
   {
-    title: "Action",
+    title: "Use Engineer CGPS",
     width: "14%",
   },
 ];

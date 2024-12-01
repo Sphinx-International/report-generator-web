@@ -112,6 +112,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
     });
 
     const [site, setSite] = useState<ResLosExecution | null>(null);
+
     const [isLoadingAccCheckBox, setIsLoadingAccCheckBox] =
       useState<boolean>(false);
     const [errorUpdatingAccess, setErrorUpdatingAccess] =
@@ -183,6 +184,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
         latitude: null,
       });
       setSite(null);
+      fetchOrder();
     };
 
     const handleSeconderyButton = () => {
@@ -247,24 +249,28 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
 
     useEffect(() => {
       if (site) {
-        setformValues((prev) => ({
-          ...prev,
-          hba: siteInfo.losStatus === 3 ? 0 : site.hba,
-          longitude: site.longitude,
-          latitude: site.latitude,
-        }));
-        updateDMSFromDecimal(
-          String(site.latitude),
-          setLatitude,
-          true,
-          setformValues
-        );
-        updateDMSFromDecimal(
-          String(site.longitude),
-          setLongitude,
-          false,
-          setformValues
-        );
+        if (site.hba) {
+          setformValues((prev) => ({
+            ...prev,
+            hba: siteInfo.losStatus === 3 ? 0 : site.hba,
+          }));
+        }
+        if (site.latitude) {
+          updateDMSFromDecimal(
+            String(site.latitude),
+            setLatitude,
+            true,
+            setformValues
+          );
+        }
+        if (site.longitude) {
+          updateDMSFromDecimal(
+            String(site.longitude),
+            setLongitude,
+            false,
+            setformValues
+          );
+        }
       } else {
         setformValues({
           los_result: siteInfo.altId,
@@ -1215,7 +1221,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {site?.hba && (
+                {(site?.hba || site?.hba === 0) && (
                   <button
                     className={`rounded-[86px] px-[45px] py-[10px]  text-[14px]  font-semibold border-[1px]  flex items-center justify-center border-n400 bg-n300 text-n600`}
                     onClick={handleSeconderyButton}

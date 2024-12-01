@@ -52,6 +52,11 @@ type FarEndAlt = {
     near_end: boolean;
     far_end: boolean;
   };
+  execution_cgps: {
+    longitude: number;
+    latitude: number;
+    is_valid: boolean;
+  };
   image_count: {
     near_end: number;
     far_end: number;
@@ -63,12 +68,18 @@ export interface resOfOneOrder {
     id: number;
     near_end_accessibility: boolean;
     priority: 0 | 1 | 2 | 3;
-    status: 0 | 2 | 1 | 3;
+    status: 0 | 2 | 1 | 3 | 4 | 5 | 6 | 7;
     execute_with_all_alternatives: boolean;
     assigned_to: User | null;
+    reject_message: string | null;
     type: {
       id: number;
       name: string;
+    };
+    execution_cgps: {
+      longitude: number;
+      latitude: number;
+      is_valid: boolean;
     };
     near_end_location: NearEndLocation;
     created_at: Date;

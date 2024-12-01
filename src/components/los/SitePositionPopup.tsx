@@ -33,7 +33,10 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
 
     const [downloadImg, setDownloadImg] = useState<string | null>(null);
     const [isLoadingDownload, setIsLoadingDownload] = useState<boolean>(false);
-
+    const [metadata, setMetadata] = useState<{
+      title?: string | null;
+      comment?: string | null;
+    }>({});
     const handleThirdSubmit = (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
     ) => {
@@ -48,7 +51,7 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
             thirdFormValues,
             setIsLoadingSubmit,
             "site-position",
-            setCurrentSliderIndex,
+            setCurrentSliderIndex
           );
           setFileErr(false);
         }
@@ -71,6 +74,7 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
       downloadSiteImages(
         site?.id,
         setDownloadImg,
+        setMetadata,
         setIsLoadingDownload,
         "site-position"
       );
@@ -88,13 +92,27 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
             </div>
           ) : downloadImg ? (
             <div className="w-full max-w-lg mx-auto bg-gray-100 p-4 rounded-lg shadow-md overflow-hidden">
-              <div className="relative w-full max-h-[300px] overflow-auto">
+              {/* Image Container */}
+              <div className="relative w-full max-h-[300px] overflow-auto mb-4">
                 <img
                   src={downloadImg}
-                  alt="Site position"
+                  alt="Site location"
                   className="w-auto max-h-[300px] mx-auto object-contain"
                 />
               </div>
+
+              <div className="w-full text-n800 text-sm bg-gray-200 p-2 rounded-lg shadow-inner">
+                {metadata.comment || "No comment available."}
+              </div>
+
+              {/*  <div className="mt-4 text-right">
+    <button
+      onClick={() => handleEdit(metadata)} // Example: placeholder function for future edit logic
+      className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
+    >
+      Edit Metadata
+    </button>
+  </div> */}
             </div>
           ) : (
             <div className="flex flex-col items-start gap-[18px] w-full">
@@ -135,8 +153,8 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
 
                       // Ensure files are not null and handle each file
                       if (files) {
-                        Array.from(files).forEach(async (file) => {
-                          /*  await handleFileChange(
+                      /*  Array.from(files).forEach(async (file) => {
+                            await handleFileChange(
       dispatch,
       props.workorderId!,
       "certificate",
@@ -147,8 +165,8 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
       undefined,
       certType
     );
-    setFile({ file: file, progress: 0 });  */
-                        });
+    setFile({ file: file, progress: 0 });  
+                        });*/
                       }
                     }}
                   >

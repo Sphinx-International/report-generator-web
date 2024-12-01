@@ -1,7 +1,7 @@
 import SideBar from "../../components/SideBar";
 import Header from "../../components/Header";
 import Main from "../../components/Main";
-import WorkOrderStatus from "../../components/workorder/WorkOrderStatus";
+import LosStatus from "../../components/los/losStatus";
 import WorkOrderpriority from "../../components/workorder/WorkOrderPriorities";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -179,7 +179,7 @@ const LosCommands = () => {
                           {order.type.name}
                         </p>
                         <div className="flex items-center gap-[8px]">
-                          <WorkOrderStatus
+                          <LosStatus
                             status={order.status}
                             styles={{ fontSize: 10, px: 6, py: 5 }}
                           />

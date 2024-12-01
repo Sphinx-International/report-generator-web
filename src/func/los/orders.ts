@@ -347,8 +347,6 @@ export const setSiteHba = async (
   }
   setIsLoading(true);
 
-  console.log("seeeet HBA");
-
   const requestBody = JSON.stringify(result);
 
   try {
@@ -369,14 +367,19 @@ export const setSiteHba = async (
             fecthOneOrder();
           }
           setSite((prev) => {
-            if (!prev) return null;
-            return {
-              ...prev,
+            const updatedSite = {
+              latitude: prev?.latitude ?? null,
+              longitude: prev?.longitude ?? null,
               hba: data.hba,
+              id: data.id,
+              site_type: data.site_type,
+              los_result: data.los_result,
             };
-          });
 
-          await setCGPS(result, losId, setSite);
+            setCGPS(result, losId, () => updatedSite);
+
+            return updatedSite; // Return the updated state
+          });
           setCurrSlide(2);
           setFormErrs({});
           break;
@@ -418,15 +421,12 @@ export const setCGPS = async (
     return;
   }
 
-  console.log("seeeet CGPS");
-
   const requestBody = JSON.stringify({
     [result.site_type === 1 ? "line_of_sight" : "alternative"]:
       result.site_type === 1 ? losId : result.los_result,
     latitude: result.latitude,
     longitude: result.longitude,
   });
-  console.log(requestBody);
   try {
     const response = await fetch(
       result.site_type === 1
@@ -447,9 +447,8 @@ export const setCGPS = async (
       switch (response.status) {
         case 200:
           setSite((prev) => {
-            if (!prev) return null;
             return {
-              ...prev,
+              ...prev!,
               longitude: data.longitude,
               latitude: data.latitude,
             };
@@ -570,7 +569,7 @@ export const updateCGPS = async (
     latitude: result.latitude,
   });
 
-  console.log(requestBody)
+  console.log(requestBody);
 
   try {
     const response = await fetch(
@@ -788,11 +787,13 @@ export const getCGPS = async (
 export const downloadSiteImages = async (
   fileId: number | undefined,
   setImageUrl: React.Dispatch<React.SetStateAction<string | null>>,
+  setMetadata: React.Dispatch<
+    React.SetStateAction<{ title?: string | null; comment?: string | null }>
+  >,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   imageType: "site-location" | "site-position" | "additional-picture",
   imgindex?: number | null,
-  onProgress?: (progress: number) => void,
-  onComplete?: () => void
+  onProgress?: (progress: number) => void
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -814,41 +815,39 @@ export const downloadSiteImages = async (
         Accept: "application/json, application/octet-stream",
         Authorization: `Token ${token}`,
       },
-      mode: "cors", // Keep cors mode
+      mode: "cors",
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // Debug: Log all headers
-    console.log("All response headers:");
-    response.headers.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
-    console.log(response.headers.get("X-metadata"));
-    // Try to get metadata with different header cases
-    const metadata =
+    // Handle metadata parsing
+    const metadataHeader =
       response.headers.get("X-Metadata") ||
       response.headers.get("x-metadata") ||
       response.headers.get("X-metadata");
 
-    console.log("Metadata header:", metadata);
-
-    if (metadata) {
+    if (metadataHeader) {
       try {
-        const parsedMetadata = JSON.parse(metadata);
-        console.log("Parsed metadata:", parsedMetadata);
-      } catch (e) {
-        console.warn("Failed to parse metadata:", e);
+        const parsedMetadata = JSON.parse(metadataHeader);
+        setMetadata({
+          title: parsedMetadata.title ?? null,
+          comment: parsedMetadata.comment ?? null,
+        });
+      } catch (error) {
+        console.warn("Failed to parse metadata:", error);
+        setMetadata({ title: null, comment: null });
       }
+    } else {
+      setMetadata({ title: null, comment: null });
     }
 
     const reader = response.body?.getReader();
     if (!reader) {
       throw new Error("No reader found in the response");
     }
-    console.log(reader);
+
     const contentLength = response.headers.get("content-length");
     const total = contentLength ? parseInt(contentLength, 10) : 0;
     let receivedLength = 0;
@@ -874,7 +873,6 @@ export const downloadSiteImages = async (
     const urlImg = URL.createObjectURL(blob);
 
     setImageUrl(urlImg);
-    onComplete?.();
   } catch (error) {
     console.error("Download failed:", error);
     throw error;
@@ -1188,6 +1186,346 @@ export const handle_chunck = async (
     }
   } catch (err) {
     console.error("Error submitting first chunk", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const selectCGPS_toWorkWith = async (
+  id: number,
+  site_type: 1 | 2,
+  choice: "suggested" | "original",
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  fetchOrder: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  setIsLoading(true);
+
+  // Dynamically set the URL based on choice and site_type
+  let url = "";
+  if (site_type === 1) {
+    if (choice === "original") {
+      url = `use-original-near-end-cgps/${id}`;
+    } else if (choice === "suggested") {
+      url = `use-suggested-near-end-cgps/${id}`;
+    }
+  } else if (site_type === 2) {
+    if (choice === "original") {
+      url = `use-original-alternative-far-end-cgps/${id}`;
+    } else if (choice === "suggested") {
+      url = `use-suggested-alternative-far-end-cgps/${id}`;
+    }
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/line-of-sight/${url}`, {
+      method: choice === "suggested" ? "DELETE" : "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (response) {
+      switch (response.status) {
+        case 200:
+          console.log("done");
+          fetchOrder();
+          break;
+        case 208:
+          console.log("Already chosen");
+          break;
+        case 404:
+          console.error("Not Found.");
+          break;
+        case 406:
+          console.log("Not acceptable.");
+          break;
+        default:
+          console.log("An unexpected error occurred.");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error during request", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const generateReport = async (
+  losId: number | null,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  fetchOrders: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+  try {
+    const response = await fetch(
+      `${baseUrl}/line-of-sight/generate-report/${losId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+
+    if (response) {
+      switch (response.status) {
+        case 200: {
+          // Handle PDF download
+          const blob = await response.blob(); // Get the response as a Blob
+          const url = window.URL.createObjectURL(blob); // Create a URL for the Blob
+          const link = document.createElement("a"); // Create an anchor element
+          link.href = url;
+          link.download = `report_${losId}.pdf`; // Set the filename
+          document.body.appendChild(link);
+          link.click(); // Trigger the download
+          document.body.removeChild(link); // Remove the anchor element
+          console.log("Report generated and downloaded.");
+          fetchOrders();
+          break;
+        }
+        default:
+          console.log("An unexpected error occurred");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error generating report", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const downloadGeneratedReport = async (
+  lineOfSightId: number,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/line-of-sight/download-generated-report/${lineOfSightId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      // Handle successful response and file download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `generated_report_${lineOfSightId}.pdf`; // Set the filename
+      document.body.appendChild(link);
+      link.click(); // Trigger the download
+      document.body.removeChild(link); // Clean up
+      console.log("PDF downloaded successfully.");
+    } else {
+      switch (response.status) {
+        case 404:
+          console.error("Not Found: Report does not exist.");
+          break;
+        case 409:
+          console.error("Conflict: File does not exist (unexpected case).");
+          break;
+        default:
+          console.error("An unexpected error occurred.");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching the report", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const approveLineOfSight = async (
+  losId: number,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  onSuccess: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/line-of-sight/approve-line-of-sight/${losId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+
+    if (response) {
+      switch (response.status) {
+        case 200:
+          console.log("Line of Sight approved successfully.");
+          onSuccess(); // Callback for success
+          break;
+        case 404:
+          console.error(
+            "Not Found: The specified line of sight does not exist."
+          );
+          break;
+        case 406:
+          console.error("Not Acceptable: Invalid request.");
+          break;
+        default:
+          console.error("An unexpected error occurred.");
+      }
+    }
+  } catch (err) {
+    console.error("Error during request:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const rejectLineOfSight = async (
+  losId: number,
+  message: string,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  onSuccess: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/line-of-sight/reject-line-of-sight/${losId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ message }),
+      }
+    );
+
+    if (response) {
+      switch (response.status) {
+        case 200:
+          console.log("Line of Sight rejected successfully.");
+          onSuccess(); // Callback for success
+          break;
+        case 401:
+          console.error("Unauthorized: Please log in.");
+          break;
+        case 403:
+          console.error("Forbidden: You don't have the necessary permissions.");
+          break;
+        case 404:
+          console.error(
+            "Not Found: The specified line of sight does not exist."
+          );
+          break;
+        case 406:
+          console.error(
+            "Not Acceptable: Line of sight has not been generated yet."
+          );
+          break;
+        default:
+          console.error("An unexpected error occurred.");
+      }
+    }
+  } catch (err) {
+    console.error("Error during request:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const closeLineOfSight = async (
+  losId: number,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  onSuccess: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/line-of-sight/close-line-of-sight/${losId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+
+    if (response) {
+      switch (response.status) {
+        case 200:
+          console.log("Line of Sight closed successfully.");
+          onSuccess(); // Callback for success
+          break;
+        case 404:
+          console.error(
+            "Not Found: The specified line of sight does not exist."
+          );
+          break;
+        case 406:
+          console.error("Not Acceptable: Unable to close this line of sight.");
+          break;
+        default:
+          console.error("An unexpected error occurred.");
+      }
+    }
+  } catch (err) {
+    console.error("Error during request:", err);
   } finally {
     setIsLoading(false);
   }
