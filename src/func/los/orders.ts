@@ -77,6 +77,8 @@ export const fetchProjectTypes = async (
   }
 
   const url = `${baseUrl}/line-of-sight/get-project-types`;
+  console.log(url);
+
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -92,11 +94,10 @@ export const fetchProjectTypes = async (
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const text = await response.text();
+    const data = await response.json(); // Use response.json() to parse the JSON response
 
-    // Check if the response is empty
-    if (text) {
-      const data = JSON.parse(text);
+    // Check if the data array is empty
+    if (Array.isArray(data) && data.length > 0) {
       setProjectTypes(data);
       firstProjectType(data[0]);
       setformValues((prev) => ({

@@ -91,8 +91,8 @@ const DeletePopup = forwardRef<HTMLDialogElement, DeletePopUpProps>(
         });
 
         if (!response.ok) {
-          console.error("Error deleting items:", await response.text());
-          alert("Failed to delete items");
+          console.error("Error deleting users:", await response.text());
+          alert(`Failed to delete ${props.page}.`);
           return;
         }
         // Determine if the current page is empty after deletion
