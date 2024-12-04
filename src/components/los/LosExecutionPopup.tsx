@@ -3,6 +3,7 @@ import "../../styles/PrioritySelector.css";
 import {
   ReqLosExecution,
   ResLosExecution,
+  NearEndLocation,
 } from "../../assets/types/LosCommands";
 import {
   validateForm1,
@@ -33,7 +34,7 @@ interface LosPopupProps {
     losId: number | null;
     altId: number | null;
     site_type: 1 | 2 | null;
-    site_name: string;
+    site_location: NearEndLocation | null;
     losStatus: 1 | 2 | 3 | null;
     accessibility: boolean;
     image_count: number | null;
@@ -45,7 +46,7 @@ interface LosPopupProps {
       losId: number | null;
       altId: number | null;
       site_type: 1 | 2 | null;
-      site_name: string;
+      site_location: NearEndLocation | null;
       losStatus: 1 | 2 | 3 | null;
       accessibility: boolean;
       image_count: number | null;
@@ -60,6 +61,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
     const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2 | 3 | 4>(
       1
     );
+    console.log(siteInfo);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [loadingFirstSubmit, setLoadingFirstSubmit] =
       useState<boolean>(false);
@@ -230,11 +232,6 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
     };
 
     useEffect(() => {
-      setformValues((prev) => ({
-        ...prev,
-        site_type: siteInfo.site_type,
-        los_result: siteInfo.altId,
-      }));
       getHbaSiteResult(
         setSite,
         setIsLoading,
@@ -276,21 +273,27 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
           los_result: siteInfo.altId,
           site_type: siteInfo.site_type,
           hba: siteInfo.losStatus === 3 ? 0 : null,
-          longitude: null,
-          latitude: null,
+          longitude: siteInfo.site_location
+            ? siteInfo.site_location.longitude
+            : null,
+          latitude: siteInfo.site_location
+            ? siteInfo.site_location.latitude
+            : null,
         });
-        setLatitude({
-          degrees: null,
-          minutes: null,
-          seconds: null,
-          direction: "N",
-        });
-        setLongitude({
-          degrees: null,
-          minutes: null,
-          seconds: null,
-          direction: "E",
-        });
+        if (siteInfo.site_location) {
+          updateDMSFromDecimal(
+            String(siteInfo.site_location!.latitude),
+            setLatitude,
+            true,
+            setformValues
+          );
+          updateDMSFromDecimal(
+            String(siteInfo.site_location!.longitude),
+            setLongitude,
+            true,
+            setformValues
+          );
+        }
       }
     }, [site, siteInfo]);
 
@@ -310,7 +313,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
           <>
             <div className="flex flex-col items-start gap-[22px] w-full">
               <h3 className="text-[19px] text-primary font-medium">
-                Execution of {siteInfo.site_name}
+                Execution of {siteInfo.site_location?.site_code}
               </h3>
               <div className="flex flex-col items-start gap-[18px] w-full">
                 <div className="flex flex-col items-start gap-2 w-full">

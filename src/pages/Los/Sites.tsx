@@ -236,7 +236,7 @@ const Sites = () => {
                               : null}
                           </span>
                           <span className="w-[14%] flex justify-center text-center leading-[18px] text-[12px] text-n800 font-medium">
-                            <Link to={`/edit-site/{user.email}`}>
+                            <Link to={`/edit-site/${site.id}`}>
                               <svg
                                 className="cursor-pointer hover:scale-105"
                                 xmlns="http://www.w3.org/2000/svg"

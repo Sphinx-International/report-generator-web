@@ -1,7 +1,6 @@
 import { reqOrders } from "../../assets/types/LosCommands";
 import { Dispatch, SetStateAction } from "react";
 import { handleCloseDialog } from "../openDialog";
-import { ResProjectType } from "../../assets/types/LosSites";
 import { ExectionPopupErrors } from "./validation/validateExectionPopup";
 import {
   ReqLosExecution,
@@ -9,6 +8,7 @@ import {
   ReqUploadSiteLocation,
 } from "../../assets/types/LosCommands";
 import { TheUploadingFile } from "../../assets/types/Mission";
+import { NearEndLocation } from "../../assets/types/LosCommands";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -62,59 +62,7 @@ export const handleCreateOrder = async (
   }
 };
 
-export const fetchProjectTypes = async (
-  setProjectTypes: React.Dispatch<React.SetStateAction<ResProjectType[]>>,
-  firstProjectType: React.Dispatch<
-    React.SetStateAction<ResProjectType | undefined>
-  >,
-  setformValues: React.Dispatch<React.SetStateAction<reqOrders>>
-) => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
-  if (!token) {
-    console.error("No token found");
-    return;
-  }
 
-  const url = `${baseUrl}/line-of-sight/get-project-types`;
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Error response text: ", errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const text = await response.text();
-
-    // Check if the response is empty
-    if (text) {
-      const data = JSON.parse(text);
-      setProjectTypes(data);
-      firstProjectType(data[0]);
-      setformValues((prev) => ({
-        ...prev,
-        type: data[0].id,
-      }));
-    } else {
-      setProjectTypes([]);
-      firstProjectType(undefined);
-      setformValues((prev) => ({
-        ...prev,
-        type: null,
-      }));
-    }
-  } catch (err) {
-    console.error("Error: ", err);
-  }
-};
 
 export const handleAssingLos = async (
   line_of_sight_id: number,
@@ -891,7 +839,7 @@ export const updateAccessStatus = async (
       losId: number | null;
       altId: number | null;
       site_type: 1 | 2 | null;
-      site_name: string;
+      site_location: NearEndLocation | null;
       losStatus: 1 | 2 | 3 | null;
       accessibility: boolean;
       image_count: number | null;
@@ -1422,7 +1370,8 @@ export const rejectLineOfSight = async (
   losId: number,
   message: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  onSuccess: () => void
+  onSuccess: () => void,
+  ref: React.ForwardedRef<HTMLDialogElement>
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -1451,6 +1400,7 @@ export const rejectLineOfSight = async (
       switch (response.status) {
         case 200:
           console.log("Line of Sight rejected successfully.");
+          handleCloseDialog(ref)
           onSuccess(); // Callback for success
           break;
         case 401:

@@ -35,7 +35,9 @@ import {
 import { handleOpenDialog } from "../../func/openDialog";
 import LosExcutionPopup from "../../components/los/LosExecutionPopup";
 import { ResSite } from "../../assets/types/LosSites";
+import { NearEndLocation } from "../../assets/types/LosCommands";
 import { useSnackbar } from "notistack";
+import RequestUpdatePopup from "../../components/los/RequestUpdateReportPopup";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const OrderDetails = () => {
@@ -48,7 +50,9 @@ const OrderDetails = () => {
   const [inputWidth, setInputWidth] = useState(380);
   const spanRef = useRef<HTMLSpanElement>(null);
   const executeLosPopupRef = useRef<HTMLDialogElement>(null);
- // const [showPriority, setShowPriority] = useState(false);
+  const reqUpdateReportPopup = useRef<HTMLDialogElement>(null);
+
+  // const [showPriority, setShowPriority] = useState(false);
 
   const [basicDataOrder, setbasicDataOrder] = useState<{
     title: string;
@@ -76,9 +80,9 @@ const OrderDetails = () => {
   const [isLoadingMainButton, setIsLoadingMainButton] = useState(false);
 
   const [isLoadingAltSites, setIsLoadingAltSites] = useState(false);
-  console.log(isLoadingAltSites)
+  console.log(isLoadingAltSites);
   const [isLoadingDeleteFile, setIsLoadingDeleteFile] = useState(false);
-  console.log(setIsLoadingDeleteFile)
+  console.log(setIsLoadingDeleteFile);
   const [isLoadingCancelUpload] = useState(false);
   const [isLoadingAttach] = useState(false);
 
@@ -88,12 +92,12 @@ const OrderDetails = () => {
     null
   );
   const [isLosStatusLoading, setIsLosStatusLoading] = useState(false);
-  console.log(isLosStatusLoading)
+  console.log(isLosStatusLoading);
   const [selectedSiteInfo, setSelectedSiteInfo] = useState<{
     losId: number | null;
     altId: number | null;
     site_type: 1 | 2 | null;
-    site_name: string;
+    site_location: NearEndLocation | null;
     losStatus: 1 | 2 | 3 | null;
     accessibility: boolean;
     image_count: number | null;
@@ -102,7 +106,7 @@ const OrderDetails = () => {
     losId: null,
     altId: null,
     site_type: null,
-    site_name: "",
+    site_location: null,
     losStatus: null,
     accessibility: true,
     image_count: null,
@@ -1418,7 +1422,8 @@ const OrderDetails = () => {
                   </div>
                 </div>
                 <div className="w-full flex justify-end">
-                  {(order.line_of_sight.status < 4 || order.line_of_sight.status === 5) && (
+                  {(order.line_of_sight.status < 4 ||
+                    order.line_of_sight.status === 5) && (
                     <button
                       className={`${
                         order.line_of_sight.status === 0
@@ -1445,7 +1450,8 @@ const OrderDetails = () => {
                               fetchOneLOS
                             )
                           : order.line_of_sight.status === 2 ||
-                            order.line_of_sight.status === 3 || order.line_of_sight.status === 5
+                            order.line_of_sight.status === 3 ||
+                            order.line_of_sight.status === 5
                           ? setCurrentSlide(2)
                           : null;
                       }}
@@ -1801,12 +1807,7 @@ const OrderDetails = () => {
                         <button
                           className="flex items-center justify-center px-[45px] py-[10px] rounded-[56px] bg-[#DB2C2C1A] text-[15px] text-[#DB2C2C] font-medium"
                           onClick={() => {
-                            rejectLineOfSight(
-                              order.line_of_sight.id,
-                              "static message",
-                              setIsLoadingRejectLos,
-                              fetchOneLOS
-                            );
+                            handleOpenDialog(reqUpdateReportPopup);
                           }}
                         >
                           {isLoadingRejectLos ? (
@@ -1918,8 +1919,8 @@ const OrderDetails = () => {
                               losId: order.line_of_sight.id,
                               altId: alt.id,
                               site_type: 1,
-                              site_name:
-                                order.line_of_sight.near_end_location.site_code,
+                              site_location:
+                                order.line_of_sight.near_end_location,
                               losStatus: alt.los_status,
                               accessibility:
                                 order.line_of_sight.near_end_accessibility,
@@ -1973,7 +1974,7 @@ const OrderDetails = () => {
                               losId: order.line_of_sight.id,
                               altId: alt.id,
                               site_type: 2,
-                              site_name: alt.site_location.site_code,
+                              site_location: alt.site_location,
                               losStatus: alt.los_status,
                               accessibility: alt.far_end_accessibility,
                               image_count: alt.image_count.far_end,
@@ -2281,6 +2282,11 @@ const OrderDetails = () => {
         siteInfo={selectedSiteInfo!}
         setSelectedSiteInfo={setSelectedSiteInfo}
         fetchOrder={fetchOneLOS}
+      />
+      <RequestUpdatePopup
+        ref={reqUpdateReportPopup}
+        losId={order?.line_of_sight.id}
+        fetchOneWorkOrder={fetchOneLOS}
       />
     </div>
   );

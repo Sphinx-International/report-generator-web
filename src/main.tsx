@@ -23,6 +23,7 @@ import NewSites from "./pages/newSites.tsx";
 import NewSiteDetails from "./pages/newSiteDetails.tsx";
 import NewSitesByUser from "./pages/newSitesByUser.tsx";
 import OrderDetails from "./pages/Los/OrderDetails.tsx";
+import EditSite from "./pages/Los/EditSite.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -30,6 +31,7 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GlobalBeforeUnload from "./routes middlewares/GlobalBeforeUnload.tsx";
 import { SnackbarProvider } from "notistack";
+import ProjectTypes from "./pages/Los/ProjectTypes.tsx";
 
 const router = createBrowserRouter([
   {
@@ -108,6 +110,10 @@ const router = createBrowserRouter([
     element: <ProtectedRoute element={<Sites />} allowedRoles={[0, 1]} />,
   },
   {
+    path: "/edit-site/:id",
+    element: <ProtectedRoute element={<EditSite />} allowedRoles={[0, 1]} />,
+  },
+  {
     path: "/los/orders",
     element: (
       <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1, 2]} />
@@ -117,6 +123,12 @@ const router = createBrowserRouter([
     path: "/los/orders/:id",
     element: (
       <ProtectedRoute element={<OrderDetails />} allowedRoles={[0, 1, 2]} />
+    ),
+  },
+  {
+    path: "/los/projects",
+    element: (
+      <ProtectedRoute element={<ProjectTypes />} allowedRoles={[0, 1]} />
     ),
   },
   {

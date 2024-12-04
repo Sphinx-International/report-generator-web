@@ -14,7 +14,7 @@ import {
   validateLosForm2,
 } from "../../func/los/validation/Validation";
 import { handleCreateOrder } from "../../func/los/orders";
-import { fetchProjectTypes } from "../../func/los/orders";
+import { fetchProjectTypes } from "../../func/los/ProjectTypes";
 
 interface LosPopupProps {
   fetchOrders: () => void;

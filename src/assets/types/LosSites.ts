@@ -33,6 +33,17 @@ export interface ResSite {
   created_at: Date;
 }
 
+export interface ResOfOneSite {
+  site: {
+    id: number;
+    code: string;
+    region: 1 | 2 | 3;
+    state: string;
+    created_at: Date;
+  };
+  location_history: ResLocation[];
+}
+
 export interface ResProjectType {
   id: number;
   name: string;
