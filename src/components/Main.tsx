@@ -274,7 +274,7 @@ const Main: React.FC<MainProps> = (props) => {
                   {props.functionalties.primaryFunc.name}
                 </button>
                 {props.page === "los orders" && (
-                  <div className="absolute rounde"></div>
+                  <div className="absolute rounded-[15px]"></div>
                 )}
               </div>
             )}

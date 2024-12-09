@@ -24,7 +24,6 @@ import {
   selectCGPS_toWorkWith,
   downloadGeneratedReport,
   approveLineOfSight,
-  rejectLineOfSight,
   closeLineOfSight,
 } from "../../func/los/orders";
 import { losAltTabHeader, losOrdersTabHeader } from "../../assets/los";
@@ -115,8 +114,6 @@ const OrderDetails = () => {
   const [isLoadingChoicingCGPS, setIsLoadingChoicingCGPS] = useState(false);
 
   const [isLoadingDownloadReport, setIsLoadingDownloadReport] = useState(false);
-
-  const [isLoadingRejectLos, setIsLoadingRejectLos] = useState(false);
 
   const handleDropdownToggle = (index: number) => {
     // Toggle the dropdown for the clicked item
@@ -1810,16 +1807,7 @@ const OrderDetails = () => {
                             handleOpenDialog(reqUpdateReportPopup);
                           }}
                         >
-                          {isLoadingRejectLos ? (
-                            <RotatingLines
-                              visible={true}
-                              width="20"
-                              strokeWidth="3"
-                              strokeColor={"#111"}
-                            />
-                          ) : (
-                            "Reject"
-                          )}
+                          Reject
                         </button>
                         <button
                           className={`flex items-center justify-center px-[45px] py-[10px] rounded-[56px] text-[15px] font-medium ${
