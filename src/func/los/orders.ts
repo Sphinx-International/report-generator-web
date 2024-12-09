@@ -62,8 +62,6 @@ export const handleCreateOrder = async (
   }
 };
 
-
-
 export const handleAssingLos = async (
   line_of_sight_id: number,
   engineer_id: number,
@@ -307,30 +305,29 @@ export const setSiteHba = async (
       body: requestBody,
     });
 
-    if (response) {
+    if (response.status === 200) {
       const data = await response.json();
+      if (fecthOneOrder) {
+        fecthOneOrder();
+      }
+      setSite((prev) => {
+        const updatedSite = {
+          latitude: prev?.latitude ?? null,
+          longitude: prev?.longitude ?? null,
+          hba: data.hba,
+          id: data.id,
+          site_type: data.site_type,
+          los_result: data.los_result,
+        };
+
+        setCGPS(result, losId, () => updatedSite);
+
+        return updatedSite; // Return the updated state
+      });
+      setCurrSlide(2);
+      setFormErrs({});
+    } else {
       switch (response.status) {
-        case 200:
-          if (fecthOneOrder) {
-            fecthOneOrder();
-          }
-          setSite((prev) => {
-            const updatedSite = {
-              latitude: prev?.latitude ?? null,
-              longitude: prev?.longitude ?? null,
-              hba: data.hba,
-              id: data.id,
-              site_type: data.site_type,
-              los_result: data.los_result,
-            };
-
-            setCGPS(result, losId, () => updatedSite);
-
-            return updatedSite; // Return the updated state
-          });
-          setCurrSlide(2);
-          setFormErrs({});
-          break;
         case 400:
           console.log("Verify your data");
           setFormErrs({});
@@ -339,11 +336,13 @@ export const setSiteHba = async (
         case 409:
           setCurrSlide(2);
           break;
+
         case 422:
           setFormErrs({
             hba: "Please enter HBA between [0 - structure height]",
           });
           break;
+
         default:
           console.log("An unexpected error occurred");
           setFormErrs({});
@@ -600,6 +599,64 @@ export const uploadSiteImages = async (
         console.log("enter");
         fecthOneOrder();
       }
+      if (setCurrSlide) {
+        imageType === "site-location" ? setCurrSlide(3) : setCurrSlide(4);
+      }
+      return true; // Success case
+    } else if (response.status === 400) {
+      console.log("Verify your data");
+    } else {
+      console.log("Error occurred");
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
+  } finally {
+    setIsLoading(false);
+  }
+
+  return false;
+};
+
+export const updateSiteImages = async (
+  result: ReqUploadSiteLocation &{
+    title?:string,
+  },
+  imageType: "site-location" | "site-position" | "additional-picture",
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setUpdateThisTime: React.Dispatch<React.SetStateAction<boolean>>,
+  setCurrSlide?: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>,
+  imageIndex?: number
+): Promise<boolean> => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return false;
+  }
+
+  setIsLoading(true);
+
+  const requestBody = JSON.stringify({
+    image: result.image,
+    comment: result.comment,
+    title: result.title
+  });
+
+  const url = imageIndex
+    ? `${baseUrl}/line-of-sight/update-${imageType}/${result.site_result}/${imageIndex}`
+    : `${baseUrl}/line-of-sight/update-${imageType}/${result.site_result}`;
+  try {
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+      body: requestBody,
+    });
+
+    if (response.ok) {
+      setUpdateThisTime(false);
       if (setCurrSlide) {
         imageType === "site-location" ? setCurrSlide(3) : setCurrSlide(4);
       }
@@ -1085,7 +1142,8 @@ export const handle_chunck = async (
   file: File,
   file_token: string,
   setFile: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setUpdateThisTime?: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -1119,9 +1177,10 @@ export const handle_chunck = async (
       const data = await response.json();
       const fileId = data.id;
       setFile((prev) => ({ ...prev, id: fileId }));
-
       setIsLoading(false);
-
+      if (setUpdateThisTime) {
+        setUpdateThisTime(true);
+      }
       if (totalChunks > 1) {
         await uploadRemainingChunks(file, fileId, setFile, chunkSize, [], 1);
       } else {
@@ -1400,7 +1459,7 @@ export const rejectLineOfSight = async (
       switch (response.status) {
         case 200:
           console.log("Line of Sight rejected successfully.");
-          handleCloseDialog(ref)
+          handleCloseDialog(ref);
           onSuccess(); // Callback for success
           break;
         case 401:

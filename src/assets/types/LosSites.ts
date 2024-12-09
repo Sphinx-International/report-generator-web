@@ -11,6 +11,17 @@ export interface ReqSite {
   longitude: number | null;
 }
 
+export interface ReqRelocateSite {
+  code: string;
+  region: 1 | 2 | 3;
+  state: string;
+  district: string;
+  municipality: string;
+  type: 1 | 2 | 3 | 4 | 5;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 export interface ResLocation {
   id: number;
   district: string;
@@ -32,6 +43,8 @@ export interface ResSite {
   state: string;
   created_at: Date;
 }
+
+
 
 export interface ResOfOneSite {
   site: {

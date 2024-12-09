@@ -61,7 +61,6 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
     const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2 | 3 | 4>(
       1
     );
-    console.log(siteInfo);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [loadingFirstSubmit, setLoadingFirstSubmit] =
       useState<boolean>(false);
@@ -282,21 +281,20 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
         });
         if (siteInfo.site_location) {
           updateDMSFromDecimal(
-            String(siteInfo.site_location!.latitude),
+            String(siteInfo.site_location.latitude),
             setLatitude,
             true,
             setformValues
           );
           updateDMSFromDecimal(
-            String(siteInfo.site_location!.longitude),
+            String(siteInfo.site_location.longitude),
             setLongitude,
-            true,
+            false,
             setformValues
           );
         }
       }
     }, [site, siteInfo]);
-
     return (
       <dialog
         ref={ref}
@@ -905,6 +903,11 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                                 !siteInfo.accessibility
                             )
                       }
+                      value={
+                        editing
+                          ? editingLongitude.seconds ?? ""
+                          : longitude.seconds ?? ""
+                      }
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const target = e.target as HTMLInputElement;
                         const value = target.value.replace(",", "."); // Replace comma with dot
@@ -935,11 +938,6 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                         const target = e.target as HTMLInputElement;
                         target.value = target.value.replace(/[^\d,.]/g, "");
                       }}
-                      value={
-                        editing
-                          ? editingLongitude.seconds ?? ""
-                          : longitude.seconds ?? ""
-                      }
                       onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                         const target = e.currentTarget;
                         if (

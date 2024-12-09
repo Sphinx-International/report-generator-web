@@ -50,9 +50,46 @@ const LosCommands = () => {
 
     setIsLoading(true);
 
-    const url = status
-      ? `${baseUrl}/line-of-sight/get-line-of-sights/${status}?offset=${offset}&limit=${limit}`
-      : `${baseUrl}/line-of-sight/get-line-of-sights?offset=${offset}&limit=${limit}`;
+    // Map status to its corresponding index
+    let statusIndex: number | undefined;
+
+    if (status) {
+      switch (status) {
+        case "created":
+          statusIndex = 0;
+          break;
+        case "assigned":
+          statusIndex = 1;
+          break;
+        case "launched":
+          statusIndex = 2;
+          break;
+        case "executed":
+          statusIndex = 3;
+          break;
+        case "generated":
+          statusIndex = 4;
+          break;
+        case "rejected":
+          statusIndex = 5;
+          break;
+        case "approved":
+          statusIndex = 6;
+          break;
+        case "closed":
+          statusIndex = 7;
+          break;
+        default:
+          console.warn(`Unknown status: ${status}`);
+          statusIndex = undefined;
+      }
+    }
+
+    const url =
+      statusIndex !== undefined
+        ? `${baseUrl}/line-of-sight/get-line-of-sights-by-status/${statusIndex}?offset=${offset}&limit=${limit}`
+        : `${baseUrl}/line-of-sight/get-line-of-sights?offset=${offset}&limit=${limit}`;
+
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -137,13 +174,16 @@ const LosCommands = () => {
             "All",
             "Created",
             "Assigned",
-            "Submitted",
+            "Launched",
+            "Executed",
+            "Generated",
             "Rejected",
             "Approved",
+            "Closed",
           ]}
           FiltrationFunc={fetchOrders}
           functionalties={{
-            // primaryFunc: { name: "Add workorder" },
+             primaryFunc: { name: "filter by month" },
             secondaryFuncs: [{ name: "Delete" }],
           }}
           // handleAddPrimaryButtonClick={handladdMissionButtonClick}

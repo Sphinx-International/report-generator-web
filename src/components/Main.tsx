@@ -159,7 +159,7 @@ const Main: React.FC<MainProps> = (props) => {
                     : "text-n600"
                 } leading-[36px] cursor-pointer text-[15px] flex items-center gap-[6px] relative`}
                 onClick={() => {
-                  if (item === "Executed") {
+                  if (item === "Executed" && props.page !== "los orders") {
                     setVisibleExcutedPopup(!visibleExcutedPopup);
                   } else {
                     handleFilterClick(item.toLowerCase());
@@ -169,7 +169,7 @@ const Main: React.FC<MainProps> = (props) => {
                 }}
               >
                 {item}
-                {item === "Executed" && (
+                {item === "Executed" && props.page !== "los orders" && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="11"
@@ -186,48 +186,50 @@ const Main: React.FC<MainProps> = (props) => {
                   </svg>
                 )}
               </span>
-              {item === "Executed" && visibleExcutedPopup && (
-                <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
-                  {excutedFilter.map((filter, index) => {
-                    // Only render if the page is not "new site" and filter.title is not "Missing return voucher"
-                    if (
-                      !(
-                        props.page === "new site" &&
-                        filter.title === "Missing return voucher"
-                      )
-                    ) {
-                      return (
-                        <span
-                          key={index}
-                          className={`text-[14px] text-nowrap cursor-pointer ${
-                            selectedExcutedFilter === filter.title
-                              ? "text-primary"
-                              : "text-n600"
-                          }`}
-                          onClick={() => {
-                            // Handle the filter click logic
-                            if (filter.title === "All") {
-                              handleFilterClick("executed");
-                            } else {
-                              handleFilterClick(filter.title);
-                            }
-                            setSelectedExcutedFilter(filter.title);
-                            setVisibleExcutedPopup(false);
-                            localStorage.setItem(
-                              "selectedSubExecutedFilter",
-                              filter.title
-                            );
-                          }}
-                        >
-                          {filter.title}
-                        </span>
-                      );
-                    }
-                    // Return null if the condition is not met
-                    return null;
-                  })}
-                </div>
-              )}
+              {item === "Executed" &&
+                visibleExcutedPopup &&
+                props.page !== "los orders" && (
+                  <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
+                    {excutedFilter.map((filter, index) => {
+                      // Only render if the page is not "new site" and filter.title is not "Missing return voucher"
+                      if (
+                        !(
+                          props.page === "new site" &&
+                          filter.title === "Missing return voucher"
+                        )
+                      ) {
+                        return (
+                          <span
+                            key={index}
+                            className={`text-[14px] text-nowrap cursor-pointer ${
+                              selectedExcutedFilter === filter.title
+                                ? "text-primary"
+                                : "text-n600"
+                            }`}
+                            onClick={() => {
+                              // Handle the filter click logic
+                              if (filter.title === "All") {
+                                handleFilterClick("executed");
+                              } else {
+                                handleFilterClick(filter.title);
+                              }
+                              setSelectedExcutedFilter(filter.title);
+                              setVisibleExcutedPopup(false);
+                              localStorage.setItem(
+                                "selectedSubExecutedFilter",
+                                filter.title
+                              );
+                            }}
+                          >
+                            {filter.title}
+                          </span>
+                        );
+                      }
+                      // Return null if the condition is not met
+                      return null;
+                    })}
+                  </div>
+                )}
             </div>
           ))}
         </div>
@@ -264,12 +266,17 @@ const Main: React.FC<MainProps> = (props) => {
                 })
               : null}
             {props.functionalties && props.functionalties.primaryFunc && (
-              <button
-                className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-                onClick={props.handleAddPrimaryButtonClick}
-              >
-                {props.functionalties.primaryFunc.name}
-              </button>
+              <div className="relative">
+                <button
+                  className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
+                  onClick={props.handleAddPrimaryButtonClick}
+                >
+                  {props.functionalties.primaryFunc.name}
+                </button>
+                {props.page === "los orders" && (
+                  <div className="absolute rounde"></div>
+                )}
+              </div>
             )}
           </div>
         )}
@@ -308,18 +315,21 @@ const Main: React.FC<MainProps> = (props) => {
                       option === selectedFilter ? "bg-gray-100" : ""
                     }`}
                     onClick={() => {
-                      if (option !== "Executed") {
+                      if (
+                        option === "Executed" &&
+                        props.page !== "los orders"
+                      ) {
+                        setVisibleExcutedPopup(!visibleExcutedPopup);
+                      } else {
                         setSelectedFilter(option);
                         setIsOpen(false);
                         handleFilterClick(option.toLowerCase());
                         setSelectedExcutedFilter("");
-                      } else {
-                        setVisibleExcutedPopup(!visibleExcutedPopup);
                       }
                     }}
                   >
                     {option}
-                    {option === "Executed" && (
+                    {option === "Executed" && props.page !== "los orders" && (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="9"
@@ -336,7 +346,7 @@ const Main: React.FC<MainProps> = (props) => {
                       </svg>
                     )}
                   </li>
-                  {option === "Executed" && (
+                  {option === "Executed" && props.page !== "los orders" && (
                     <div
                       className={`flex flex-col items-start gap-2 transition-all duration-1000 overflow-hidden ${
                         visibleExcutedPopup ? "h-[145px]" : "h-0"

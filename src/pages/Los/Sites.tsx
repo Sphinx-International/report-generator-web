@@ -373,7 +373,11 @@ const Sites = () => {
                     totalPages={totalPages}
             /> */}
         </div>
-        <CreateSitePopup ref={createSite} fetchSites={fetchSites} />
+        <CreateSitePopup
+          ref={createSite}
+          fetchSites={fetchSites}
+          method="create"
+        />
         <DeletePopup
           page="sites"
           ref={deleteDialogRef}

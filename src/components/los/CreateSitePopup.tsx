@@ -2,11 +2,12 @@ import { forwardRef, useState, useEffect, FormEvent, MouseEvent } from "react";
 import { handleCloseDialog } from "../../func/openDialog";
 import CustomSelect from "../CustomSelect";
 import { ReqSite } from "../../assets/types/LosSites";
-import { handleCreateSite } from "../../func/los/Sites";
+import { handleCreateSite, addSiteLocation } from "../../func/los/Sites";
 import {
   validateForm1,
   SiteFormErrors,
   validateForm2,
+  validateRelocateSiteForm1,
 } from "../../func/los/validation/Validation";
 import { RotatingLines } from "react-loader-spinner";
 import {
@@ -18,10 +19,12 @@ import {
 
 interface CreateSitePopupProps {
   fetchSites: () => void;
+  method: "create" | "update";
+  siteId?: number;
 }
 
 const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
-  ({ fetchSites }, ref) => {
+  ({ fetchSites, method, siteId }, ref) => {
     const [currPage, setCurrPage] = useState<1 | 2>(1);
 
     const [regionNumber, setRegionNumber] = useState<1 | 2 | 3>(1);
@@ -95,7 +98,10 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
     ) => {
       e.preventDefault();
       setvalidationErrors({});
-      const formErrors = validateForm1(formValue);
+      const formErrors =
+        method === "create"
+          ? validateForm1(formValue)
+          : validateRelocateSiteForm1(formValue);
       if (Object.keys(formErrors).length === 0) {
         setCurrPage(2);
         setvalidationErrors({});
@@ -111,7 +117,21 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
       setvalidationErrors({});
       const formErrors = validateForm2(formValue);
       if (Object.keys(formErrors).length === 0) {
-        handleCreateSite(formValue, setloading, ref, fetchSites);
+        method === "create"
+          ? handleCreateSite(formValue, setloading, ref, fetchSites)
+          : addSiteLocation(
+              {
+                site: siteId!,
+                district: formValue.district,
+                municipality: formValue.municipality,
+                type: formValue.type,
+                building_height: formValue.building_height!,
+                site_height: formValue.site_height!,
+                latitude: formValue.latitude!,
+                longitude: formValue.longitude!,
+              },
+              setloading,
+            );
         setvalidationErrors({});
       } else {
         setvalidationErrors(formErrors);
@@ -136,7 +156,11 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
         {currPage === 1 ? (
           <div className="flex flex-col gap-5 items-end ">
             <div className="flex flex-col w-full gap-[18px]">
-              <div className="flex items-center gap-4 w-full">
+              <div
+                className={` items-center gap-4 w-full ${
+                  method === "create" ? "flex" : "hidden"
+                }`}
+              >
                 <div className="flex flex-col items-start gap-[5px] w-[50%]">
                   <div className="flex items-center">
                     <div className="relative inline-block">
@@ -194,7 +218,11 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                 </div>
               </div>
               <div className="flex items-center gap-4 w-full">
-                <div className="flex flex-col items-start gap-[5px] w-[33%%]">
+                <div
+                  className={`flex flex-col items-start gap-[5px] w-[33%%] ${
+                    method === "create" ? "flex" : "hidden"
+                  }`}
+                >
                   <div className="flex items-center">
                     <div className="relative inline-block">
                       {validationErrors?.wilaya && (
@@ -238,7 +266,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     maxLength={15}
                   />
                 </div>
-                <div className="flex flex-col items-start gap-[5px] w-[33%]">
+                <div className="flex flex-col items-start gap-[5px] w-[33%] flex-grow">
                   <div className="flex items-center">
                     <div className="relative inline-block">
                       {validationErrors?.daira && (
@@ -282,7 +310,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     maxLength={20}
                   />
                 </div>
-                <div className="flex flex-col items-start gap-[5px] w-[33%]">
+                <div className="flex flex-col items-start gap-[5px] w-[33%] flex-grow">
                   <div className="flex items-center">
                     <div className="relative inline-block">
                       {validationErrors?.baladia && (
@@ -972,7 +1000,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                 {loading ? (
                   <RotatingLines strokeColor="white" width="20" />
                 ) : (
-                  "Create"
+                  method === "create" ? "Create" : "Relocate"
                 )}
               </button>
             </div>
