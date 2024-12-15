@@ -74,6 +74,62 @@ export const handleCreateOrder = async (
   }
 };
 
+
+export const fetchProjectTypes = async (
+  setProjectTypes: React.Dispatch<React.SetStateAction<ResProjectType[]>>,
+  firstProjectType: React.Dispatch<
+    React.SetStateAction<ResProjectType | undefined>
+  >,
+  setformValues: React.Dispatch<React.SetStateAction<reqOrders>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  const url = `${baseUrl}/line-of-sight/get-project-types`;
+  console.log(url);
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error response text: ", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json(); // Use response.json() to parse the JSON response
+
+    // Check if the data array is empty
+    if (Array.isArray(data) && data.length > 0) {
+      setProjectTypes(data);
+      firstProjectType(data[0]);
+      setformValues((prev) => ({
+        ...prev,
+        type: data[0].id,
+      }));
+    } else {
+      setProjectTypes([]);
+      firstProjectType(undefined);
+      setformValues((prev) => ({
+        ...prev,
+        type: null,
+      }));
+    }
+  } catch (err) {
+    console.error("Error: ", err);
+  }
+};
+
 export const handleAssingLos = async (
   line_of_sight_id: number,
   engineer_id: number,
