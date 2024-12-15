@@ -39,6 +39,7 @@ interface LosPopupProps {
     accessibility: boolean;
     image_count: number | null;
     siteIndex?: number;
+    secondSiteCode: string | null;
   };
 
   setSelectedSiteInfo: React.Dispatch<
@@ -51,6 +52,7 @@ interface LosPopupProps {
       accessibility: boolean;
       image_count: number | null;
       siteIndex?: number;
+      secondSiteCode: string | null;
     }>
   >;
 
@@ -1275,6 +1277,10 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
             site={site}
             image_count={siteInfo.image_count}
             fetchOneOrder={fetchOrder}
+            siteInfo={{
+              preSite: siteInfo.site_location!.site_code,
+              secSite: siteInfo.secondSiteCode!,
+            }}
           />
         )}
 

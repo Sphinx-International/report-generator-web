@@ -37,10 +37,25 @@ const LosCommands = () => {
   const totalPages = Math.ceil(totalWorkorders / limit);
 
   const [orders, setOrders] = useState<resOrders[] | null>(null);
+
+  const [selectedMonth, setSelectedMonth] = useState<
+    1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | null
+  >(null);
+  console.log(selectedMonth)
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
+
   const losRef = useRef<HTMLDialogElement>(null);
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
-  const fetchOrders = async (offset = 0, limit = 6, status?: string) => {
+  const fetchOrders = async (
+    offset = 0,
+    limit = 6,
+    status?: string,
+    month?: number,
+    year?: number
+  ) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
@@ -88,6 +103,8 @@ const LosCommands = () => {
     const url =
       statusIndex !== undefined
         ? `${baseUrl}/line-of-sight/get-line-of-sights-by-status/${statusIndex}?offset=${offset}&limit=${limit}`
+        : month
+        ? `${baseUrl}/line-of-sight/get-line-of-sights-by-date/${month}/${year}?offset=${offset}&limit=${limit}`
         : `${baseUrl}/line-of-sight/get-line-of-sights?offset=${offset}&limit=${limit}`;
 
     try {
@@ -104,13 +121,12 @@ const LosCommands = () => {
         console.error("Error response text: ", errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       switch (response.status) {
         case 200: {
           const data = await response.json();
-          console.log(data.data);
           setOrders(data.data);
           setTotalWorkorders(data.total);
+          console.log(data.total)
           return { total: data.total, current_offset: offset };
         }
 
@@ -149,12 +165,21 @@ const LosCommands = () => {
     const offset = (currentPage - 1) * limit;
     const filter = localStorage.getItem("selectedFilterForLos");
 
-    if (filter === "all" || !filter) {
-      fetchOrders(offset, limit);
-    } else {
+    if (filter !== "all" && filter) {
+      console.log("first");
       fetchOrders(offset, limit, filter);
+    } else {
+      if (selectedMonth) {
+        console.log("second");
+
+        fetchOrders(offset, limit, undefined, selectedMonth, selectedYear);
+      } else {
+        console.log("third");
+
+        fetchOrders(offset, limit);
+      }
     }
-  }, [currentPage]);
+  }, [currentPage, selectedMonth, selectedYear]);
 
   return (
     <div className="w-full flex md:h-[100vh]">
@@ -183,8 +208,16 @@ const LosCommands = () => {
           ]}
           FiltrationFunc={fetchOrders}
           functionalties={{
-             primaryFunc: { name: "filter by month" },
+            primaryFunc: { name: "filter by month" },
             secondaryFuncs: [{ name: "Delete" }],
+            setState: setSelectedMonth as React.Dispatch<
+              React.SetStateAction<unknown>
+            >,
+            State: selectedMonth,
+            setState2: setSelectedYear as React.Dispatch<
+              React.SetStateAction<unknown>
+            >,
+            State2: selectedYear,
           }}
           // handleAddPrimaryButtonClick={handladdMissionButtonClick}
           handleSecondaryButtonClick={handleDeleteButtonClick}

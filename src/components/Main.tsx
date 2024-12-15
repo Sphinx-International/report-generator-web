@@ -1,6 +1,7 @@
 import React, { ReactNode, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
+import MonthCalender from "./monthCalender";
 
 type SecondaryFunc = {
   name: string;
@@ -10,6 +11,10 @@ type SecondaryFunc = {
 type Functionalities = {
   primaryFunc?: SecondaryFunc;
   secondaryFuncs?: SecondaryFunc[];
+  setState?: React.Dispatch<React.SetStateAction<unknown>>;
+  State?: unknown;
+  setState2?: React.Dispatch<React.SetStateAction<unknown>>;
+  State2?: unknown;
 };
 
 interface MainProps {
@@ -64,9 +69,12 @@ const Main: React.FC<MainProps> = (props) => {
     if (storedFilter) {
       return storedFilter;
     }
-    return ["0", "1"].includes(localStorage.getItem("role")!) ? "all" : "To do";
+    return ["0", "1"].includes(localStorage.getItem("role")!)
+      ? "all"
+      : props.page === "workorders"
+      ? "To do"
+      : "all";
   };
-
   const selectedExtension = useSelector((state: RootState) =>
     props.page === "workorders"
       ? state.selectedExtantions.workOrdersTab
@@ -91,6 +99,9 @@ const Main: React.FC<MainProps> = (props) => {
       ? `${localStorage.getItem("selectedSubExecutedFilter")}`
       : ""
   );
+
+  const [visibleMonthCalender, setVisibleMonthCalender] =
+    useState<boolean>(false);
 
   const handleFilterClick = (item: string) => {
     if (
@@ -165,6 +176,9 @@ const Main: React.FC<MainProps> = (props) => {
                     handleFilterClick(item.toLowerCase());
                     setSelectedExcutedFilter("");
                     setVisibleExcutedPopup(false);
+                    if (props.functionalties && props.functionalties.setState) {
+                      props.functionalties.setState(null);
+                    }
                   }
                 }}
               >
@@ -268,13 +282,29 @@ const Main: React.FC<MainProps> = (props) => {
             {props.functionalties && props.functionalties.primaryFunc && (
               <div className="relative">
                 <button
-                  className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-                  onClick={props.handleAddPrimaryButtonClick}
+                  className={`flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] ${
+                    props.page === "los orders"
+                      ? "text-primary border-[2px] border-primary"
+                      : "text-white bg-primary"
+                  }  rounded-[21px] `}
+                  onClick={() => {
+                    if (props.page === "los orders") {
+                      setVisibleMonthCalender(!visibleMonthCalender);
+                    }
+                    props.handleAddPrimaryButtonClick;
+                  }}
                 >
                   {props.functionalties.primaryFunc.name}
                 </button>
-                {props.page === "los orders" && (
-                  <div className="absolute rounded-[15px]"></div>
+                {props.page === "los orders" && visibleMonthCalender && (
+                  <MonthCalender
+                    setMonth={props.functionalties.setState!}
+                    selectedMonth={props.functionalties.State as number}
+                    setYear={props.functionalties.setState2!}
+                    selectedYear={props.functionalties.State2 as number}
+                    setVisibility={setVisibleMonthCalender}
+                    setFilter={setSelectedFilter}
+                  />
                 )}
               </div>
             )}

@@ -82,7 +82,7 @@ const ModernisationPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
       title: "",
       priority: 0,
       description: "",
-      require_return_voucher: false,
+      require_return_voucher: true,
       emails: [],
       attachments: [],
     });

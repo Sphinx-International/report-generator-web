@@ -13,11 +13,10 @@ import { ReqUploadSiteLocation } from "../../assets/types/LosCommands";
 import { TheUploadingFile } from "../../assets/types/Mission";
 import {
   uploadSiteImages,
-  handle_chunck,
   downloadSiteImages,
   updateSiteImages,
+  handleFileChange
 } from "../../func/los/orders";
-import { generateFileToken } from "../../func/generateFileToken";
 import UploadingFile from "../uploadingFile";
 import { ResLosExecution } from "../../assets/types/LosCommands";
 
@@ -163,11 +162,9 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
                     if (file) {
                       setFile({ file: file, progress: 0 });
 
-                      const file_token = await generateFileToken(file);
                       setDownloadImg(null);
-                      await handle_chunck(
+                      await handleFileChange(
                         file,
-                        file_token,
                         setFile,
                         setIsLoading,
                         setUpdateThisTime
@@ -257,13 +254,10 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
                         if (file) {
                           setFile({ file: file, progress: 0 });
 
-                          const file_token = await generateFileToken(file);
-
-                          await handle_chunck(
+                          await handleFileChange(
                             file,
-                            file_token,
                             setFile,
-                            setIsLoading
+                            setIsLoading,
                           );
                         }
                       }}

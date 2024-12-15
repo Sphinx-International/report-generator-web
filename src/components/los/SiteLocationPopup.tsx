@@ -9,15 +9,14 @@ import {
 import "../../styles/PrioritySelector.css";
 import handleChange from "../../func/handleChangeFormsInput";
 import {
-  handle_chunck,
   downloadSiteImages,
   uploadSiteImages,
   updateSiteImages,
+  handleFileChange
 } from "../../func/los/orders";
 import { RotatingLines } from "react-loader-spinner";
 import { ReqUploadSiteLocation } from "../../assets/types/LosCommands";
 import { TheUploadingFile } from "../../assets/types/Mission";
-import { generateFileToken } from "../../func/generateFileToken";
 import UploadingFile from "../uploadingFile";
 import { ResLosExecution } from "../../assets/types/LosCommands";
 
@@ -166,11 +165,9 @@ const SiteLocationPopup = forwardRef<HTMLDialogElement, SiteLocationPopupProps>(
                     if (file) {
                       setFile({ file: file, progress: 0 });
 
-                      const file_token = await generateFileToken(file);
                       setDownloadImg(null);
-                      await handle_chunck(
+                      await handleFileChange(
                         file,
-                        file_token,
                         setFile,
                         setIsLoading,
                         setUpdateThisTime
@@ -261,14 +258,10 @@ const SiteLocationPopup = forwardRef<HTMLDialogElement, SiteLocationPopupProps>(
                         const file = e.target.files ? e.target.files[0] : null;
                         if (file) {
                           setFile({ file: file, progress: 0 });
-
-                          const file_token = await generateFileToken(file);
-
-                          await handle_chunck(
+                          await handleFileChange(
                             file,
-                            file_token,
                             setFile,
-                            setIsLoading
+                            setIsLoading,
                           );
                         }
                       }}

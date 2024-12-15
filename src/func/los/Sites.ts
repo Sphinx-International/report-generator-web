@@ -172,7 +172,7 @@ export const addSiteLocation = async (
     latitude: number;
     longitude: number;
   },
-  setIsLoading: Dispatch<SetStateAction<boolean>>,
+  setIsLoading: Dispatch<SetStateAction<boolean>>
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -199,6 +199,99 @@ export const addSiteLocation = async (
     }
   } catch (err) {
     console.error("Error while adding site location:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const downloadSiteCsv = async (
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+
+  // Update URL to reflect the correct endpoint for Excel download
+  const url = `${baseUrl}/site/download-sites-excel-file`;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (response) {
+      switch (response.status) {
+        case 200: {
+          // Handle Excel file download
+          const blob = await response.blob(); // Get the response as a Blob
+          const url = window.URL.createObjectURL(blob); // Create a URL for the Blob
+          const link = document.createElement("a"); // Create an anchor element
+          link.href = url;
+          link.download = `Sites.xlsx`; // Set the filename with .xlsx extension
+          document.body.appendChild(link);
+          link.click(); // Trigger the download
+          document.body.removeChild(link); // Remove the anchor element
+          console.log("Excel report generated and downloaded.");
+          break;
+        }
+        default:
+          console.log("An unexpected error occurred.");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error generating report", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const uploadCSV = async (
+  file: File,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  onUploadSuccess?: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+
+  const url = `${baseUrl}/site/upload-sites-excel-file`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+      body: formData,
+    });
+    console.log(response.status);
+    switch (response.status) {
+      case 201:
+        console.log("File uploaded successfully.");
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
+        break;
+      default:
+        console.error("An unexpected error occurred.");
+        break;
+    }
+  } catch (err) {
+    console.error("Error uploading file", err);
   } finally {
     setIsLoading(false);
   }
