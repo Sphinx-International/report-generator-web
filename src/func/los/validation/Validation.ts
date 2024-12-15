@@ -39,6 +39,31 @@ export const validateForm1 = (formValues: ReqSite): SiteFormErrors => {
   return formErrors;
 };
 
+export const validateRelocateSiteForm1 = (formValues: ReqSite): SiteFormErrors => {
+  const formErrors: SiteFormErrors = {};
+  if (formValues.district === "") formErrors.daira = "Daira is required";
+  if (formValues.municipality === "")
+    formErrors.baladia = "Baladia is required";
+  if (
+    formValues.latitude === 0 ||
+    formValues.latitude === null ||
+    String(formValues.latitude) === ""
+  )
+    formErrors.latitude = "Latitude is required";
+
+  if (String(formValues.latitude) === "-")
+    formErrors.latitude = "Enter valid latitude value";
+  if (
+    formValues.longitude === 0 ||
+    formValues.longitude === null ||
+    String(formValues.longitude) === ""
+  )
+    formErrors.longitude = "Longitude is required";
+  if (String(formValues.longitude) === "-")
+    formErrors.longitude = "Enter valid longitude value";
+  return formErrors;
+};
+
 export const validateForm2 = (formValues: ReqSite): SiteFormErrors => {
   const formErrors: SiteFormErrors = {};
 

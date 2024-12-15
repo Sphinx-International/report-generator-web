@@ -1,3 +1,4 @@
+
 export interface TabHeader {
   title: string;
   width: string;
@@ -65,4 +66,14 @@ export const losOrdersTabHeader: TabHeader[] = [
     title: "Use Engineer CGPS",
     width: "14%",
   },
+];
+
+export const LosSuggestionTitle = [
+  "Zoom 0%",
+  "Zoom 25%",
+  "Zoom 50%",
+  "Zoom 75%",
+  "Zoom 100%",
+  "Obstacle",
+  "Building under construction",
 ];

@@ -5,7 +5,7 @@ export type DimensionDMS = {
   direction: "N" | "S" | "E" | "W";
 };
 
-const decimalToDMS = (decimal: number, isLatitude: boolean = true) => {
+export const decimalToDMS = (decimal: number, isLatitude: boolean = true) => {
   const degrees = Math.floor(Math.abs(decimal));
   const minutesDecimal = (Math.abs(decimal) - degrees) * 60;
   const minutes = Math.floor(minutesDecimal);
@@ -18,7 +18,6 @@ const decimalToDMS = (decimal: number, isLatitude: boolean = true) => {
     : decimal >= 0
     ? "E"
     : "W";
-
   return {
     degrees: degrees,
     minutes: minutes,
@@ -53,7 +52,7 @@ export const updateDMSFromDecimal = (
   });
 
   // Update formValue with the decimal value
-  setFormValue((prevFormValue:any) => ({
+  setFormValue((prevFormValue: any) => ({
     ...prevFormValue,
     [isLatitude ? "latitude" : "longitude"]: decimal,
   }));
@@ -97,7 +96,7 @@ export const handleDMSChange = (
       updatedState.direction
     );
 
-    setFormValue((prevFormValue:any) => ({
+    setFormValue((prevFormValue: any) => ({
       ...prevFormValue,
       [isLatitude ? "latitude" : "longitude"]: decimalValue,
     }));
@@ -127,11 +126,88 @@ export const handleDMSDirectionChange = (
       updatedState.direction
     );
 
-    setFormValue((prevFormValue:any) => ({
+    setFormValue((prevFormValue: any) => ({
       ...prevFormValue,
       [isLatitude ? "latitude" : "longitude"]: decimalValue,
     }));
 
     return updatedState;
   });
+};
+
+export const handleSingleDMSChange = (
+  field: "degrees" | "minutes" | "seconds" | "direction",
+  value: string | number,
+  isLatitude: boolean,
+  currentDecimal: number,
+  setFormValue: React.Dispatch<React.SetStateAction<any>>
+) => {
+  // Helper to convert decimal to DMS
+  const decimalToDMS = (decimal: number, isLatitude: boolean) => {
+    const direction = isLatitude
+      ? decimal >= 0
+        ? "N"
+        : "S"
+      : decimal >= 0
+      ? "E"
+      : "W";
+
+    const absDecimal = Math.abs(decimal);
+    const degrees = Math.floor(absDecimal);
+    const minutes = Math.floor((absDecimal - degrees) * 60);
+    const seconds = Number(
+      ((absDecimal - degrees - minutes / 60) * 3600).toFixed(2)
+    );
+
+    return { degrees, minutes, seconds, direction };
+  };
+
+  // Helper to convert DMS to decimal
+  const DMSToDecimal = (
+    degrees: number,
+    minutes: number,
+    seconds: number,
+    direction: string
+  ) => {
+    const sign = direction === "S" || direction === "W" ? -1 : 1;
+    return sign * (Math.abs(degrees) + minutes / 60 + seconds / 3600);
+  };
+
+  // Get current DMS values from the current decimal
+  const currentDMS = decimalToDMS(currentDecimal, isLatitude);
+
+  // Skip update if `value` is an incomplete input (e.g., ends with ".")
+  if (field === "seconds" && value.toString().endsWith(".")) {
+    return; // Do nothing
+  }
+
+  // Update the appropriate field
+  const updatedDMS = {
+    ...currentDMS,
+    [field]: field === "direction" ? value : Number(value),
+  };
+
+  // Ensure valid direction for latitude and longitude
+  if (field === "direction") {
+    const validDirs = isLatitude ? ["N", "S"] : ["E", "W"];
+    if (!validDirs.includes(value as string)) {
+      throw new Error(
+        `Invalid direction for ${isLatitude ? "latitude" : "longitude"}`
+      );
+    }
+  }
+
+  // Convert updated DMS back to decimal
+  const updatedDecimal = DMSToDecimal(
+    updatedDMS.degrees || 0,
+    updatedDMS.minutes || 0,
+    updatedDMS.seconds || 0,
+    updatedDMS.direction as string
+  );
+
+  // Update the form value
+  setFormValue((prevFormValue: any) => ({
+    ...prevFormValue,
+    [isLatitude ? "latitude" : "longitude"]: updatedDecimal,
+  }));
 };

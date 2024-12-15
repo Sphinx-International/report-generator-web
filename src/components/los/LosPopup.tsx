@@ -1,4 +1,11 @@
-import { forwardRef, useState, FormEvent, MouseEvent, useEffect } from "react";
+import {
+  forwardRef,
+  useState,
+  FormEvent,
+  MouseEvent,
+  useEffect,
+  ChangeEvent,
+} from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import "../../styles/PrioritySelector.css";
 import { handleCloseDialog } from "../../func/openDialog";
@@ -14,13 +21,25 @@ import {
   validateLosForm2,
 } from "../../func/los/validation/Validation";
 import { handleCreateOrder } from "../../func/los/orders";
-import { fetchProjectTypes } from "../../func/los/orders";
+import { fetchProjectTypes } from "../../func/los/ProjectTypes";
+import {
+  addUploadingFile,
+  removeUploadingFile,
+  updateFileProgress,
+} from "../../Redux/slices/uploadingFilesSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../Redux/store";
+import { generateFileToken } from "../../func/generateFileToken";
+import UploadingFile from "../uploadingFile";
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface LosPopupProps {
   fetchOrders: () => void;
 }
 
 const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
+  const dispatch = useDispatch<AppDispatch>();
+
   const [currentSliderIndex, setCurrentSliderIndex] = useState<1 | 2>(1);
 
   const priorities = ["Low", "Medium", "High", "Urgent"];
@@ -154,6 +173,250 @@ const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
       setFormErrs({});
     } else {
       setFormErrs(formErrors);
+    }
+  };
+
+  const handleAddingFileChange = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      if (file.size > 20 * 1024 * 1024) {
+        alert(`${file.name} exceeds the 20MB limit.`);
+      } else if (file.size <= 32 * 1024) {
+        handle_files_with_one_chunk(file);
+      } else {
+        const file_token = await generateFileToken(file);
+        handle_chunck(file, file_token);
+      }
+    }
+  };
+
+ /* const handleAddingFileChangeWithDragAndDrop = async (files: FileList) => {
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const file_token = await generateFileToken(file);
+        handle_chunck(file, file_token);
+      }
+    }
+  }; */
+
+  const updateAttachmentProgress = (id: number, newProgress: number) => {
+    setformValues((prevValues) => ({
+      ...prevValues,
+      attachments: prevValues.attachments.map((attachment) =>
+        attachment.id === id
+          ? { ...attachment, progress: newProgress }
+          : attachment
+      ),
+    }));
+  };
+
+  const uploadRemainingChunks = async (
+    file: File,
+    fileId: number,
+    totalChunks: number
+  ) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    const chunkSize = 512 * 1024; // 512 KB
+    const startOffset = 32 * 1024; // Start uploading from 32KB onwards
+
+    for (let index = 1; index < totalChunks; index++) {
+      const start = startOffset + (index - 1) * chunkSize; // Adjust to skip first chunk
+      const end = Math.min(start + chunkSize, file.size);
+      const chunk = file.slice(start, end);
+
+      const formData = new FormData();
+      formData.append("index", index.toString());
+      formData.append("file", chunk, `${file.name}.part`);
+
+      try {
+        const response = await fetch(
+          `${baseUrl}/file/upload-rest-chunks/${fileId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+            body: formData,
+          }
+        );
+
+        switch (response.status) {
+          case 200: {
+            const progress = ((index + 1) / totalChunks) * 100;
+            dispatch(
+              updateFileProgress({ type: "attachements", fileId, progress })
+            );
+            updateAttachmentProgress(fileId, Number(progress.toFixed(2)));
+            break;
+          }
+          case 201:
+            dispatch(
+              updateFileProgress({
+                type: "attachements",
+                fileId,
+                progress: 100.0,
+              })
+            );
+            updateAttachmentProgress(fileId, 100.0);
+            break;
+
+          case 404:
+            setformValues((prevValues) => ({
+              ...prevValues,
+              attachments: prevValues.attachments.filter(
+                (attachment) => attachment.id !== fileId
+              ),
+            }));
+            return;
+
+          default:
+            console.error("Failed to upload chunk");
+            break;
+        }
+      } catch (err) {
+        console.error(`Error uploading chunk ${index + 1}:`, err);
+        break;
+      }
+    }
+  };
+
+  const handle_chunck = async (file: File, file_token: string) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    const firstChunkSize = 32 * 1024; // 32 KB
+    const chunkSize = 512 * 1024; // 512 KB for subsequent chunks
+    const fileSize = file.size;
+
+    // Calculate total number of chunks, ensuring we handle small files correctly
+    const chunks =
+      fileSize <= firstChunkSize
+        ? 1 // If file is smaller than or equal to 32 KB, it's just 1 chunk
+        : fileSize <= chunkSize
+        ? 2 // If file is between 32 KB and 512 KB, there will be 2 chunks: the first 32 KB and the remainder
+        : Math.ceil((fileSize - firstChunkSize) / chunkSize) + 1; // For larger files, more chunks
+
+    // Extract the first 32KB chunk
+    const firstChunk = file.slice(0, firstChunkSize);
+
+    const formData = new FormData();
+    formData.append("name", file.name);
+    formData.append("type", "1");
+    formData.append("total_chunks", chunks.toString());
+    formData.append("file", firstChunk, `${file.name}.part`);
+    formData.append("file_token", file_token);
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const fileId = data.id;
+        setformValues((prevFormValues) => ({
+          ...prevFormValues,
+          attachments: [
+            ...(prevFormValues.attachments || []),
+            { id: fileId, progress: chunks === 1 ? 100.0 : 0, file },
+          ],
+        }));
+        dispatch(
+          addUploadingFile({
+            type: "attachements",
+            file: { id: fileId, progress: 0, file },
+          })
+        );
+        setIsLoading(false);
+
+        // Upload remaining chunks if the file has more than 32 KB
+        if (chunks > 1) {
+          await uploadRemainingChunks(file, fileId, chunks);
+        }
+
+        dispatch(removeUploadingFile({ type: "attachements", fileId }));
+      } else {
+        console.error("Failed to upload first chunk");
+      }
+    } catch (err) {
+      console.error("Error submitting first chunk", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handle_files_with_one_chunk = async (file: File) => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("name", file.name);
+    formData.append("type", "1");
+    formData.append("file", file);
+
+    for (const pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${baseUrl}/file/upload-file`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        body: formData,
+      });
+      console.log(response.status);
+      if (response.ok) {
+        const data = await response.json();
+        const fileId = data.id;
+
+        setformValues((prevFormValues) => ({
+          ...prevFormValues,
+          attachments: [
+            ...(prevFormValues.attachments || []),
+            { id: fileId, progress: 100.0, file },
+          ],
+        }));
+        dispatch(
+          updateFileProgress({
+            type: "attachements",
+            fileId,
+            progress: 100.0,
+          })
+        );
+      } else {
+        console.error("Failed to upload first chunk");
+      }
+    } catch (err) {
+      console.error("Error submitting first chunk", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1041,7 +1304,7 @@ const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
                 name="attachement"
                 id="attachement"
                 accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
-                // onChange={handleAddingFileChange}
+                onChange={handleAddingFileChange}
                 className="hidden"
               />
               <label
@@ -1071,7 +1334,7 @@ const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
                 </span>
               </label>
             </div>
-            {/* formValues.attachments !== undefined
+            {formValues.attachments !== undefined
               ? formValues.attachments?.length > 0 && (
                   <div className="w-full flex flex-col gap-[12px]">
                     {formValues.attachments.map((file, index) => {
@@ -1087,7 +1350,7 @@ const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
                     })}
                   </div>
                 )
-              : null  */}
+              : null}
           </div>
 
           <div className="flex items-center gap-[6px]">

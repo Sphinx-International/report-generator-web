@@ -1,7 +1,6 @@
 import { reqOrders } from "../../assets/types/LosCommands";
 import { Dispatch, SetStateAction } from "react";
 import { handleCloseDialog } from "../openDialog";
-import { ResProjectType } from "../../assets/types/LosSites";
 import { ExectionPopupErrors } from "./validation/validateExectionPopup";
 import {
   ReqLosExecution,
@@ -9,6 +8,8 @@ import {
   ReqUploadSiteLocation,
 } from "../../assets/types/LosCommands";
 import { TheUploadingFile } from "../../assets/types/Mission";
+import { NearEndLocation } from "../../assets/types/LosCommands";
+import { generateFileToken } from "../generateFileToken";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -27,6 +28,17 @@ export const handleCreateOrder = async (
 
   setIsLoading(true);
 
+  // Extract the file IDs from the attachments array
+  const attachmentIds = formValues.attachments.map(
+    (attachment) => attachment.id
+  );
+
+  // Create a new object for the body, replacing attachments with IDs
+  const body = {
+    ...formValues,
+    attachments: attachmentIds,
+  };
+
   try {
     const response = await fetch(
       `${baseUrl}/line-of-sight/create-line-of-sight`,
@@ -36,7 +48,7 @@ export const handleCreateOrder = async (
           "Content-Type": "application/json",
           Authorization: `Token ${token}`,
         },
-        body: JSON.stringify(formValues),
+        body: JSON.stringify(body),
       }
     );
     console.log(response.status);
@@ -61,6 +73,7 @@ export const handleCreateOrder = async (
     // localStorage.setItem("selectedFilterForWorkorders", "all");
   }
 };
+
 
 export const fetchProjectTypes = async (
   setProjectTypes: React.Dispatch<React.SetStateAction<ResProjectType[]>>,
@@ -360,30 +373,29 @@ export const setSiteHba = async (
       body: requestBody,
     });
 
-    if (response) {
+    if (response.status === 200) {
       const data = await response.json();
+      if (fecthOneOrder) {
+        fecthOneOrder();
+      }
+      setSite((prev) => {
+        const updatedSite = {
+          latitude: prev?.latitude ?? null,
+          longitude: prev?.longitude ?? null,
+          hba: data.hba,
+          id: data.id,
+          site_type: data.site_type,
+          los_result: data.los_result,
+        };
+
+        setCGPS(result, losId, () => updatedSite);
+
+        return updatedSite; // Return the updated state
+      });
+      setCurrSlide(2);
+      setFormErrs({});
+    } else {
       switch (response.status) {
-        case 200:
-          if (fecthOneOrder) {
-            fecthOneOrder();
-          }
-          setSite((prev) => {
-            const updatedSite = {
-              latitude: prev?.latitude ?? null,
-              longitude: prev?.longitude ?? null,
-              hba: data.hba,
-              id: data.id,
-              site_type: data.site_type,
-              los_result: data.los_result,
-            };
-
-            setCGPS(result, losId, () => updatedSite);
-
-            return updatedSite; // Return the updated state
-          });
-          setCurrSlide(2);
-          setFormErrs({});
-          break;
         case 400:
           console.log("Verify your data");
           setFormErrs({});
@@ -392,11 +404,13 @@ export const setSiteHba = async (
         case 409:
           setCurrSlide(2);
           break;
+
         case 422:
           setFormErrs({
             hba: "Please enter HBA between [0 - structure height]",
           });
           break;
+
         default:
           console.log("An unexpected error occurred");
           setFormErrs({});
@@ -671,6 +685,64 @@ export const uploadSiteImages = async (
   return false;
 };
 
+export const updateSiteImages = async (
+  result: ReqUploadSiteLocation & {
+    title?: string;
+  },
+  imageType: "site-location" | "site-position" | "additional-picture",
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setUpdateThisTime: React.Dispatch<React.SetStateAction<boolean>>,
+  setCurrSlide?: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>,
+  imageIndex?: number
+): Promise<boolean> => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return false;
+  }
+
+  setIsLoading(true);
+
+  const requestBody = JSON.stringify({
+    image: result.image,
+    comment: result.comment,
+    title: result.title,
+  });
+
+  const url = imageIndex
+    ? `${baseUrl}/line-of-sight/update-${imageType}/${result.site_result}/${imageIndex}`
+    : `${baseUrl}/line-of-sight/update-${imageType}/${result.site_result}`;
+  try {
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+      body: requestBody,
+    });
+
+    if (response.ok) {
+      setUpdateThisTime(false);
+      if (setCurrSlide) {
+        imageType === "site-location" ? setCurrSlide(3) : setCurrSlide(4);
+      }
+      return true; // Success case
+    } else if (response.status === 400) {
+      console.log("Verify your data");
+    } else {
+      console.log("Error occurred");
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
+  } finally {
+    setIsLoading(false);
+  }
+
+  return false;
+};
+
 export const getHbaSiteResult = async (
   setData: React.Dispatch<React.SetStateAction<ResLosExecution | null>>,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
@@ -892,10 +964,11 @@ export const updateAccessStatus = async (
       losId: number | null;
       altId: number | null;
       site_type: 1 | 2 | null;
-      site_name: string;
+      site_location: NearEndLocation | null;
       losStatus: 1 | 2 | 3 | null;
       accessibility: boolean;
       image_count: number | null;
+      secondSiteCode: string | null;
     }>
   >,
   setErrorUpdatingAccess: React.Dispatch<React.SetStateAction<boolean>>,
@@ -1068,130 +1141,6 @@ export const handleFinishLos = async (
   }
 };
 
-const uploadRemainingChunks = async (
-  file: File,
-  fileId: number,
-  setFile: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>,
-  chunkSize: number = 512 * 1024, // Default chunk size of 512KB for remaining chunks
-  uploadedChunks: number[] = [], // Ensure uploadedChunks is an array
-  startFromChunk: number = 1 // Default to start from the second chunk
-) => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
-  if (!token) {
-    console.error("No token found");
-    return;
-  }
-
-  // Start after the first 32KB chunk (i.e., from byte 32 * 1024)
-  let start = 32 * 1024;
-  const totalRemainingChunks = Math.ceil((file.size - start) / chunkSize);
-
-  for (let index = startFromChunk; index <= totalRemainingChunks; index++) {
-    if (uploadedChunks.includes(index)) {
-      start += chunkSize; // Skip already uploaded chunks
-      continue;
-    }
-
-    const end = Math.min(start + chunkSize, file.size);
-    const chunk = file.slice(start, end);
-
-    const formData = new FormData();
-    formData.append("index", index.toString());
-    formData.append("file", chunk, `${file.name}.part`);
-
-    try {
-      const response = await fetch(
-        `${baseUrl}/file/upload-rest-chunks/${fileId}`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Token ${token}` },
-          body: formData,
-        }
-      );
-      switch (response.status) {
-        case 200:
-          {
-            const progress = ((index + 1) / (totalRemainingChunks + 1)) * 100;
-            setFile((prev) => ({ ...prev, progress }));
-          }
-          break;
-        case 201:
-          setFile((prev) => ({ ...prev, progress: 100 }));
-          break;
-        default:
-          {
-            const errorData = await response.json();
-            console.error(`Failed to upload chunk ${index}:`, errorData);
-          }
-          break;
-      }
-    } catch (err) {
-      console.error(`Error uploading chunk ${index}:`, err);
-      break;
-    }
-    start += chunkSize;
-  }
-};
-
-export const handle_chunck = async (
-  file: File,
-  file_token: string,
-  setFile: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
-) => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
-  if (!token) {
-    console.error("No token found");
-    return;
-  }
-
-  const firstChunkSize = 32 * 1024;
-  const chunkSize = 512 * 1024;
-  const totalChunks = Math.ceil((file.size - firstChunkSize) / chunkSize) + 1;
-  const firstChunk = file.slice(0, firstChunkSize);
-
-  const formData = new FormData();
-  formData.append("name", file.name);
-  formData.append("type", "1");
-  formData.append("total_chunks", totalChunks.toString());
-  formData.append("file", firstChunk, `${file.name}.part`);
-  formData.append("file_token", file_token);
-
-  setIsLoading(true);
-
-  try {
-    const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
-      method: "POST",
-      headers: { Authorization: `Token ${token}` },
-      body: formData,
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      const fileId = data.id;
-      setFile((prev) => ({ ...prev, id: fileId }));
-
-      setIsLoading(false);
-
-      if (totalChunks > 1) {
-        await uploadRemainingChunks(file, fileId, setFile, chunkSize, [], 1);
-      } else {
-        setFile((prev) => ({ ...prev, progress: 100 }));
-      }
-
-      // fetchOneWorkOrder();
-    } else {
-      console.error("Failed to upload first chunk");
-    }
-  } catch (err) {
-    console.error("Error submitting first chunk", err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
 export const selectCGPS_toWorkWith = async (
   id: number,
   site_type: 1 | 2,
@@ -1263,7 +1212,8 @@ export const selectCGPS_toWorkWith = async (
 export const generateReport = async (
   losId: number | null,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  fetchOrders: () => void
+  fetchOrders?: () => void,
+  isItTest: boolean = false
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -1272,16 +1222,16 @@ export const generateReport = async (
     return;
   }
   setIsLoading(true);
+  const url = isItTest
+    ? `${baseUrl}/line-of-sight/generate-test-report/${losId}`
+    : `${baseUrl}/line-of-sight/generate-report/${losId}`;
   try {
-    const response = await fetch(
-      `${baseUrl}/line-of-sight/generate-report/${losId}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      }
-    );
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
 
     if (response) {
       switch (response.status) {
@@ -1296,7 +1246,9 @@ export const generateReport = async (
           link.click(); // Trigger the download
           document.body.removeChild(link); // Remove the anchor element
           console.log("Report generated and downloaded.");
-          fetchOrders();
+          if (fetchOrders) {
+            fetchOrders();
+          }
           break;
         }
         default:
@@ -1423,7 +1375,8 @@ export const rejectLineOfSight = async (
   losId: number,
   message: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  onSuccess: () => void
+  onSuccess: () => void,
+  ref: React.ForwardedRef<HTMLDialogElement>
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -1452,6 +1405,7 @@ export const rejectLineOfSight = async (
       switch (response.status) {
         case 200:
           console.log("Line of Sight rejected successfully.");
+          handleCloseDialog(ref);
           onSuccess(); // Callback for success
           break;
         case 401:
@@ -1529,5 +1483,193 @@ export const closeLineOfSight = async (
     console.error("Error during request:", err);
   } finally {
     setIsLoading(false);
+  }
+};
+
+const uploadRemainingChunks = async (
+  file: File,
+  fileId: number,
+  setFile: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>,
+  chunkSize: number = 512 * 1024, // Default chunk size of 512KB for remaining chunks
+  uploadedChunks: number[] = [], // Ensure uploadedChunks is an array
+  startFromChunk: number = 1 // Default to start from the second chunk
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  // Start after the first 32KB chunk (i.e., from byte 32 * 1024)
+  let start = 32 * 1024;
+  const totalRemainingChunks = Math.ceil((file.size - start) / chunkSize);
+
+  for (let index = startFromChunk; index <= totalRemainingChunks; index++) {
+    if (uploadedChunks.includes(index)) {
+      start += chunkSize; // Skip already uploaded chunks
+      continue;
+    }
+
+    const end = Math.min(start + chunkSize, file.size);
+    const chunk = file.slice(start, end);
+
+    const formData = new FormData();
+    formData.append("index", index.toString());
+    formData.append("file", chunk, `${file.name}.part`);
+
+    try {
+      const response = await fetch(
+        `${baseUrl}/file/upload-rest-chunks/${fileId}`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Token ${token}` },
+          body: formData,
+        }
+      );
+      console.log(response.status);
+
+      switch (response.status) {
+        case 200:
+          {
+            const progress = ((index + 1) / (totalRemainingChunks + 1)) * 100;
+            setFile((prev) => ({ ...prev, progress }));
+          }
+          break;
+        case 201:
+          setFile((prev) => ({ ...prev, progress: 100 }));
+          break;
+        default:
+          {
+            const errorData = await response.json();
+            console.error(`Failed to upload chunk ${index}:`, errorData);
+          }
+          break;
+      }
+    } catch (err) {
+      console.error(`Error uploading chunk ${index}:`, err);
+      break;
+    }
+    start += chunkSize;
+  }
+};
+
+export const handle_chunck = async (
+  file: File,
+  file_token: string,
+  setFile: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setUpdateThisTime?: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  const firstChunkSize = 32 * 1024;
+  const chunkSize = 512 * 1024;
+  const totalChunks = Math.ceil((file.size - firstChunkSize) / chunkSize) + 1;
+  const firstChunk = file.slice(0, firstChunkSize);
+
+  const formData = new FormData();
+  formData.append("name", file.name);
+  formData.append("type", "1");
+  formData.append("total_chunks", totalChunks.toString());
+  formData.append("file", firstChunk, `${file.name}.part`);
+  formData.append("file_token", file_token);
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(`${baseUrl}/file/upload-first-chunk`, {
+      method: "POST",
+      headers: { Authorization: `Token ${token}` },
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const fileId = data.id;
+      setFile((prev) => ({ ...prev, id: fileId }));
+      setIsLoading(false);
+      if (setUpdateThisTime) {
+        setUpdateThisTime(true);
+      }
+      if (totalChunks > 1) {
+        await uploadRemainingChunks(file, fileId, setFile, chunkSize, [], 1);
+      } else {
+        setFile((prev) => ({ ...prev, progress: 100 }));
+      }
+
+      // fetchOneWorkOrder();
+    } else {
+      console.error("Failed to upload first chunk");
+    }
+  } catch (err) {
+    console.error("Error submitting first chunk", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+export const handle_files_with_one_chunk = async (
+  file: File,
+  setFile: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setUpdateThisTime?: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+
+  // Extract the first chunk
+  const formData = new FormData();
+  formData.append("name", file.name);
+  formData.append("type", "1");
+  formData.append("file", file);
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(`${baseUrl}/file/upload-file`, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const fileId = data.id;
+      setFile({ id: fileId, progress: 100.0, file });
+      if (setUpdateThisTime) {
+        setUpdateThisTime(true);
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting file", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+export const handleFileChange = async (
+  file: File,
+  setFile: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setUpdateThisTime?: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  if (file.size > 20 * 1024 * 1024) {
+    alert(`${file.name} exceeds the 20MB limit.`);
+  } else if (file.size <= 32 * 1024) {
+    handle_files_with_one_chunk(file, setFile, setIsLoading, setUpdateThisTime);
+  } else {
+    const file_token = await generateFileToken(file);
+    handle_chunck(file, file_token, setFile, setIsLoading, setUpdateThisTime);
   }
 };

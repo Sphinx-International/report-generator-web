@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-google-maps/api": "^2.20.3",
     "@reduxjs/toolkit": "^2.2.6",
     "@types/react-transition-group": "^4.4.10",
     "notistack": "^3.0.1",

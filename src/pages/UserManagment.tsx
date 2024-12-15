@@ -365,7 +365,7 @@ const UserManagment = () => {
                         }}
                       >
                         <img
-                          src="/avatar2.jpg"
+                          src="/avatar1.png"
                           alt="avatar"
                           className="w-[52.5px] rounded-[11px] h-full"
                         />
