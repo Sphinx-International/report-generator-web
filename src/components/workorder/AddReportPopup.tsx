@@ -10,6 +10,7 @@ import { AppDispatch } from "../../Redux/store";
 import { useSelector } from "react-redux";
 import { RootState } from "../../Redux/store";
 import { handleFileChange } from "../../func/otherworkorderApis";
+import { getRole } from "../../func/getUserRole";
 
 interface AddReportProps {
   workorderId: string | undefined;
@@ -25,23 +26,28 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
     const [file, setFile] = useState<TheUploadingFile | undefined>();
     const dispatch = useDispatch<AppDispatch>();
 
-    const reportTypes = ["Final","Partial"];
-    const [currentReportTypeIndex, setCurrentReportTypeIndex] = useState<1 | 2>(1);
-
+    const reportTypes = ["Final", "Partial"];
+    const [currentReportTypeIndex, setCurrentReportTypeIndex] = useState<1 | 2>(
+      getRole() !== 2 ? 1 : 2
+    );
 
     const uploadingReportFiles = useSelector(
       (state: RootState) => state.uploadingFiles.reportFiles
     );
     const handleNextClick = () => {
       setCurrentReportTypeIndex((prevIndex) => {
-        const newIndex = (prevIndex === 2 ? 1 : prevIndex + 1) as reportTypeIndex;
+        const newIndex = (
+          prevIndex === 2 ? 1 : prevIndex + 1
+        ) as reportTypeIndex;
         return newIndex;
       });
     };
-    
+
     const handlePreviousClick = () => {
       setCurrentReportTypeIndex((prevIndex) => {
-        const newIndex = (prevIndex === 1 ? 2 : prevIndex - 1) as reportTypeIndex;
+        const newIndex = (
+          prevIndex === 1 ? 2 : prevIndex - 1
+        ) as reportTypeIndex;
         return newIndex;
       });
     };
@@ -55,13 +61,18 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
           <h3 className="text-[19px] font-semibold text-primary leading-[20px]">
             Upload Report{" "}
           </h3>
-          <div className="w-full flex items-center gap-[11px]"
-          >
+          <div className="w-full flex items-center gap-[11px]">
             <svg
-              onClick={() => { if (!file) {
-                handlePreviousClick()
-              }  }}
-              className={`hover:scale-105 ${file ? "cursor-not-allowed": "cursor-pointer"}`}
+              onClick={() => {
+                if (!file && getRole() !== 2) {
+                  handlePreviousClick();
+                }
+              }}
+              className={`hover:scale-105 ${
+                file || getRole() === 2
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
               xmlns="http://www.w3.org/2000/svg"
               width="13"
               height="14"
@@ -94,17 +105,23 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                         : "text-[#DB2C9F]"
                     }`}
                   >
-                    {reportTypes[currentReportTypeIndex-1]}
+                    {reportTypes[currentReportTypeIndex - 1]}
                   </span>
                 </CSSTransition>
               </TransitionGroup>
             </div>
 
             <svg
-              onClick={() => { if (!file) {
-                handleNextClick()
-              } }}
-              className={`rotate-180 hover:scale-105 ${file ? "cursor-not-allowed": "cursor-pointer"}`}
+              onClick={() => {
+                if (!file && getRole() !== 2) {
+                  handleNextClick();
+                }
+              }}
+              className={`rotate-180 hover:scale-105 ${
+                file || getRole() === 2
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
               xmlns="http://www.w3.org/2000/svg"
               width="13"
               height="14"
@@ -156,7 +173,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                     undefined,
                     currentReportTypeIndex
                   );
-                  setFile({file:file, progress:0})
+                  setFile({ file: file, progress: 0 });
                 });
               }
             }}
@@ -181,7 +198,7 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
                     undefined,
                     currentReportTypeIndex
                   );
-                  setFile({file:file, progress:0})
+                  setFile({ file: file, progress: 0 });
                 }
               }}
             />
@@ -221,7 +238,6 @@ const AddReportPopup = forwardRef<HTMLDialogElement, AddReportProps>(
           className="absolute top-6 right-6 text-[#111111] cursor-pointer"
           onClick={() => {
             handleCloseDialog(ref);
-            setCurrentReportTypeIndex(1);
           }}
         >
           🗙
