@@ -13,7 +13,6 @@ import { useSnackbar } from "notistack";
 import EditProjectType from "../../components/los/EditProjectType";
 import { handleOpenDialog } from "../../func/openDialog";
 
-
 const ProjectTypes = () => {
   const { enqueueSnackbar } = useSnackbar();
 
@@ -56,24 +55,24 @@ const ProjectTypes = () => {
         ) : (
           <>
             <div className="w-full flex items-center justify-between">
-              <h1 className="font-semibold text-[22px] text-primary leading-8">
+              <h1 className="font-semibold sm:text-[22px] text-[18px] text-primary leading-8">
                 Projects type
               </h1>
               <button
                 onClick={scrollToBottom}
-                className="self-end mb-4 rounded-[30px] bg-primary py-[10px] px-[20px] text-white text-[14px] font-medium hover:bg-primary-dark transition"
+                className="self-end mb-4 rounded-[30px] bg-primary sm:py-[10px] py-[6px] px-[15px] sm:px-[20px] text-white text-[14px] font-medium hover:bg-primary-dark transition"
               >
                 Scroll down
               </button>
             </div>
 
-            <div className="rounded-[20px] border-[1px] border-n400 px-[32px] py-[20px] w-full">
+            <div className="rounded-[20px] border-[1px] border-n400 px-[24px] sm:px-[32px] py-[20px] w-full">
               <div className="w-full flex items-center border-b-[1px] border-b-n300 py-4">
-                <h6 className="text-[18px] text-n800 font-medium text-start">
+                <h6 className="sm:text-[18px] text-[14px] text-n800 font-medium text-start">
                   Name{" "}
                 </h6>
                 <div className="flex-grow"></div>
-                <h6 className="text-[18px] text-n800 font-medium w-[30%] text-center">
+                <h6 className="sm:text-[18px] text-[14px] text-n800 font-medium w-[30%] text-center">
                   Actions{" "}
                 </h6>
               </div>
@@ -87,14 +86,14 @@ const ProjectTypes = () => {
                       type="text"
                       name={`project-${project.id}`}
                       id={`project-${project.id}`}
-                      className={`text-n700 font-medium text-start`}
+                      className={`text-n700 font-medium text-start sm:text-[16px] text-[14px] w-[60%] overflow-hidden text-ellipsis`}
                       value={project.name}
                     />
 
                     <div className="flex-grow" />
                     <div className="flex items-center justify-center w-[30%] gap-[6px]">
                       <button
-                        className="rounded-[15px] bg-[#DB2C2C1A] py-[6px] px-5 text-[#FF3B30] text-[12px] font-medium"
+                        className="rounded-[15px] bg-[#DB2C2C1A] py-[6px] sm:px-5 px-3 text-[#FF3B30] text-[12px] font-medium"
                         onClick={() => {
                           if (!deleteLoader) {
                             deleteProjectTypes(
@@ -110,10 +109,10 @@ const ProjectTypes = () => {
                         Delete
                       </button>
                       <button
-                        className="rounded-[30px] bg-[#48C1B54D] py-[6px] px-5 text-[#23B4A6] text-[12px] font-medium"
+                        className="rounded-[30px] bg-[#48C1B54D] py-[6px] sm:px-5 px-3 text-[#23B4A6] text-[12px] font-medium"
                         onClick={() => {
                           setEditedPT(project);
-                          handleOpenDialog(editPopup)
+                          handleOpenDialog(editPopup);
                         }}
                       >
                         Edit
@@ -123,7 +122,7 @@ const ProjectTypes = () => {
                 );
               })}
 
-              <div className="mt-8 w-full flex items-center gap-2">
+              <div className="mt-8 w-full flex items-center gap-2 flex-wrap">
                 <input
                   type="text"
                   name="add-pt"
@@ -138,13 +137,15 @@ const ProjectTypes = () => {
                 <button
                   className={`flex items-center justify-center rounded-[30px] ${
                     newPT === "" ? "bg-n500 text-n300" : "bg-primary text-white"
-                  }  py-[12px] px-[20px]  text-[14px] font-medium hover:bg-primary-dark transition`}
+                  }  py-[12px] px-[20px]  text-[14px] font-medium hover:bg-primary-dark transition sm:flex-grow-0  flex-grow`}
                   onClick={() => {
                     createProjectTypes(
                       newPT,
                       setNewPT,
                       setProjectTypes,
-                      setCreateLoader
+                      setCreateLoader,
+                      (message, options) =>
+                        enqueueSnackbar(message, { ...options })
                     );
                   }}
                   disabled={newPT === ""}
@@ -162,7 +163,11 @@ const ProjectTypes = () => {
           </>
         )}
       </div>
-      <EditProjectType ref={editPopup} editedPT={editedPT} setProjectTypes={setProjectTypes} />
+      <EditProjectType
+        ref={editPopup}
+        editedPT={editedPT}
+        setProjectTypes={setProjectTypes}
+      />
     </div>
   );
 };

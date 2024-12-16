@@ -374,7 +374,7 @@ const Sites = () => {
                   return (
                     <div
                       key={index}
-                      className={`relative p-[9px] flex items-center gap-[9px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow ${
+                      className={`relative p-[9px] flex items-center gap-[20px] border-[1px] border-[#E9F1FF] rounded-[11px] w-[49%] flex-grow ${
                         isSelected ? "bg-primary" : ""
                       }`}
                       onClick={(e) => {
@@ -383,16 +383,18 @@ const Sites = () => {
                       }}
                     >
                       <img
-                        src="/avatar.png"
-                        alt="avatar"
-                        className="w-[52.5px] rounded-[11px]"
+                        src="/site.png"
+                        alt="site"
+                        className="w-[45px] rounded-[11px]"
                       />
                       <span
                         className={` text-[12px] leading-[18px] ${
                           isSelected ? "text-white" : "text-n600"
                         }`}
                       >
-                        AN1966 <br /> Annaba <br /> 10-09-2002 <br /> 4°44’19.0"
+                        {site.code} <br /> {site.location.district} <br />{" "}
+                        {site.region} <br /> lat: {site.location.latitude},{" "}
+                        <br /> long: {site.location.longitude}
                       </span>
                       <Link to={`/edit-site/{user.email}`}>
                         <svg

@@ -160,7 +160,7 @@ const EditSite = () => {
             return (
               <div
                 key={index}
-                className="w-full rounded-[20px] border-[1px] border-n400 px-[36px] pt-[36px] pb-[50px] flex flex-col items-start gap-[50px] transition-all duration-1000"
+                className="w-full rounded-[20px] border-[1px] border-n400 px-[26px] sm:px-[36px] pt-[36px] pb-[50px] flex flex-col items-start gap-[50px] transition-all duration-1000"
                 style={{
                   maxHeight:
                     !openDivs.includes(history.id) && index !== 0
@@ -174,12 +174,12 @@ const EditSite = () => {
               >
                 <div className="flex flex-col items-start gap-[35px] w-full">
                   <div className="w-full flex items-center justify-between">
-                    <h2 className="text-[20px] text-n800 font-semibold">
+                    <h2 className="sm:text-[20px] text-[18px] text-n800 font-semibold">
                       Site information {index + 1}
                     </h2>
                     {index === 0 && (
                       <button
-                        className="py-[6px] px-[20px] rounded-[20px] border-[2px] border-primary text-[12px] text-primary font-semibold"
+                        className="py-[5px] sm:py-[6px] px-[12px] sm:px-[20px] rounded-[20px] border-[2px] border-primary text-[12px] text-primary font-semibold"
                         onClick={() => {
                           handleOpenDialog(relocateSiteRef);
                         }}
@@ -206,9 +206,9 @@ const EditSite = () => {
                       </svg>
                     )}
                   </div>
-                  <div className="w-full pr-[82px] flex flex-col items-start gap-[25px]">
+                  <div className="w-full sm:pr-[82px] flex flex-col items-start gap-[25px]">
                     <div className="w-full flex items-center justify-between">
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="site-code"
                           className="text-[14px] text-n600 font-medium"
@@ -259,7 +259,7 @@ const EditSite = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="region"
                           className="text-[14px] text-n600 font-medium"
@@ -283,7 +283,7 @@ const EditSite = () => {
                       </div>
                     </div>
                     <div className="w-full flex items-center justify-between">
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="wilaya"
                           className="text-[14px] text-n600 font-medium"
@@ -299,7 +299,7 @@ const EditSite = () => {
                           disabled={true}
                         />
                       </div>
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="daira"
                           className="text-[14px] text-n600 font-medium"
@@ -351,7 +351,7 @@ const EditSite = () => {
                       </div>
                     </div>
                     <div className="w-full flex items-center justify-between">
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="commune"
                           className="text-[14px] text-n600 font-medium"
@@ -402,7 +402,7 @@ const EditSite = () => {
                           )}
                         </div>
                       </div>
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="type"
                           className="text-[14px] text-n600 font-medium"
@@ -460,7 +460,7 @@ const EditSite = () => {
                       </div>
                     </div>
                     <div className="w-full flex items-center justify-between">
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="building-height"
                           className="text-[14px] text-n600 font-medium"
@@ -514,7 +514,7 @@ const EditSite = () => {
                           )}
                         </div>
                       </div>
-                      <div className="w-[40%] flex flex-col items-start gap-2">
+                      <div className="w-[48%] sm:w-[40%] flex flex-col items-start gap-2">
                         <label
                           htmlFor="mast-height"
                           className="text-[14px] text-n600 font-medium"
@@ -571,7 +571,7 @@ const EditSite = () => {
                   <h2 className="text-[20px] text-n800 font-semibold">
                     Cordonnées - GPS
                   </h2>
-                  <div className="w-full pr-[82px] flex flex-col items-start gap-[28px]">
+                  <div className="w-full sm:pr-[82px] flex flex-col items-start gap-[28px]">
                     <div className="flex flex-col items-start gap-4 w-full">
                       <label
                         htmlFor="latitude"
@@ -579,12 +579,12 @@ const EditSite = () => {
                       >
                         Latitude
                       </label>
-                      <div className="w-full flex items-center justify-between">
+                      <div className="w-full flex items-center sm:gap-0 gap-x-2 gap-y-3 sm:justify-between flex-wrap justify-center">
                         <input
                           type="text"
                           name="degrees"
                           id="latitude-degrees"
-                          className={`w-[30%] border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
+                          className={`w-[30%] border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] sm:flex-grow-0 flex-grow ${
                             (!editing.latitude || index !== 0) && "bg-n200"
                           }`}
                           value={
@@ -618,7 +618,7 @@ const EditSite = () => {
                           type="text"
                           name="minutes"
                           id="latitude-min"
-                          className={`w-[30%] border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
+                          className={`w-[30%] sm:flex-grow-0 flex-grow border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
                             (!editing.latitude || index !== 0) && "bg-n200"
                           }`}
                           value={
@@ -652,7 +652,7 @@ const EditSite = () => {
                           type="text"
                           name="seconds"
                           id="latitude-sec"
-                          className={`w-[30%] border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
+                          className={`w-[30%] sm:flex-grow-0 flex-grow border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
                             (!editing.latitude || index !== 0) && "bg-n200"
                           }`}
                           value={
@@ -701,7 +701,7 @@ const EditSite = () => {
                             }
                           }}
                         />
-                        <div className="flex items-center gap-3 w-[6%]">
+                        <div className="flex items-center gap-3 w-[20%] sm:w-[6%]">
                           <div className="flex items-center gap-[5px]">
                             <div className="rounded-full border-[2px] border-primary p-[2px]">
                               <input
@@ -885,12 +885,12 @@ const EditSite = () => {
                       >
                         Longitude
                       </label>
-                      <div className="w-full flex items-center justify-between">
+                      <div className="w-full flex items-center sm:gap-0 gap-x-2 gap-y-3 sm:justify-between flex-wrap justify-center">
                         <input
                           type="text"
                           name="degrees"
                           id="longitude-degrees"
-                          className={`w-[30%] border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
+                          className={`w-[30%] sm:flex-grow-0 flex-grow border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
                             (!editing.longitude || index !== 0) && "bg-n200"
                           }`}
                           value={
@@ -924,7 +924,7 @@ const EditSite = () => {
                           type="text"
                           name="minutes"
                           id="longitude-min"
-                          className={`w-[30%] border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
+                          className={`w-[30%] sm:flex-grow-0 flex-grow border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
                             (!editing.longitude || index !== 0) && "bg-n200"
                           }`}
                           value={
@@ -958,7 +958,7 @@ const EditSite = () => {
                           type="text"
                           name="seconds"
                           id="longitude-sec"
-                          className={`w-[30%] border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
+                          className={`w-[30%] sm:flex-grow-0 flex-grow border-[1px] border-n300 rounded-[19px] px-[22px] py-[16px] text-n700 text-[13px] ${
                             (!editing.longitude || index !== 0) && "bg-n200"
                           }`}
                           value={

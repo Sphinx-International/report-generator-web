@@ -39,7 +39,6 @@ export const fetchProjectTypes = async (
     }
 
     const data = await response.json();
-
     // Check if the response is empty
     if (Array.isArray(data) && data.length > 0) {
       setProjectTypes(data);
@@ -77,7 +76,8 @@ export const createProjectTypes = async (
   name: string,
   setName: React.Dispatch<React.SetStateAction<string>>,
   setProjectTypes: React.Dispatch<React.SetStateAction<ResProjectType[]>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  enqueueSnackbar: (message: string, options?: any) => void
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -103,30 +103,40 @@ export const createProjectTypes = async (
       body,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Error response text: ", errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
+    let data: any;
+    try {
+      data = await response.json();
+    } catch (error) {
+      console.error("Failed to parse JSON response:", error);
+      data = null;
     }
-
-    const data = await response.json();
 
     switch (response.status) {
       case 200:
-        // Add the newly created project type to the existing list
         setProjectTypes((prevProjectTypes) => [...prevProjectTypes, data]);
         setName("");
         console.log("Project type created successfully:", data);
         break;
       case 400:
-        console.log("Verify your data");
+        enqueueSnackbar(data?.message || "Project Type too long", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
         break;
       default:
-        console.log("Unexpected error occurred");
+        enqueueSnackbar(data?.message || "Unexpected error occurred", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+        console.log("Unexpected error occurred:", data);
         break;
     }
   } catch (err) {
     console.error("Error submitting form", err);
+    enqueueSnackbar("An error occurred while submitting the form", {
+      variant: "error",
+      autoHideDuration: 3000,
+    });
   } finally {
     setIsLoading(false);
   }
@@ -215,8 +225,6 @@ export const editProjectType = async (
       body,
     });
 
-
-
     switch (response.status) {
       case 200:
         // Update the specific project type in the state
@@ -227,17 +235,14 @@ export const editProjectType = async (
               : projectType
           )
         );
-        handleCloseDialog(dialogRef)
+        handleCloseDialog(dialogRef);
         console.log(`Project type with ID ${id} updated successfully.`);
         break;
       case 409:
-        enqueueSnackbar(
-            "This name is already used.",
-            {
-              variant: "error",
-              autoHideDuration: 3000,
-            }
-          );
+        enqueueSnackbar("This name is already used.", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
         break;
       default:
         console.log("Unexpected error occurred.");
