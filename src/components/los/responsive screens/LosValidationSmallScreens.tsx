@@ -1,4 +1,3 @@
-import { losOrdersTabHeader } from "../../../assets/los";
 import { calculateDistance } from "../../../func/los/geographicFunctions";
 import { selectCGPS_toWorkWith } from "../../../func/los/orders";
 import { resOfOneOrder } from "../../../assets/types/LosCommands";
