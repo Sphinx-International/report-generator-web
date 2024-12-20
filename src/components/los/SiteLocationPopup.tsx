@@ -299,13 +299,13 @@ const SiteLocationPopup = forwardRef<HTMLDialogElement, SiteLocationPopupProps>(
         </div>
         <div className="flex items-center gap-[6px]">
           <button
-            className="rounded-[86px] px-[45px] py-[10px] bg-n300 text-[14px] text-n600 font-semibold border-[1px] border-n400"
+            className="rounded-[86px] px-[25px] sm:px-[45px] py-[7px] bg-n300 text-[14px] text-n600 font-semibold border-[1px] border-n400"
             onClick={handlePrev}
           >
             Previous
           </button>
           <button
-            className="rounded-[86px] px-[45px] py-[10px] bg-primary text-[14px] text-white font-semibold border-[1px] border-primary flex items-center justify-center"
+            className="rounded-[86px] px-[25px] sm:px-[45px] py-[7px] bg-primary text-[14px] text-white font-semibold border-[1px] border-primary flex items-center justify-center"
             onClick={handleSecondSubmit}
           >
             {isLoadingSubmit ? (

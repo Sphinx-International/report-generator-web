@@ -291,7 +291,7 @@ const Main: React.FC<MainProps> = (props) => {
                     if (props.page === "los orders") {
                       setVisibleMonthCalender(!visibleMonthCalender);
                     }
-                    props.handleAddPrimaryButtonClick;
+                    props.handleAddPrimaryButtonClick!();
                   }}
                 >
                   {props.functionalties.primaryFunc.name}

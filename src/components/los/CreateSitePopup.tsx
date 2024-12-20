@@ -130,7 +130,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                 latitude: formValue.latitude!,
                 longitude: formValue.longitude!,
               },
-              setloading,
+              setloading
             );
         setvalidationErrors({});
       } else {
@@ -435,7 +435,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   <input
                     type="text" // Change type to "text" to allow commas
                     id="latitude-second"
-                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]" 
+                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                     placeholder="Second"
                     min={0}
                     max={59.99}
@@ -999,8 +999,10 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
               >
                 {loading ? (
                   <RotatingLines strokeColor="white" width="20" />
+                ) : method === "create" ? (
+                  "Create"
                 ) : (
-                  method === "create" ? "Create" : "Relocate"
+                  "Relocate"
                 )}
               </button>
             </div>

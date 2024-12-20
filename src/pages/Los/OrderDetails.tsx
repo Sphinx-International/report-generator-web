@@ -16,21 +16,13 @@ import useWebSocketSearch from "../../hooks/useWebSocketSearch";
 import {
   handleAssingLos,
   handleExecuteLos,
-  losResult,
-  updateLosResult,
   addOrDeleteAlt,
   handleFinishLos,
   generateReport,
-  selectCGPS_toWorkWith,
   downloadGeneratedReport,
   approveLineOfSight,
   closeLineOfSight,
 } from "../../func/los/orders";
-import { losAltTabHeader, losOrdersTabHeader } from "../../assets/los";
-import {
-  calculateAzimuths,
-  calculateDistance,
-} from "../../func/los/geographicFunctions";
 import { handleOpenDialog } from "../../func/openDialog";
 import LosExcutionPopup from "../../components/los/LosExecutionPopup";
 import { ResSite } from "../../assets/types/LosSites";
@@ -43,9 +35,13 @@ import { RootState } from "../../Redux/store";
 import UploadingFile from "../../components/uploadingFile";
 import { downloadFile } from "../../func/donwloadFile";
 import { handleCancelUpload } from "../../func/chunkUpload";
+import LosOrdersSmallScreens from "../../components/los/responsive screens/LosOrdersSmallScreens";
+import LosOrdersLargeScreens from "../../components/los/responsive screens/LosOrdersLargeScreens";
+import LosValidationLargeScreens from "../../components/los/responsive screens/LosValidationLargeScreens";
+import LosValidationSmallScreens from "../../components/los/responsive screens/LosValidationSmallScreens";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-interface CGPS {
+export interface CGPS {
   id: number;
   lat: number;
   lng: number;
@@ -136,11 +132,6 @@ const OrderDetails = () => {
   const [isLoadingChoicingCGPS, setIsLoadingChoicingCGPS] = useState(false);
 
   const [isLoadingDownloadReport, setIsLoadingDownloadReport] = useState(false);
-
-  const handleDropdownToggle = (index: number) => {
-    // Toggle the dropdown for the clicked item
-    setOpenDropdownIndex(openDropdownIndex === index ? null : index);
-  };
 
   const fetchOneLOS = useCallback(async () => {
     const token =
@@ -936,7 +927,7 @@ const OrderDetails = () => {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-x-2 gap-y-3 flex-wrap">
                     <LosStatus
                       status={order.line_of_sight.status}
                       styles={{ fontSize: 13, px: 22, py: 8.5 }}
@@ -1243,305 +1234,20 @@ const OrderDetails = () => {
 
               {order.line_of_sight.status === 3 && getRole() !== 2 && (
                 <div className="w-full flex flex-col items-center gap-4 md:border-[1px] md:border-n400 rounded-[20px] md:p-[20px]">
-                  <div className="flex flex-col w-full">
-                    <div className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4">
-                      {losOrdersTabHeader.map((header, index) => {
-                        return (
-                          <span
-                            key={index}
-                            className={`flex items-center justify-center text-[13px] text-n800 font-medium `}
-                            style={{ width: `${header.width}` }}
-                          >
-                            {header.title}
-                          </span>
-                        );
-                      })}
-                    </div>
-                    <div className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4">
-                      <div className="w-[10%] flex items-center justify-center">
-                        <span className="text-[12px] text-n800">
-                          {order.line_of_sight.near_end_location.site_code}
-                        </span>
-                      </div>
-                      <div className="w-[14%] flex items-center justify-center">
-                        <span className="text-[12px] text-n800">
-                          {order.line_of_sight.near_end_location.longitude.toFixed(
-                            6
-                          )}
-                        </span>
-                      </div>
-                      <div className="w-[14%] flex items-center justify-center">
-                        <span className="text-[12px] text-n800">
-                          {order.line_of_sight.near_end_location.latitude.toFixed(
-                            6
-                          )}
-                        </span>
-                      </div>
-                      <div className="w-[14%] flex items-center justify-center">
-                        <span className="text-[12px] text-n800">
-                          {order.line_of_sight.execution_cgps.longitude.toFixed(
-                            6
-                          )}
-                        </span>
-                      </div>
-                      <div className="w-[14%] flex items-center justify-center">
-                        <span className="text-[12px] text-n800">
-                          {order.line_of_sight.execution_cgps.latitude.toFixed(
-                            6
-                          )}
-                        </span>
-                      </div>
-
-                      <div className="w-[10%] flex items-center justify-center">
-                        <span className="text-[12px] text-n800">
-                          {calculateDistance(
-                            {
-                              latitude:
-                                order.line_of_sight.near_end_location.latitude,
-                              longitude:
-                                order.line_of_sight.near_end_location.longitude,
-                            },
-                            {
-                              latitude:
-                                order.line_of_sight.execution_cgps.latitude,
-                              longitude:
-                                order.line_of_sight.execution_cgps.longitude,
-                            }
-                          ).toFixed(2)}{" "}
-                          km
-                        </span>
-                      </div>
-                      <div className="w-[10%] flex items-center justify-center">
-                        <span
-                          className="p-[7px] rounded-full bg-sec cursor-pointer"
-                          onClick={() => {
-                            setMarkers([
-                              {
-                                id: Number(`${order.line_of_sight.id}.1`),
-                                lat: order.line_of_sight.execution_cgps
-                                  .latitude,
-                                lng: order.line_of_sight.execution_cgps
-                                  .longitude,
-                                name: `${order.line_of_sight.near_end_location.site_code} (ENG)`,
-                              },
-                              {
-                                id: order.line_of_sight.id,
-                                lat: order.line_of_sight.near_end_location
-                                  .latitude,
-                                lng: order.line_of_sight.near_end_location
-                                  .longitude,
-                                name: ` ${order.line_of_sight.near_end_location.site_code} (DB)`,
-                              },
-                            ]);
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                            fill="none"
-                          >
-                            <path
-                              d="M14 2.23438L13.297 2.54688L9.9845 3.96837L6.172 2.53087L5.9845 2.46837L5.797 2.54688L2.297 4.04688L2 4.17188V13.7649L2.703 13.4524L6.0155 12.0309L9.828 13.4684L10.0155 13.5309L10.203 13.4524L13.703 11.9524L14 11.8274V2.23438ZM6.5 3.71837L9.5 4.84338V12.2814L6.5 11.1564V3.71837ZM5.5 3.74988V11.1719L3 12.2499V4.82788L5.5 3.74988ZM13 3.74988V11.1719L10.5 12.2499V4.82788L13 3.74988Z"
-                              fill="#4A3AFF"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                      <div className="w-[14%] flex gap-[6px] items-center justify-center">
-                        <div className="items-center gap-[7px] hidden sm:flex">
-                          <input
-                            type="checkbox"
-                            id={`CGPS-${order.line_of_sight.id}`}
-                            className="hidden peer"
-                            checked={
-                              order.line_of_sight.execution_cgps.is_valid
-                            }
-                            onChange={(e) => {
-                              console.log("first");
-                              if (!isLoadingChoicingCGPS) {
-                                if (e.target.checked) {
-                                  selectCGPS_toWorkWith(
-                                    order.line_of_sight.id,
-                                    1,
-                                    "suggested",
-                                    setIsLoadingChoicingCGPS,
-                                    fetchOneLOS
-                                  );
-                                } else {
-                                  selectCGPS_toWorkWith(
-                                    order.line_of_sight.id,
-                                    1,
-                                    "original",
-                                    setIsLoadingChoicingCGPS,
-                                    fetchOneLOS
-                                  );
-                                }
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`CGPS-${order.line_of_sight.id}`}
-                            className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-primary flex items-center justify-center cursor-pointer"
-                          >
-                            <svg
-                              className="text-white hidden"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="12"
-                              height="10"
-                              viewBox="0 0 12 10"
-                              fill="none"
-                            >
-                              <path
-                                d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
-                                fill="white"
-                              />
-                            </svg>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    {order.alternative_far_ends
-                      .filter((alt) => alt.los_status !== null)
-                      .map((alt, index) => {
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4"
-                          >
-                            <div className="w-[10%] flex items-center justify-center">
-                              <span className="text-[12px] text-n800">
-                                {alt.site_location.site_code}
-                              </span>
-                            </div>
-                            <div className="w-[14%] flex items-center justify-center">
-                              <span className="text-[12px] text-n800">
-                                {alt.site_location.longitude.toFixed(6)}
-                              </span>
-                            </div>
-                            <div className="w-[14%] flex items-center justify-center">
-                              <span className="text-[12px] text-n800">
-                                {alt.site_location.latitude.toFixed(6)}
-                              </span>
-                            </div>
-                            <div className="w-[14%] flex items-center justify-center">
-                              <span className="text-[12px] text-n800">
-                                {alt.execution_cgps.longitude.toFixed(6)}
-                              </span>
-                            </div>
-                            <div className="w-[14%] flex items-center justify-center">
-                              <span className="text-[12px] text-n800">
-                                {alt.execution_cgps.latitude.toFixed(6)}
-                              </span>
-                            </div>
-
-                            <div className="w-[10%] flex items-center justify-center">
-                              <span className="text-[12px] text-n800">
-                                {calculateDistance(
-                                  {
-                                    latitude: alt.site_location.latitude,
-                                    longitude: alt.site_location.longitude,
-                                  },
-                                  {
-                                    latitude: alt.execution_cgps.latitude,
-                                    longitude: alt.execution_cgps.longitude,
-                                  }
-                                ).toFixed(2)}
-                                km
-                              </span>
-                            </div>
-                            <div className="w-[10%] flex items-center justify-center">
-                              <span
-                                className="p-[7px] rounded-full bg-sec cursor-pointer"
-                                onClick={() => {
-                                  setMarkers([]); // Clear existing markers
-
-                                  setMarkers([
-                                    {
-                                      id: Number(`${alt.id}.1`),
-                                      lat: alt.execution_cgps.latitude,
-                                      lng: alt.execution_cgps.longitude,
-                                      name: `${alt.site_location.site_code} (ENG)`,
-                                    },
-                                    {
-                                      id: alt.id,
-                                      lat: alt.site_location.latitude,
-                                      lng: alt.site_location.longitude,
-                                      name: `${alt.site_location.site_code} (DB)`,
-                                    },
-                                  ]);
-                                }}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 16 16"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M14 2.23438L13.297 2.54688L9.9845 3.96837L6.172 2.53087L5.9845 2.46837L5.797 2.54688L2.297 4.04688L2 4.17188V13.7649L2.703 13.4524L6.0155 12.0309L9.828 13.4684L10.0155 13.5309L10.203 13.4524L13.703 11.9524L14 11.8274V2.23438ZM6.5 3.71837L9.5 4.84338V12.2814L6.5 11.1564V3.71837ZM5.5 3.74988V11.1719L3 12.2499V4.82788L5.5 3.74988ZM13 3.74988V11.1719L10.5 12.2499V4.82788L13 3.74988Z"
-                                    fill="#4A3AFF"
-                                  />
-                                </svg>
-                              </span>
-                            </div>
-                            <div className="w-[14%] flex gap-[6px] items-center justify-center">
-                              <div className="items-center gap-[7px] hidden sm:flex">
-                                <input
-                                  type="checkbox"
-                                  id={`CGPS-${alt.id}`}
-                                  className="hidden peer"
-                                  checked={alt.execution_cgps.is_valid}
-                                  onChange={(e) => {
-                                    console.log("first");
-                                    if (!isLoadingChoicingCGPS) {
-                                      if (e.target.checked) {
-                                        selectCGPS_toWorkWith(
-                                          alt.id,
-                                          2,
-                                          "suggested",
-                                          setIsLoadingChoicingCGPS,
-                                          fetchOneLOS
-                                        );
-                                      } else {
-                                        selectCGPS_toWorkWith(
-                                          alt.id,
-                                          2,
-                                          "original",
-                                          setIsLoadingChoicingCGPS,
-                                          fetchOneLOS
-                                        );
-                                      }
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`CGPS-${alt.id}`}
-                                  className="w-[24px] h-[24px] rounded-full border-2 border-gray-400 peer-checked:bg-primary flex items-center justify-center cursor-pointer"
-                                >
-                                  <svg
-                                    className="text-white hidden"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="12"
-                                    height="10"
-                                    viewBox="0 0 12 10"
-                                    fill="none"
-                                  >
-                                    <path
-                                      d="M4 9.4L0 5.4L1.4 4L4 6.6L10.6 0L12 1.4L4 9.4Z"
-                                      fill="white"
-                                    />
-                                  </svg>
-                                </label>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-
+                  <LosValidationLargeScreens
+                    order={order}
+                    setMarkers={setMarkers}
+                    isLoadingChoicingCGPS={isLoadingChoicingCGPS}
+                    setIsLoadingChoicingCGPS={setIsLoadingChoicingCGPS}
+                    fetchOneLOS={fetchOneLOS}
+                  />
+                  <LosValidationSmallScreens
+                    order={order}
+                    setMarkers={setMarkers}
+                    isLoadingChoicingCGPS={isLoadingChoicingCGPS}
+                    setIsLoadingChoicingCGPS={setIsLoadingChoicingCGPS}
+                    fetchOneLOS={fetchOneLOS}
+                  />
                   <button
                     className="flex items-center justify-center rounded-[30px] font-semibold leading-5 py-[10px] px-[30px] text-white bg-primary"
                     onClick={() => {
@@ -1677,371 +1383,26 @@ const OrderDetails = () => {
           ) : (
             <div className="flex flex-col items-start gap-8">
               <h2 className="text-[20px] font-semibold text-n800">Los order</h2>
-              <div className="flex flex-col w-full px-[25px]">
-                <div className="flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4">
-                  {losAltTabHeader.map((header, index) => {
-                    return (
-                      <span
-                        key={index}
-                        className={`flex items-center justify-center text-[14px] text-n800 font-medium w-[${header.width}]`}
-                      >
-                        {header.title}
-                      </span>
-                    );
-                  })}
-                </div>
-                {order.alternative_far_ends.map((alt, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className={`flex items-center w-full border-b-[1px] border-b-[#E6EDFF] py-4 ${
-                        !order.line_of_sight.execute_with_all_alternatives &&
-                        index !== 0 &&
-                        (order.alternative_far_ends[index - 1].los_status ===
-                          null ||
-                          order.alternative_far_ends[index - 1].los_status ===
-                            1)
-                          ? "cursor-not-allowed pointer-events-none"
-                          : ""
-                      }`}
-                    >
-                      <div className="w-[17%] flex items-center justify-center">
-                        <span
-                          className={`relative flex items-center justify-between rounded-[25px] px-[22px] py-[5px] text-[14px] group  ${
-                            !order.line_of_sight
-                              .execute_with_all_alternatives &&
-                            index !== 0 &&
-                            (order.alternative_far_ends[index - 1]
-                              .los_status === null ||
-                              order.alternative_far_ends[index - 1]
-                                .los_status === 1)
-                              ? "bg-n300 text-n500"
-                              : order.line_of_sight.near_end_accessibility
-                              ? alt.executed.near_end
-                                ? "bg-[#48C1B521] text-[#48C1B5] cursor-pointer"
-                                : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
-                              : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
-                          }`}
-                          onClick={() => {
-                            setSelectedSiteInfo(() => ({
-                              losId: order.line_of_sight.id,
-                              altId: alt.id,
-                              site_type: 1,
-                              site_location:
-                                order.line_of_sight.near_end_location,
-                              losStatus: alt.los_status,
-                              accessibility:
-                                order.line_of_sight.near_end_accessibility,
-                              image_count: alt.image_count.near_end,
-                              siteIndex: index,
-                              secondSiteCode: alt.site_location.site_code,
-                            }));
-
-                            handleOpenDialog(executeLosPopupRef);
-                          }}
-                        >
-                          <span className="truncate">
-                            {order.line_of_sight.near_end_location.site_code}
-                          </span>
-
-                          {/* Gallery Icon and Image Count */}
-                          <div className="absolute right-[-20px] top-[7px] transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 flex items-center gap-1 text-gray-700 p-1 rounded-full bg-n300 shadow-lg transition-opacity duration-300">
-                            {" "}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="w-[14px] h-[14px]"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M21 20H3V4h18v16zM5 18h14V6H5v12zm7-8c-1.38 0-2.5-1.12-2.5-2.5S10.62 5 12 5s2.5 1.12 2.5 2.5S13.38 10 12 10zm0-1c.83 0 1.5-.67 1.5-1.5S12.83 6 12 6s-1.5.67-1.5 1.5S11.17 9 12 9zm-5 9l3.5-4.5 2.5 3 4-6 5 7H7z" />
-                            </svg>
-                            <span className="text-[11px] font-medium">
-                              {alt.image_count.near_end || 0}
-                            </span>
-                          </div>
-                        </span>
-                      </div>
-                      <div className="w-[17%] flex items-center justify-center">
-                        <span
-                          className={`relative rounded-[25px] px-[22px] py-[5px]  text-[14px] group  ${
-                            !order.line_of_sight
-                              .execute_with_all_alternatives &&
-                            index !== 0 &&
-                            (order.alternative_far_ends[index - 1]
-                              .los_status === null ||
-                              order.alternative_far_ends[index - 1]
-                                .los_status === 1)
-                              ? "bg-n300 text-n500"
-                              : alt.far_end_accessibility
-                              ? alt.executed.far_end
-                                ? "bg-[#48C1B521] text-[#48C1B5] cursor-pointer"
-                                : "bg-[#FFC46B42] text-[#FFAA29] cursor-pointer"
-                              : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
-                          }`}
-                          onClick={() => {
-                            setSelectedSiteInfo(() => ({
-                              losId: order.line_of_sight.id,
-                              altId: alt.id,
-                              site_type: 2,
-                              site_location: alt.site_location,
-                              losStatus: alt.los_status,
-                              accessibility: alt.far_end_accessibility,
-                              image_count: alt.image_count.far_end,
-                              secondSiteCode:
-                                order.line_of_sight.near_end_location.site_code,
-                            }));
-                            handleOpenDialog(executeLosPopupRef);
-                          }}
-                        >
-                          {alt.site_location.site_code}
-
-                          {/* Gallery Icon and Image Count */}
-                          <div className="absolute right-[-20px] top-[7px] transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 flex items-center gap-1 text-gray-700 p-1 rounded-full bg-n300 shadow-lg transition-opacity duration-300">
-                            {" "}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="w-[14px] h-[14px]"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M21 20H3V4h18v16zM5 18h14V6H5v12zm7-8c-1.38 0-2.5-1.12-2.5-2.5S10.62 5 12 5s2.5 1.12 2.5 2.5S13.38 10 12 10zm0-1c.83 0 1.5-.67 1.5-1.5S12.83 6 12 6s-1.5.67-1.5 1.5S11.17 9 12 9zm-5 9l3.5-4.5 2.5 3 4-6 5 7H7z" />
-                            </svg>
-                            <span className="text-[11px] font-medium">
-                              {alt.image_count.far_end || 0}
-                            </span>
-                          </div>
-                        </span>
-                      </div>
-                      <div className="w-[17%] flex items-end gap-3 justify-center">
-                        <span
-                          className={`text-[15px] ${
-                            alt.los_status === 1
-                              ? "text-[#48C1B5]"
-                              : alt.los_status === 2
-                              ? "text-[#F5A623]"
-                              : alt.los_status === 3
-                              ? "text-[#DB2C2C]"
-                              : "text-n500"
-                          } `}
-                        >
-                          {alt.los_status === 1
-                            ? "Positive"
-                            : alt.los_status === 2
-                            ? "Critical"
-                            : alt.los_status === 3
-                            ? "Negative"
-                            : "unknown"}
-                        </span>
-                        <div className="relative">
-                          <svg
-                            className="cursor-pointer"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            onClick={() => handleDropdownToggle(index)}
-                          >
-                            <g clip-path="url(#clip0_3005_9269)">
-                              <path
-                                fill-rule="evenodd"
-                                clip-rule="evenodd"
-                                d="M8.70855 10.7063C8.52105 10.8935 8.26689 10.9987 8.00189 10.9987C7.73689 10.9987 7.48272 10.8935 7.29522 10.7063L3.52322 6.9356C3.33571 6.748 3.23041 6.4936 3.23047 6.22836C3.23053 5.96313 3.33596 5.70878 3.52355 5.52127C3.71115 5.33376 3.96555 5.22845 4.23079 5.22852C4.49603 5.22858 4.75038 5.334 4.93789 5.5216L8.00189 8.5856L11.0659 5.5216C11.2544 5.33935 11.507 5.23844 11.7692 5.24059C12.0314 5.24274 12.2822 5.34779 12.4677 5.53312C12.6532 5.71844 12.7585 5.9692 12.7609 6.2314C12.7633 6.4936 12.6626 6.74625 12.4806 6.93493L8.70922 10.7069L8.70855 10.7063Z"
-                                fill="#A0A3BD"
-                              />
-                            </g>
-                            <defs>
-                              <clipPath id="clip0_3005_9269">
-                                <rect width="16" height="16" fill="white" />
-                              </clipPath>
-                            </defs>
-                          </svg>
-                          {openDropdownIndex === index && (
-                            <div className="absolute flex flex-col items-center gap-[10px] z-40 bg-white shadow-lg shadow-slate-300 rounded-[22px] p-4">
-                              {alt.los_status !== 1 && (
-                                <span
-                                  className="text-[14px] text-[#48C1B5] cursor-pointer"
-                                  aria-disabled={isLosStatusLoading}
-                                  onClick={() => {
-                                    {
-                                      alt.los_status
-                                        ? updateLosResult(
-                                            alt.id,
-                                            1,
-                                            setIsLosStatusLoading,
-                                            setOpenDropdownIndex,
-                                            fetchOneLOS
-                                          )
-                                        : losResult(
-                                            alt.id,
-                                            1,
-                                            setIsLosStatusLoading,
-                                            setOpenDropdownIndex,
-                                            fetchOneLOS
-                                          );
-                                    }
-                                  }}
-                                >
-                                  Positive
-                                </span>
-                              )}
-                              {alt.los_status !== 2 && (
-                                <span
-                                  className="text-[14px] text-[#F5A623] cursor-pointer"
-                                  onClick={() => {
-                                    {
-                                      alt.los_status
-                                        ? updateLosResult(
-                                            alt.id,
-                                            2,
-                                            setIsLosStatusLoading,
-                                            setOpenDropdownIndex,
-                                            fetchOneLOS
-                                          )
-                                        : losResult(
-                                            alt.id,
-                                            2,
-                                            setIsLosStatusLoading,
-                                            setOpenDropdownIndex,
-                                            fetchOneLOS
-                                          );
-                                    }
-                                  }}
-                                >
-                                  Critical
-                                </span>
-                              )}
-                              {alt.los_status !== 3 && (
-                                <span
-                                  className="text-[14px] text-[#DB2C2C] cursor-pointer"
-                                  onClick={() => {
-                                    {
-                                      alt.los_status
-                                        ? updateLosResult(
-                                            alt.id,
-                                            3,
-                                            setIsLosStatusLoading,
-                                            setOpenDropdownIndex,
-                                            fetchOneLOS
-                                          )
-                                        : losResult(
-                                            alt.id,
-                                            3,
-                                            setIsLosStatusLoading,
-                                            setOpenDropdownIndex,
-                                            fetchOneLOS
-                                          );
-                                    }
-                                  }}
-                                >
-                                  Negative
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="w-[16%] flex items-center justify-center">
-                        <span
-                          className={`text-[14px]  ${
-                            !order.line_of_sight
-                              .execute_with_all_alternatives &&
-                            index !== 0 &&
-                            (order.alternative_far_ends[index - 1]
-                              .los_status === null ||
-                              order.alternative_far_ends[index - 1]
-                                .los_status === 1)
-                              ? "text-n500"
-                              : "text-n800"
-                          }`}
-                        >
-                          {
-                            calculateAzimuths(
-                              {
-                                latitude:
-                                  order.line_of_sight.near_end_location
-                                    .latitude,
-                                longitude:
-                                  order.line_of_sight.near_end_location
-                                    .longitude,
-                              },
-                              {
-                                latitude: alt.site_location.latitude,
-                                longitude: alt.site_location.longitude,
-                              }
-                            ).azimuthNEToFE
-                          }
-                          °
-                        </span>
-                      </div>
-                      <div className="w-[16%] flex items-center justify-center">
-                        <span
-                          className={`text-[14px]  ${
-                            !order.line_of_sight
-                              .execute_with_all_alternatives &&
-                            index !== 0 &&
-                            (order.alternative_far_ends[index - 1]
-                              .los_status === null ||
-                              order.alternative_far_ends[index - 1]
-                                .los_status === 1)
-                              ? "text-n500"
-                              : "text-n800"
-                          }`}
-                        >
-                          {" "}
-                          {
-                            calculateAzimuths(
-                              {
-                                latitude: alt.site_location.latitude,
-                                longitude: alt.site_location.longitude,
-                              },
-                              {
-                                latitude:
-                                  order.line_of_sight.near_end_location
-                                    .latitude,
-                                longitude:
-                                  order.line_of_sight.near_end_location
-                                    .longitude,
-                              }
-                            ).azimuthFEToNE
-                          }
-                          °
-                        </span>
-                      </div>
-                      <div className="w-[16%] flex items-center justify-center">
-                        <span
-                          className={`text-[14px]  ${
-                            !order.line_of_sight
-                              .execute_with_all_alternatives &&
-                            index !== 0 &&
-                            (order.alternative_far_ends[index - 1]
-                              .los_status === null ||
-                              order.alternative_far_ends[index - 1]
-                                .los_status === 1)
-                              ? "text-n500"
-                              : "text-n800"
-                          }`}
-                        >
-                          {" "}
-                          {calculateDistance(
-                            {
-                              latitude: alt.site_location.latitude,
-                              longitude: alt.site_location.longitude,
-                            },
-                            {
-                              latitude:
-                                order.line_of_sight.near_end_location.latitude,
-                              longitude:
-                                order.line_of_sight.near_end_location.longitude,
-                            }
-                          ).toFixed(2)}
-                          km
-                        </span>
-                      </div>{" "}
-                    </div>
-                  );
-                })}
-              </div>
+              <LosOrdersLargeScreens
+                order={order}
+                setSelectedSiteInfo={setSelectedSiteInfo}
+                executeLosPopupRef={executeLosPopupRef}
+                openDropdownIndex={openDropdownIndex}
+                setOpenDropdownIndex={setOpenDropdownIndex}
+                isLosStatusLoading={isLosStatusLoading}
+                setIsLosStatusLoading={setIsLosStatusLoading}
+                fetchOneLOS={fetchOneLOS}
+              />
+              <LosOrdersSmallScreens
+                order={order}
+                setSelectedSiteInfo={setSelectedSiteInfo}
+                executeLosPopupRef={executeLosPopupRef}
+                openDropdownIndex={openDropdownIndex}
+                setOpenDropdownIndex={setOpenDropdownIndex}
+                isLosStatusLoading={isLosStatusLoading}
+                setIsLosStatusLoading={setIsLosStatusLoading}
+                fetchOneLOS={fetchOneLOS}
+              />
               {((order.line_of_sight.execute_with_all_alternatives &&
                 order.alternative_far_ends.every(
                   (alt) => alt.executed.near_end && alt.executed.far_end
