@@ -1418,7 +1418,7 @@ const OrderDetails = () => {
                       alt.executed.near_end &&
                       alt.executed.far_end
                   ))) &&
-                order.line_of_sight.status === 2 && (
+                order.line_of_sight.status === 2 || order.line_of_sight.status === 5 && (
                   <div
                     className={`w-full sm:w-[97%] flex items-center ${
                       getRole() === 2 ? "justify-between" : "justify-end"
