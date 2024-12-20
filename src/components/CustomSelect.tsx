@@ -7,7 +7,7 @@ interface CustomSelectProps<T> {
   defaultValue?: string;
 }
 
-function CustomSelect<T>({ options, setState, onChangeCallback, defaultValue }: CustomSelectProps<T>) {
+function  CustomSelect<T>({ options, setState, onChangeCallback, defaultValue }: CustomSelectProps<T>) {
   const [selectedValue, setSelectedValue] = useState(defaultValue || options[0]);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -25,7 +25,7 @@ function CustomSelect<T>({ options, setState, onChangeCallback, defaultValue }: 
   return (
     <div className="relative w-full">
       <div
-        className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] bg-white text-n700 flex items-center justify-between cursor-pointer"
+        className="w-full rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] bg-white text-n700 flex items-center justify-between cursor-pointer sm:text-[16px] text-[13px]"
         onClick={() => setIsOpen(!isOpen)}
       >
         {selectedValue}

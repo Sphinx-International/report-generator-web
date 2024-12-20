@@ -279,14 +279,14 @@ const SiteAdditionalPicsPopup = forwardRef<
             </div>
           ) : (
             <div className="flex flex-col items-start gap-[18px] w-full">
-              <div className="w-[90%] relative flex items-center justify-between gap-4">
+              <div className="w-[90%] relative flex items-center justify-between gap-3 sm:gap-4">
                 <input
                   type="text"
                   name="title"
                   id="title"
                   value={fourthFormValues.title}
                   required={true}
-                  className="text-[17px] text-primary font-medium px-[18px] py-3 rounded-[19px] border-[2px] border-n300 w-full "
+                  className="sm:text-[17px] text-[15px] text-primary font-medium px-[18px] py-2 sm:py-3 rounded-[19px] border-[2px] border-n300 w-full "
                   placeholder="Enter a title.."
                   onChange={(e) => {
                     handleChange(e, setFourthFormValues);
@@ -297,10 +297,8 @@ const SiteAdditionalPicsPopup = forwardRef<
                     onClick={() => {
                       setShowSuggList(!showSuggList);
                     }}
-                    className="cursor-pointer"
+                    className="cursor-pointer w-[30px] h-[30px] sm:w-[38px] sm:h-[38px] "
                     xmlns="http://www.w3.org/2000/svg"
-                    width="38px"
-                    height="38px"
                     viewBox="0 0 24 24"
                     fill="none"
                   >
@@ -338,12 +336,12 @@ const SiteAdditionalPicsPopup = forwardRef<
                     </g>
                   </svg>
                   {showSuggList && (
-                    <div className="absolute right-0 z-50 cursor-pointer rounded-[18px] bg-white shadow-lg shadow-slate-300 py-3 flex flex-col items-start gap-2">
+                    <div className="absolute -right-12 sm:right-0 z-50 cursor-pointer rounded-[18px] bg-white shadow-lg shadow-slate-300 py-3 flex flex-col items-start gap-2">
                       {LosSuggestionTitle.map((title, index) => {
                         return (
                           <span
                             key={index}
-                            className="w-full py-[5px] hover:bg-slate-200 font-medium text-nowrap text-[14px] px-3"
+                            className="w-full py-[5px] hover:bg-slate-200 font-semibold sm:font-medium text-nowrap text-[11px] sm:text-[14px] px-3"
                             onClick={() => {
                               setFourthFormValues((prev) => ({
                                 ...prev,
@@ -485,7 +483,7 @@ const SiteAdditionalPicsPopup = forwardRef<
             </div>
           )}
           <span
-            className={` text-[15px] ${
+            className={` text-[13px] sm:text-[15px] ${
               downloadImg ||
               (file && fourthFormValues.title !== "" && fourthFormValues.title)
                 ? "cursor-pointer text-primary"
@@ -518,13 +516,13 @@ const SiteAdditionalPicsPopup = forwardRef<
 
         <div className="flex items-center gap-[6px]">
           <button
-            className="rounded-[86px] px-[45px] py-[10px] bg-n300 text-[14px] text-n600 font-semibold border-[1px] border-n400"
+            className="rounded-[86px] px-[25px] sm:px-[45px] py-[7px] bg-n300 text-[14px] text-n600 font-semibold border-[1px] border-n400"
             onClick={handlePrev}
           >
             Previous
           </button>
           <button
-            className="rounded-[86px] px-[45px] py-[10px] bg-primary text-[14px] text-white font-semibold border-[1px] border-primary flex items-center justify-center"
+            className="rounded-[86px] px-[25px] sm:px-[45px] py-[7px] bg-primary text-[14px] text-white font-semibold border-[1px] border-primary flex items-center justify-center"
             onClick={handleFourthSubmit}
           >
             {isLoadingSubmit ? (

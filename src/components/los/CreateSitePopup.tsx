@@ -130,7 +130,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                 latitude: formValue.latitude!,
                 longitude: formValue.longitude!,
               },
-              setloading,
+              setloading
             );
         setvalidationErrors({});
       } else {
@@ -151,7 +151,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
     return (
       <dialog
         ref={ref}
-        className="bg-white rounded-[40px] px-[32px] pt-[24px] pb-[40px] hidden flex-col items-center gap-[20px] sm:w-[55%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] overflow-visible"
+        className="bg-white rounded-[40px] px-[32px] pt-[24px] pb-[40px] hidden flex-col items-center gap-[20px] sm:w-[78%] lg:w-[55%] w-[90%] absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] overflow-visible"
       >
         {currPage === 1 ? (
           <div className="flex flex-col gap-5 items-end ">
@@ -189,7 +189,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                     <label
                       htmlFor="site-code"
-                      className="text-[15px] text-550 leading-[20px] font-medium"
+                      className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                     >
                       Site Code
                     </label>
@@ -200,14 +200,14 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     name="code"
                     value={formValue.code}
                     onChange={handleChange}
-                    className={`w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px]`}
+                    className={`w-full rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] sm:text-[16px] text-[13px]`}
                     placeholder={"Enter site code"}
                   />
                 </div>
                 <div className="flex flex-col items-start gap-[5px] w-[50%]">
                   <label
                     htmlFor="region"
-                    className="text-[15px] text-550 leading-[20px] font-medium"
+                    className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                   >
                     Region
                   </label>
@@ -217,9 +217,9 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-4 w-full">
+              <div className="flex items-center gap-4 w-full flex-wrap sm:flex-nowrap">
                 <div
-                  className={`flex flex-col items-start gap-[5px] w-[33%%] ${
+                  className={`flex flex-col items-start gap-[5px] w-[33%] flex-grow ${
                     method === "create" ? "flex" : "hidden"
                   }`}
                 >
@@ -250,7 +250,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                     <label
                       htmlFor="wilaya"
-                      className="text-[15px] text-550 leading-[20px] font-medium"
+                      className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                     >
                       Wilaya
                     </label>
@@ -261,7 +261,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     name="state"
                     value={formValue.state}
                     onChange={handleChange}
-                    className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px]"
+                    className="w-full rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] sm:text-[16px] text-[13px]"
                     placeholder="Enter wilaya"
                     maxLength={15}
                   />
@@ -294,7 +294,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                     <label
                       htmlFor="daira"
-                      className="text-[15px] text-550 leading-[20px] font-medium"
+                      className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                     >
                       Daira
                     </label>
@@ -305,7 +305,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     name="district"
                     value={formValue.district}
                     onChange={handleChange}
-                    className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px]"
+                    className="w-full rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] sm:text-[16px] text-[13px]"
                     placeholder="select daira"
                     maxLength={20}
                   />
@@ -338,7 +338,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                     <label
                       htmlFor="baladia"
-                      className="text-[15px] text-550 leading-[20px] font-medium"
+                      className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                     >
                       Baladia
                     </label>
@@ -349,7 +349,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     name="municipality"
                     value={formValue.municipality}
                     onChange={handleChange}
-                    className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px]"
+                    className="w-full rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] sm:text-[16px] text-[13px]"
                     placeholder="select baladia"
                     maxLength={30}
                   />
@@ -383,16 +383,16 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                   <label
                     htmlFor="latitude"
-                    className="text-[15px] text-550 leading-[20px] font-medium"
+                    className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                   >
                     Latitude
                   </label>
                 </div>
-                <div className="flex items-center w-full gap-3">
+                <div className="flex items-center justify-center w-full gap-3 flex-wrap sm:flex-nowrap">
                   <input
                     type="text"
                     id="degrees"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                     placeholder="Degrees"
                     min={0}
                     max={90}
@@ -413,7 +413,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   <input
                     type="text"
                     id="minutes"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                     placeholder="Minute"
                     min={0}
                     max={59}
@@ -435,7 +435,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   <input
                     type="text" // Change type to "text" to allow commas
                     id="latitude-second"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                     placeholder="Second"
                     min={0}
                     max={59.99}
@@ -511,7 +511,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       </div>
                       <label
                         htmlFor="north"
-                        className="text-primary text-[15px] font-medium leading-[15px]"
+                        className="text-primary text-[13px] sm:text-[15px] font-medium leading-[15px]"
                       >
                         N
                       </label>
@@ -541,7 +541,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       </div>
                       <label
                         htmlFor="south"
-                        className="text-primary text-[15px] font-medium leading-[15px]"
+                        className="text-primary text-[13px] sm:text-[15px] font-medium leading-[15px]"
                       >
                         S
                       </label>
@@ -554,7 +554,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   name="latitude"
                   value={formValue.latitude || ""}
                   placeholder="Decimal"
-                  className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
+                  className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-full sm:text-[16px] text-[13px]"
                   onChange={(e) => {
                     let value = e.target.value.replace(",", "."); // Replace comma with dot
 
@@ -627,16 +627,16 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                   <label
                     htmlFor="longitude"
-                    className="text-[15px] text-550 leading-[20px] font-medium"
+                    className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                   >
                     Longitude
                   </label>
                 </div>
-                <div className="flex items-center w-full gap-3">
+                <div className="flex items-center justify-center w-full gap-3 flex-wrap sm:flex-nowrap">
                   <input
                     type="text"
                     id="longitude-degree"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                     placeholder="Degree"
                     min={0}
                     max={180}
@@ -658,7 +658,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   <input
                     type="text"
                     id="longitude-minute"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                     placeholder="Minute"
                     min={0}
                     max={59}
@@ -680,7 +680,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   <input
                     type="text" // Change type to "text" to allow commas
                     id="longitude-second"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                    className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                     placeholder="Second"
                     name="seconds"
                     maxLength={12}
@@ -753,7 +753,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       </div>
                       <label
                         htmlFor="east"
-                        className="text-primary text-[15px] font-medium leading-[15px]"
+                        className="text-primary text-[13px] sm:text-[15px] font-medium leading-[15px]"
                       >
                         E
                       </label>
@@ -783,7 +783,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                       </div>
                       <label
                         htmlFor="west"
-                        className="text-primary text-[15px] font-medium leading-[15px]"
+                        className="text-primary text-[13px] sm:text-[15px] font-medium leading-[15px]"
                       >
                         W
                       </label>
@@ -796,7 +796,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                   id="longitude"
                   value={formValue.longitude || ""}
                   placeholder="Decimal"
-                  className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
+                  className="rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] w-full sm:text-[16px] text-[13px]"
                   onChange={(e) => {
                     let value = e.target.value.replace(",", "."); // Replace comma with dot
 
@@ -847,7 +847,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
             </div>
             <div className="flex items-center gap-[6px]">
               <button
-                className="py-[10px] w-[130px] rounded-[86px] border-[1px] border-n400 bg-n300 text-[14px] text-n600 font-semibold"
+                className="py-[6px] sm:py-[10px] w-[100px] sm:w-[130px] rounded-[86px] border-[1px] border-n400 bg-n300 text-[14px] text-n600 font-semibold"
                 onClick={() => {
                   handleCloseDialog(ref);
                 }}
@@ -855,7 +855,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                 Cancel
               </button>
               <button
-                className="py-[10px] w-[130px] rounded-[86px] border-[1px] border-primary bg-primary text-[14px] text-white font-semibold"
+                className="py-[6px] sm:py-[10px] w-[100px] sm:w-[130px] rounded-[86px] border-[1px] border-primary bg-primary text-[14px] text-white font-semibold"
                 onClick={(e) => {
                   handleFirstSubmit(e);
                 }}
@@ -896,7 +896,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                     <label
                       htmlFor="building_height"
-                      className="text-[15px] text-550 leading-[20px] font-medium"
+                      className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                     >
                       Building height
                     </label>
@@ -906,7 +906,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     name="building_height"
                     value={formValue.building_height ?? ""}
                     id="building-height"
-                    className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px]"
+                    className="w-full rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] sm:text-[16px] text-[13px]"
                     placeholder="XX m"
                     disabled={siteType === 4 || siteType === 5 ? true : false}
                     onChange={(e) => {
@@ -945,7 +945,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
 
                     <label
                       htmlFor="site_height"
-                      className="text-[15px] text-550 leading-[20px] font-medium"
+                      className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                     >
                       Structure height
                     </label>
@@ -956,7 +956,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                     name="site_height"
                     value={formValue.site_height ?? ""}
                     onChange={handleChange}
-                    className="w-full rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px]"
+                    className="w-full rounded-[46px] h-[35px] sm:h-[45px] border-[1px] border-n300 px-[24px] sm:text-[16px] text-[13px]"
                     placeholder="XX m"
                   />
                 </div>
@@ -965,7 +965,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                 <div className="flex flex-col items-start gap-[5px] w-full">
                   <label
                     htmlFor="type"
-                    className="text-[15px] text-550 leading-[20px] font-medium"
+                    className="text-[13px] sm:text-[15px] text-550 leading-[20px] font-medium"
                   >
                     Type of Site
                   </label>
@@ -984,7 +984,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
             </div>
             <div className="flex items-center gap-[6px]">
               <button
-                className="py-[10px] w-[130px] rounded-[86px] border-[1px] border-n400 bg-n300 text-[14px] text-n600 font-semibold"
+                className="py-[6px] sm:py-[10px] w-[100px] sm:w-[130px] rounded-[86px] border-[1px] border-n400 bg-n300 text-[14px] text-n600 font-semibold"
                 onClick={() => {
                   setCurrPage(1);
                 }}
@@ -992,15 +992,17 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
                 previous
               </button>
               <button
-                className="py-[10px] w-[130px] flex items-center justify-center rounded-[86px] border-[1px] border-primary bg-primary text-[14px] text-white font-semibold"
+                className="py-[6px] sm:py-[10px] w-[100px] sm:w-[130px] flex items-center justify-center rounded-[86px] border-[1px] border-primary bg-primary text-[14px] text-white font-semibold"
                 onClick={(e) => {
                   handleSecondSubmit(e);
                 }}
               >
                 {loading ? (
                   <RotatingLines strokeColor="white" width="20" />
+                ) : method === "create" ? (
+                  "Create"
                 ) : (
-                  method === "create" ? "Create" : "Relocate"
+                  "Relocate"
                 )}
               </button>
             </div>

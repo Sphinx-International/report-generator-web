@@ -353,7 +353,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     name="hba"
                     id="hba"
                     placeholder="Enter hba"
-                    className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px]"
+                    className="rounded-[19px] h-[47px] border-[1px] border-n400 w-full px-[23px] sm:text-[16px] text-[13px]"
                     onChange={(e) => {
                       if (editing) {
                         handleChange(e, setEditingFormValues);
@@ -413,11 +413,11 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       Latitude
                     </label>
                   </div>
-                  <div className="flex items-center w-full gap-3">
+                  <div className="flex items-center justify-center w-full gap-3 flex-wrap sm:flex-nowrap">
                     <input
                       type="text"
                       id="degrees"
-                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                       placeholder="Degrees"
                       min={0}
                       max={90}
@@ -465,7 +465,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     <input
                       type="text"
                       id="minutes"
-                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                       placeholder="Minute"
                       min={0}
                       max={59}
@@ -514,7 +514,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     <input
                       type="text" // Change type to "text" to allow commas
                       id="latitude-second"
-                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                       placeholder="Second"
                       min={0}
                       max={59.99}
@@ -694,7 +694,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                         : formValues.latitude ?? ""
                     }
                     placeholder="Decimal"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
+                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full sm:text-[16px] text-[13px]"
                     disabled={
                       editing
                         ? false
@@ -790,11 +790,11 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                       Longitude
                     </label>
                   </div>
-                  <div className="flex items-center w-full gap-3">
+                  <div className="flex items-center justify-center w-full gap-3 flex-wrap sm:flex-nowrap">
                     <input
                       type="text"
                       id="longitude-degree"
-                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                       placeholder="Degree"
                       min={0}
                       max={180}
@@ -843,7 +843,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     <input
                       type="text"
                       id="longitude-minute"
-                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                       placeholder="Minute"
                       min={0}
                       max={59}
@@ -892,7 +892,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     <input
                       type="text"
                       id="longitude-second"
-                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%]"
+                      className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-[28%] flex-grow sm:text-[16px] text-[13px]"
                       placeholder="Second"
                       name="seconds"
                       maxLength={12}
@@ -1069,7 +1069,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                         : formValues.longitude ?? ""
                     }
                     placeholder="Decimal"
-                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full"
+                    className="rounded-[46px] h-[45px] border-[1px] border-n300 px-[24px] w-full sm:text-[16px] text-[13px]"
                     disabled={
                       editing
                         ? false
@@ -1171,7 +1171,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                     htmlFor="access"
                     className={`font-medium text-n600  ${
                       site ? "cursor-not-allowed" : "cursor-pointer"
-                    }`}
+                    } sm:text-[16px] text-[14px]`}
                   >
                     No access{" "}
                   </label>
@@ -1226,7 +1226,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
               <div className="flex items-center gap-2">
                 {(site?.hba || site?.hba === 0) && (
                   <button
-                    className={`rounded-[86px] px-[45px] py-[10px]  text-[14px]  font-semibold border-[1px]  flex items-center justify-center border-n400 bg-n300 text-n600`}
+                    className={`rounded-[86px] px-[22px] sm:px-[45px] py-[7px] sm:py-[10px]  text-[14px]  font-semibold border-[1px]  flex items-center justify-center border-n400 bg-n300 text-n600`}
                     onClick={handleSeconderyButton}
                     disabled={!site}
                   >
@@ -1241,7 +1241,7 @@ const LosExcutionPopup = forwardRef<HTMLDialogElement, LosPopupProps>(
                 )}
 
                 <button
-                  className={`rounded-[86px] px-[45px] py-[10px]  text-[14px]  font-semibold border-[1px]  flex items-center justify-center ${
+                  className={`rounded-[86px] px-[22px] sm:px-[45px] py-[7px] sm:py-[10px] text-[14px]  font-semibold border-[1px]  flex items-center justify-center ${
                     siteInfo.losStatus
                       ? "border-primary bg-primary text-white"
                       : "border-n400 bg-n400 text-n500"

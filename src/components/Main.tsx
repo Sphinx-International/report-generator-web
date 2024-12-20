@@ -291,7 +291,7 @@ const Main: React.FC<MainProps> = (props) => {
                     if (props.page === "los orders") {
                       setVisibleMonthCalender(!visibleMonthCalender);
                     }
-                    props.handleAddPrimaryButtonClick;
+                    props.handleAddPrimaryButtonClick!();
                   }}
                 >
                   {props.functionalties.primaryFunc.name}
@@ -427,12 +427,33 @@ const Main: React.FC<MainProps> = (props) => {
 
         <div className="flex items-center gap-3 flex-row-reverse">
           {props.functionalties && props.functionalties.primaryFunc && (
-            <button
-              className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-              onClick={props.handleAddPrimaryButtonClick}
-            >
-              {props.functionalties && props.functionalties.primaryFunc.name}
-            </button>
+            <div className="relative">
+              <button
+                className={`hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] rounded-[21px] ${
+                  props.page === "los orders"
+                    ? "text-primary border-[2px] border-primary"
+                    : "text-white bg-primary"
+                }`}
+                onClick={() => {
+                  if (props.page === "los orders") {
+                    setVisibleMonthCalender(!visibleMonthCalender);
+                  }
+                  props.handleAddPrimaryButtonClick;
+                }}
+              >
+                {props.functionalties && props.functionalties.primaryFunc.name}
+              </button>
+              {props.page === "los orders" && visibleMonthCalender && (
+                <MonthCalender
+                  setMonth={props.functionalties.setState!}
+                  selectedMonth={props.functionalties.State as number}
+                  setYear={props.functionalties.setState2!}
+                  selectedYear={props.functionalties.State2 as number}
+                  setVisibility={setVisibleMonthCalender}
+                  setFilter={setSelectedFilter}
+                />
+              )}
+            </div>
           )}
 
           {props.functionalties &&
