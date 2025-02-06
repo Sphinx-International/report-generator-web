@@ -272,6 +272,8 @@ const UserManagment = () => {
                               ? "Coordinator"
                               : user.role === 2
                               ? "Engineer"
+                              : user.role === 3
+                              ? "Client"
                               : null}
                           </span>
                           <div className="w-[12%] text-center">

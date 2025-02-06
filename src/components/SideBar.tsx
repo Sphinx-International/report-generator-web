@@ -118,7 +118,7 @@ const SideBar = () => {
             {sideBarTab.map((item, index) => {
               if (
                 (getRole() === 1 && item.access === "admin") ||
-                (getRole() === 2 && item.access !== "all")
+                ((getRole() === 2 || getRole() === 3) && item.access !== "all")
               )
                 return null;
 

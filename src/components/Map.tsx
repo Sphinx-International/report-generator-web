@@ -27,7 +27,6 @@ const MapWithMarkers: React.FC<MapProps> = ({
     width: "100%",
     height: "400px",
   };
-  console.log(markers);
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: apiKey,
   });

@@ -18,6 +18,7 @@ import Pagination from "../../components/Pagination";
 import downloadIcon from "/icons/uploadIcon.png";
 import uploadIcon from "/icons/uploadIcon.png";
 import { downloadSiteCsv, uploadCSV } from "../../func/los/Sites";
+import { getRole } from "../../func/getUserRole";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -165,86 +166,88 @@ const Sites = () => {
               <h3 className="text-[18px] font-semibold leading-[30px] text-n800 lg:inline-block hidden">
                 Sites
               </h3>
-              <div className="flex items-center gap-3">
-                <button
-                  className="px-[18px] py-[8px] rounded-[20px] border-[1.5px] border-n400 text-n600 text-[14px] font-semibold flex items-center justify-center gap-1"
-                  onClick={() => {
-                    downloadSiteCsv(setIsloadingDownloadCsv);
-                  }}
-                >
-                  {isloadingDownloadCsv ? (
-                    <RotatingLines
-                      strokeWidth="4"
-                      strokeColor="#A0A3BD"
-                      width="20"
-                    />
-                  ) : (
-                    "Export"
-                  )}
-                  <img src={downloadIcon} alt="download icon" />
-                </button>
-                <button
-                  className="px-[18px] py-[8px] rounded-[20px] border-[1.5px] border-n400 text-n600 text-[14px] font-semibold flex items-center gap-1"
-                  onClick={() => {
-                    if (uploadCsvInput.current) {
-                      uploadCsvInput.current.click();
-                    }
-                  }}
-                >
-                  {isloadingUploadCsv ? (
-                    <RotatingLines
-                      strokeWidth="4"
-                      strokeColor="#A0A3BD"
-                      width="20"
-                    />
-                  ) : (
-                    "Import"
-                  )}{" "}
-                  <img src={uploadIcon} alt="upload icon" />
-                </button>{" "}
-                <input
-                  type="file"
-                  accept=".csv,.xls,.xlsx"
-                  ref={uploadCsvInput}
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      uploadCSV(file, setIsloadingUploadCsv, fetchSites);
-                    }
-                  }}
-                />
-                <span
-                  onClick={() => {
-                    if (selectedSites.length !== 0) {
-                      handleOpenDialog(deleteDialogRef);
-                    }
-                  }}
-                  aria-disabled={selectedSites.length === 0 ? true : false}
-                  className={`p-[8px] bg-n200 border-[1px] border-n400 rounded-[6px] ${
-                    selectedSites.length === 0
-                      ? " cursor-not-allowed"
-                      : " cursor-pointer"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
+              {getRole() !== 3 && (
+                <div className="flex items-center gap-3">
+                  <button
+                    className="px-[18px] py-[8px] rounded-[20px] border-[1.5px] border-n400 text-n600 text-[14px] font-semibold flex items-center justify-center gap-1"
+                    onClick={() => {
+                      downloadSiteCsv(setIsloadingDownloadCsv);
+                    }}
                   >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M18.412 6.5L17.611 20.117C17.5812 20.6264 17.3577 21.1051 16.9865 21.4551C16.6153 21.8052 16.1243 22.0001 15.614 22H8.386C7.87575 22.0001 7.38475 21.8052 7.0135 21.4551C6.64226 21.1051 6.41885 20.6264 6.389 20.117L5.59 6.5H3.5V5.5C3.5 5.36739 3.55268 5.24021 3.64645 5.14645C3.74021 5.05268 3.86739 5 4 5H20C20.1326 5 20.2598 5.05268 20.3536 5.14645C20.4473 5.24021 20.5 5.36739 20.5 5.5V6.5H18.412ZM10 2.5H14C14.1326 2.5 14.2598 2.55268 14.3536 2.64645C14.4473 2.74021 14.5 2.86739 14.5 3V4H9.5V3C9.5 2.86739 9.55268 2.74021 9.64645 2.64645C9.74021 2.55268 9.86739 2.5 10 2.5ZM9 9L9.5 18H11L10.6 9H9ZM13.5 9L13 18H14.5L15 9H13.5Z"
-                      fill={`${
-                        selectedSites.length === 0 ? "#6F6C8F" : "#df0505"
-                      }`}
-                    />
-                  </svg>
-                </span>
-              </div>
+                    {isloadingDownloadCsv ? (
+                      <RotatingLines
+                        strokeWidth="4"
+                        strokeColor="#A0A3BD"
+                        width="20"
+                      />
+                    ) : (
+                      "Export"
+                    )}
+                    <img src={downloadIcon} alt="download icon" />
+                  </button>
+                  <button
+                    className="px-[18px] py-[8px] rounded-[20px] border-[1.5px] border-n400 text-n600 text-[14px] font-semibold flex items-center gap-1"
+                    onClick={() => {
+                      if (uploadCsvInput.current) {
+                        uploadCsvInput.current.click();
+                      }
+                    }}
+                  >
+                    {isloadingUploadCsv ? (
+                      <RotatingLines
+                        strokeWidth="4"
+                        strokeColor="#A0A3BD"
+                        width="20"
+                      />
+                    ) : (
+                      "Import"
+                    )}{" "}
+                    <img src={uploadIcon} alt="upload icon" />
+                  </button>{" "}
+                  <input
+                    type="file"
+                    accept=".csv,.xls,.xlsx"
+                    ref={uploadCsvInput}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        uploadCSV(file, setIsloadingUploadCsv, fetchSites);
+                      }
+                    }}
+                  />
+                  <span
+                    onClick={() => {
+                      if (selectedSites.length !== 0) {
+                        handleOpenDialog(deleteDialogRef);
+                      }
+                    }}
+                    aria-disabled={selectedSites.length === 0 ? true : false}
+                    className={`p-[8px] bg-n200 border-[1px] border-n400 rounded-[6px] ${
+                      selectedSites.length === 0
+                        ? " cursor-not-allowed"
+                        : " cursor-pointer"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M18.412 6.5L17.611 20.117C17.5812 20.6264 17.3577 21.1051 16.9865 21.4551C16.6153 21.8052 16.1243 22.0001 15.614 22H8.386C7.87575 22.0001 7.38475 21.8052 7.0135 21.4551C6.64226 21.1051 6.41885 20.6264 6.389 20.117L5.59 6.5H3.5V5.5C3.5 5.36739 3.55268 5.24021 3.64645 5.14645C3.74021 5.05268 3.86739 5 4 5H20C20.1326 5 20.2598 5.05268 20.3536 5.14645C20.4473 5.24021 20.5 5.36739 20.5 5.5V6.5H18.412ZM10 2.5H14C14.1326 2.5 14.2598 2.55268 14.3536 2.64645C14.4473 2.74021 14.5 2.86739 14.5 3V4H9.5V3C9.5 2.86739 9.55268 2.74021 9.64645 2.64645C9.74021 2.55268 9.86739 2.5 10 2.5ZM9 9L9.5 18H11L10.6 9H9ZM13.5 9L13 18H14.5L15 9H13.5Z"
+                        fill={`${
+                          selectedSites.length === 0 ? "#6F6C8F" : "#df0505"
+                        }`}
+                      />
+                    </svg>
+                  </span>
+                </div>
+              )}
             </div>
             <div className="lg:flex lg:flex-col hidden w-full h-[84%]">
               <div className="flex w-full h-[44px] border-b-[1px]">
@@ -329,18 +332,20 @@ const Sites = () => {
                               </svg>
                             </Link>
                           </span>
-                          <input
-                            type="checkbox"
-                            name="user"
-                            id={`${index}`}
-                            checked={isSelected}
-                            readOnly
-                            className="absolute left-2 top-1/2 transform -translate-y-1/2 checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCheckboxChange(site.id);
-                            }}
-                          />
+                          {getRole() !== 3 && (
+                            <input
+                              type="checkbox"
+                              name="user"
+                              id={`${index}`}
+                              checked={isSelected}
+                              readOnly
+                              className="absolute left-2 top-1/2 transform -translate-y-1/2 checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCheckboxChange(site.id);
+                              }}
+                            />
+                          )}
                         </div>
                       );
                     })}
@@ -396,7 +401,7 @@ const Sites = () => {
                         {site.region} <br /> lat: {site.location.latitude},{" "}
                         <br /> long: {site.location.longitude}
                       </span>
-                      <Link to={`/edit-site/{user.email}`}>
+                      <Link to={`/edit-site/${site.id}`}>
                         <svg
                           onClick={(e) => {
                             e.stopPropagation();

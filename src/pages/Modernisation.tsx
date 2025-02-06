@@ -395,10 +395,10 @@ const Modernisation = () => {
             searchQuery
               ? typeOfSearch === "Wo"
                 ? []
-                : ["0", "1"].includes(localStorage.getItem("role")!)
+                : ["0", "1","3"].includes(localStorage.getItem("role")!)
                 ? ["All", "Created", "Assigned", "Executed", "Closed"]
                 : ["All", "To do", "Executed"]
-              : ["0", "1"].includes(localStorage.getItem("role")!)
+              : ["0", "1","3"].includes(localStorage.getItem("role")!)
               ? ["All", "Created", "Assigned", "Executed", "Closed"]
               : ["All", "To do", "Executed", "Closed"]
           }

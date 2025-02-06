@@ -14,6 +14,7 @@ import {
 } from "../../func/los/Dms_Decimal";
 import CreateSitePopup from "../../components/los/CreateSitePopup";
 import { handleOpenDialog } from "../../func/openDialog";
+import { getRole } from "../../func/getUserRole";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 type SiteLocationUpdate = {
@@ -177,7 +178,7 @@ const EditSite = () => {
                     <h2 className="sm:text-[20px] text-[18px] text-n800 font-semibold">
                       Site information {index + 1}
                     </h2>
-                    {index === 0 && (
+                    {index === 0 && getRole() !== 3 && (
                       <button
                         className="py-[5px] sm:py-[6px] px-[12px] sm:px-[20px] rounded-[20px] border-[2px] border-primary text-[12px] text-primary font-semibold"
                         onClick={() => {
@@ -235,7 +236,7 @@ const EditSite = () => {
                                 handleFieldChange("code", e.target.value);
                               }}
                             />
-                            {!editing.code && index === 0 && (
+                            {!editing.code && index === 0 && getRole() !== 3 &&  (
                               <svg
                                 className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                                 onClick={() => {
@@ -326,7 +327,7 @@ const EditSite = () => {
                               handleFieldChange("district", e.target.value);
                             }}
                           />
-                          {!editing.district && index === 0 && (
+                          {!editing.district && index === 0 && getRole() !== 3 &&  (
                             <svg
                               className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                               onClick={() => {
@@ -379,7 +380,7 @@ const EditSite = () => {
                               handleFieldChange("municipality", e.target.value);
                             }}
                           />
-                          {!editing.municipality && index === 0 && (
+                          {!editing.municipality && index === 0 && getRole() !== 3 &&  (
                             <svg
                               className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                               onClick={() => {
@@ -435,7 +436,7 @@ const EditSite = () => {
                             }}
                           />
 
-                          {!editing.type && index === 0 && (
+                          {!editing.type && index === 0 && getRole() !== 3 &&  (
                             <svg
                               className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                               onClick={() => {
@@ -491,7 +492,7 @@ const EditSite = () => {
                               );
                             }}
                           />
-                          {!editing.building_height && index === 0 && (
+                          {!editing.building_height && index === 0 && getRole() !== 3 &&  (
                             <svg
                               className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                               onClick={() => {
@@ -541,7 +542,7 @@ const EditSite = () => {
                               handleFieldChange("site_height", e.target.value);
                             }}
                           />
-                          {!editing.site_height && index === 0 && (
+                          {!editing.site_height && index === 0 && getRole() !== 3 &&  (
                             <svg
                               className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                               onClick={() => {
@@ -854,7 +855,7 @@ const EditSite = () => {
                             }
                           }}
                         />
-                        {!editing.latitude && index === 0 && (
+                        {!editing.latitude && index === 0 && getRole() !== 3 &&  (
                           <svg
                             className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                             onClick={() => {
@@ -1164,7 +1165,7 @@ const EditSite = () => {
                             }
                           }}
                         />
-                        {!editing.longitude && index === 0 && (
+                        {!editing.longitude && index === 0 && getRole() !== 3 &&  (
                           <svg
                             className="absolute top-[50%] translate-y-[-50%] right-4 cursor-pointer"
                             onClick={() => {
@@ -1189,7 +1190,7 @@ const EditSite = () => {
                     </div>
                   </div>
                 </div>
-                {Object.values(editing).some(Boolean) && index === 0 && (
+                {Object.values(editing).some(Boolean) && index === 0 && getRole() !== 3 &&  (
                   <div className="w-full flex items-center justify-end">
                     <div className="flex items-center gap-[6px]">
                       <button

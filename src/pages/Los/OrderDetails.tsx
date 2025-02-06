@@ -267,6 +267,7 @@ const OrderDetails = () => {
     setLoader: setLoaderSiteSearch,
   });
 
+
   if (!HaveAccess) {
     return <Page404 />;
   }
@@ -383,147 +384,152 @@ const OrderDetails = () => {
                               alt="site"
                               className={`rounded-full transition duration-300 ease-in-out  ${
                                 order.line_of_sight.status < 2 &&
+                                [0, 1, 2].includes(getRole()!) &&
                                 "group-hover:blur-[2px]"
                               } `}
                             />
 
-                            <div
-                              className={`absolute inset-0 flex items-center justify-center border-n400 border-[2px] rounded-full opacity-0 transition duration-300 ease-in-out ${
-                                order.line_of_sight.status < 2 &&
-                                "group-hover:opacity-100"
-                              }`}
-                            >
-                              <button
-                                className="text-red-500 text-xl font-bold"
-                                onClick={() =>
-                                  addOrDeleteAlt(
-                                    alt.id,
-                                    "delete",
-                                    setIsLoadingAltSites,
-                                    fetchOneLOS
-                                  )
-                                }
+                            {[0, 1, 2].includes(getRole()!) && (
+                              <div
+                                className={`absolute inset-0 flex items-center justify-center border-n400 border-[2px] rounded-full opacity-0 transition duration-300 ease-in-out ${
+                                  order.line_of_sight.status < 2 &&
+                                  "group-hover:opacity-100"
+                                }`}
                               >
-                                ×
-                              </button>
-                            </div>
+                                <button
+                                  className="text-red-500 text-xl font-bold"
+                                  onClick={() =>
+                                    addOrDeleteAlt(
+                                      alt.id,
+                                      "delete",
+                                      setIsLoadingAltSites,
+                                      fetchOneLOS
+                                    )
+                                  }
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           <span>{alt.site_location.site_code}</span>
                         </div>
                       ))}
-                      <div className="relative z-50">
-                        {order.line_of_sight.status < 2 && (
-                          <span
-                            className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
-                            onClick={() => {
-                              setVisibleCoordPopup(!visibleCoordPopup);
-                            }}
-                          >
-                            +
-                          </span>
-                        )}
+                      {[0, 1, 2].includes(getRole()!) && (
+                        <div className="relative z-50">
+                          {order.line_of_sight.status < 2 && (
+                            <span
+                              className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
+                              onClick={() => {
+                                setVisibleCoordPopup(!visibleCoordPopup);
+                              }}
+                            >
+                              +
+                            </span>
+                          )}
 
-                        {visibleCoordPopup && (
-                          <div className="sm:w-[400px] w-[280px] max-h-[300px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 right-0 ">
-                            <div className=" relative w-full">
-                              <input
-                                type="search"
-                                name=""
-                                id=""
-                                value={searchQuerySite}
-                                onChange={(eo) => {
-                                  setSearchQuerySite(eo.target.value);
-                                }}
-                                className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
-                                placeholder="Search"
-                              />
-                              <svg
-                                className="absolute left-[14px] top-[50%] translate-y-[-50%]"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="15"
-                                height="15"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                              >
-                                <path
-                                  d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
-                                  stroke="#6F6C8F"
-                                  strokeWidth="1.5"
-                                  fillOpacity="round"
-                                  strokeLinejoin="round"
+                          {visibleCoordPopup && (
+                            <div className="sm:w-[350px] w-[260px] max-h-[300px] absolute z-20 bg-white rounded-[20px] rounded-tl-none shadow-lg p-[24px] flex flex-col gap-[21px] items-start top-10 sm:-left-28 -right-24 ">
+                              <div className=" relative w-full">
+                                <input
+                                  type="search"
+                                  name=""
+                                  id=""
+                                  value={searchQuerySite}
+                                  onChange={(eo) => {
+                                    setSearchQuerySite(eo.target.value);
+                                  }}
+                                  className="w-full h-[38px] rounded-[19px] border-[1px] border-n300 shadow-md px-[35px] md:text-[13px] text-[11px]"
+                                  placeholder="Search"
                                 />
-                                <path
-                                  d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
-                                  stroke="#6F6C8F"
-                                  strokeWidth="1.5"
-                                  fillOpacity="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </div>
-                            <div className="flex flex-col items-start gap-[12px] w-full  overflow-auto">
-                              {loaderSiteSearch ? (
-                                <div className="w-full py-[10px] flex items-center justify-center">
-                                  <RotatingLines
-                                    strokeWidth="4"
-                                    strokeColor="#4A3AFF"
-                                    width="20"
+                                <svg
+                                  className="absolute left-[14px] top-[50%] translate-y-[-50%]"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="15"
+                                  height="15"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M11 2C15.97 2 20 6.03 20 11C20 15.97 15.97 20 11 20C6.03 20 2 15.97 2 11C2 7.5 4 4.46 6.93 2.97"
+                                    stroke="#6F6C8F"
+                                    strokeWidth="1.5"
+                                    fillOpacity="round"
+                                    strokeLinejoin="round"
                                   />
-                                </div>
-                              ) : searchQuerySite !== "" ? (
-                                searchSites !== null &&
-                                searchSites.length > 0 ? (
-                                  searchSites.map((site, index) => (
-                                    <div
-                                      key={index}
-                                      className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                      onClick={() => {
-                                        // Check if the site exist
-                                        const codesExists =
-                                          order.alternative_far_ends.some(
-                                            (alt) =>
-                                              alt.site_location.site_code ===
-                                              site.code
-                                          );
+                                  <path
+                                    d="M19.07 20.97C19.6 22.57 20.81 22.73 21.74 21.33C22.6 20.05 22.04 19 20.5 19C19.35 19 18.71 19.89 19.07 20.97Z"
+                                    stroke="#6F6C8F"
+                                    strokeWidth="1.5"
+                                    fillOpacity="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </div>
+                              <div className="flex flex-col items-start gap-[12px] w-full  overflow-auto">
+                                {loaderSiteSearch ? (
+                                  <div className="w-full py-[10px] flex items-center justify-center">
+                                    <RotatingLines
+                                      strokeWidth="4"
+                                      strokeColor="#4A3AFF"
+                                      width="20"
+                                    />
+                                  </div>
+                                ) : searchQuerySite !== "" ? (
+                                  searchSites !== null &&
+                                  searchSites.length > 0 ? (
+                                    searchSites.map((site, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
+                                        onClick={() => {
+                                          // Check if the site exist
+                                          const codesExists =
+                                            order.alternative_far_ends.some(
+                                              (alt) =>
+                                                alt.site_location.site_code ===
+                                                site.code
+                                            );
 
-                                        if (!codesExists) {
-                                          addOrDeleteAlt(
-                                            order.line_of_sight.id,
-                                            "add",
-                                            setIsLoadingAltSites,
-                                            fetchOneLOS,
-                                            site.id
-                                          );
-                                        }
-                                        setSearchQuerySite("");
-                                        setVisibleCoordPopup(false);
-                                      }}
-                                    >
-                                      <img
-                                        src="/site.png"
-                                        alt="site"
-                                        className="w-[31px] rounded-[50%]"
-                                      />
-                                      <span className="text-[14px] text-n600">
-                                        {site.code}
-                                      </span>
-                                    </div>
-                                  ))
+                                          if (!codesExists) {
+                                            addOrDeleteAlt(
+                                              order.line_of_sight.id,
+                                              "add",
+                                              setIsLoadingAltSites,
+                                              fetchOneLOS,
+                                              site.id
+                                            );
+                                          }
+                                          setSearchQuerySite("");
+                                          setVisibleCoordPopup(false);
+                                        }}
+                                      >
+                                        <img
+                                          src="/site.png"
+                                          alt="site"
+                                          className="w-[31px] rounded-[50%]"
+                                        />
+                                        <span className="text-[14px] text-n600">
+                                          {site.code}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <span className="text-n700 w-full flex justify-center text-[14px]">
+                                      no result founded
+                                    </span>
+                                  )
                                 ) : (
                                   <span className="text-n700 w-full flex justify-center text-[14px]">
-                                    no result founded
+                                    Search for a site
                                   </span>
-                                )
-                              ) : (
-                                <span className="text-n700 w-full flex justify-center text-[14px]">
-                                  Search for a site
-                                </span>
-                              )}
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -533,7 +539,7 @@ const OrderDetails = () => {
                         className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
                           if (
-                            getRole() !== 2 &&
+                            [0, 1].includes(getRole()!) &&
                             order!.line_of_sight.status < 2
                           ) {
                             setVisibleEngPopup(!visibleEngPopup);
@@ -545,21 +551,22 @@ const OrderDetails = () => {
                           alt="avatar"
                           className="rounded-[50%] w-full h-full relative z-0"
                         />
-                        {getRole() !== 2 && order.line_of_sight.status < 2 && (
-                          <span className="bg-550 bg-opacity-0 w-full h-full absolute z-30 top-0 group rounded-[50%] hover:bg-opacity-40 cursor-pointer flex items-center justify-center">
-                            <svg
-                              className="opacity-0 transition-opacity duration-100 ease-in-out group-hover:opacity-100"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 20 20"
-                              fill="white"
-                            >
-                              <title>reassign</title>
-                              <path d="M15.65 4.35A8 8 0 1 0 17.4 13h-2.22a6 6 0 1 1-1-7.22L11 9h7V2z" />
-                            </svg>
-                          </span>
-                        )}
+                        {[0, 1].includes(getRole()!) &&
+                          order.line_of_sight.status < 2 && (
+                            <span className="bg-550 bg-opacity-0 w-full h-full absolute z-30 top-0 group rounded-[50%] hover:bg-opacity-40 cursor-pointer flex items-center justify-center">
+                              <svg
+                                className="opacity-0 transition-opacity duration-100 ease-in-out group-hover:opacity-100"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                                fill="white"
+                              >
+                                <title>reassign</title>
+                                <path d="M15.65 4.35A8 8 0 1 0 17.4 13h-2.22a6 6 0 1 1-1-7.22L11 9h7V2z" />
+                              </svg>
+                            </span>
+                          )}
                       </div>
                       <span className="sm:text-[18px] text-[15px] text-n600 font-medium leading-[27px]">
                         {order?.line_of_sight.assigned_to.email}
@@ -1184,7 +1191,12 @@ const OrderDetails = () => {
                           : order.line_of_sight.status === 1
                           ? "bg-primary text-white"
                           : "text-primary border-primary"
-                      }  border-[2px] rounded-[30px] font-semibold leading-5 py-[10px] px-[30px]`}
+                      }  border-[2px] rounded-[30px] font-semibold leading-5 py-[10px] px-[30px] ${
+                        getRole() === 3 &&
+                        (order.line_of_sight.status === 0 ||
+                          order.line_of_sight.status === 1) &&
+                        "cursor-not-allowed"
+                      }`}
                       onClick={() => {
                         order.line_of_sight.status === 0
                           ? handleAssingLos(
@@ -1206,6 +1218,11 @@ const OrderDetails = () => {
                           ? setCurrentSlide(2)
                           : null;
                       }}
+                      disabled={
+                        getRole() === 3 &&
+                        (order.line_of_sight.status === 0 ||
+                          order.line_of_sight.status === 1)
+                      }
                     >
                       {isLoadingMainButton ? (
                         <RotatingLines
@@ -1248,26 +1265,29 @@ const OrderDetails = () => {
                     setIsLoadingChoicingCGPS={setIsLoadingChoicingCGPS}
                     fetchOneLOS={fetchOneLOS}
                   />
-                  <button
-                    className="flex items-center justify-center rounded-[30px] font-semibold leading-5 py-[10px] px-[30px] text-white bg-primary"
-                    onClick={() => {
-                      generateReport(
-                        order.line_of_sight.id,
-                        setIsLoadingGeneration,
-                        fetchOneLOS
-                      );
-                    }}
-                  >
-                    {isLoadingGeneration ? (
-                      <RotatingLines
-                        strokeWidth="4"
-                        strokeColor="#fff"
-                        width="20"
-                      />
-                    ) : (
-                      "Generate"
-                    )}
-                  </button>
+                  {[0, 1].includes(getRole()!) && (
+                    <button
+                      className="flex items-center justify-center rounded-[30px] font-semibold leading-5 py-[10px] px-[30px] text-white bg-primary"
+                      onClick={() => {
+                        generateReport(
+                          order.line_of_sight.id,
+                          setIsLoadingGeneration,
+                          fetchOneLOS
+                        );
+                      }}
+                    >
+                      {isLoadingGeneration ? (
+                        <RotatingLines
+                          strokeWidth="4"
+                          strokeColor="#fff"
+                          width="20"
+                        />
+                      ) : (
+                        "Generate"
+                      )}
+                    </button>
+                  )}
+
                   <div className="w-full rounded-[20px] overflow-hidden">
                     <MapWithMarkers markers={markers} />
                   </div>
@@ -1325,7 +1345,7 @@ const OrderDetails = () => {
                   {order.line_of_sight.status > 3 &&
                     order.line_of_sight.status < 7 &&
                     order.line_of_sight.status !== 5 &&
-                    getRole() !== 2 && (
+                    [0, 1].includes(getRole()!) && (
                       <div className="w-full flex items-center justify-end gap-4 mt-4">
                         <button
                           className="flex items-center justify-center px-[45px] py-[10px] rounded-[56px] bg-[#DB2C2C1A] text-[15px] text-[#DB2C2C] font-medium"
@@ -1403,7 +1423,7 @@ const OrderDetails = () => {
                 setIsLosStatusLoading={setIsLosStatusLoading}
                 fetchOneLOS={fetchOneLOS}
               />
-              {((order.line_of_sight.execute_with_all_alternatives &&
+              {((((order.line_of_sight.execute_with_all_alternatives &&
                 order.alternative_far_ends.every(
                   (alt) => alt.executed.near_end && alt.executed.far_end
                 )) ||
@@ -1418,109 +1438,111 @@ const OrderDetails = () => {
                       alt.executed.near_end &&
                       alt.executed.far_end
                   ))) &&
-                order.line_of_sight.status === 2 || order.line_of_sight.status === 5 && (
-                  <div
-                    className={`w-full sm:w-[97%] flex items-center ${
-                      getRole() === 2 ? "justify-between" : "justify-end"
-                    }`}
-                  >
-                    {" "}
-                    {getRole() === 2 && (
-                      <button
-                        className={`flex items-center justify-center  text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px] ${
-                          (order.line_of_sight.execute_with_all_alternatives &&
-                            order.alternative_far_ends.every(
-                              (alt) =>
-                                alt.executed.near_end && alt.executed.far_end
-                            )) ||
-                          (!order.line_of_sight.execute_with_all_alternatives &&
-                            order.alternative_far_ends.every(
-                              (alt) =>
-                                alt.executed.near_end && alt.executed.far_end
-                            )) ||
-                          (!order.line_of_sight.execute_with_all_alternatives &&
-                            order.alternative_far_ends.some(
-                              (alt) => alt.los_status === 1
-                            ) && // At least one `los_status === 1`
-                            order.alternative_far_ends.every(
-                              (alt) =>
-                                !alt.los_status || // Ignore `alt` with undefined `los_status`
-                                (alt.executed.near_end && alt.executed.far_end) // Validate only those with defined `los_status`
-                            ))
-                            ? "text-primary border-primary"
-                            : " text-n400 border-n400"
-                        }`}
-                        onClick={() => {
-                          generateReport(
-                            order.line_of_sight.id,
-                            setIsLoadingGeneration,
-                            undefined,
-                            true
-                          );
-                        }}
-                        disabled={
-                          (order.line_of_sight.execute_with_all_alternatives &&
-                            order.alternative_far_ends.every(
-                              (alt) =>
-                                alt.executed.near_end && alt.executed.far_end
-                            )) ||
-                          (!order.line_of_sight.execute_with_all_alternatives &&
-                            order.alternative_far_ends.every(
-                              (alt) =>
-                                alt.executed.near_end && alt.executed.far_end
-                            )) ||
-                          (!order.line_of_sight.execute_with_all_alternatives &&
-                            order.alternative_far_ends.some(
-                              (alt) => alt.los_status === 1
-                            ) && // At least one `los_status === 1`
-                            order.alternative_far_ends.every(
-                              (alt) =>
-                                !alt.los_status || // Ignore `alt` with undefined `los_status`
-                                (alt.executed.near_end && alt.executed.far_end) // Validate only those with defined `los_status`
-                            ))
-                            ? false
-                            : true
-                        }
-                      >
-                        {isLoadingGeneration ? (
-                          <RotatingLines
-                            visible={true}
-                            width="20"
-                            strokeWidth="3"
-                            strokeColor={"#111"}
-                          />
-                        ) : (
-                          "View PDF"
-                        )}
-                      </button>
-                    )}
+                order.line_of_sight.status === 2) ||
+                order.line_of_sight.status === 5) && (
+                <div
+                  className={`w-full sm:w-[97%] flex items-center ${
+                    getRole() === 2 ? "justify-between" : "justify-end"
+                  }`}
+                >
+                  {" "}
+                  {[2,3].includes(getRole()!)  && (
                     <button
-                      type="button"
-                      className="flex items-center justify-center text-white bg-primary text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px]"
+                      className={`flex items-center justify-center  text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px] ${
+                        (order.line_of_sight.execute_with_all_alternatives &&
+                          order.alternative_far_ends.every(
+                            (alt) =>
+                              alt.executed.near_end && alt.executed.far_end
+                          )) ||
+                        (!order.line_of_sight.execute_with_all_alternatives &&
+                          order.alternative_far_ends.every(
+                            (alt) =>
+                              alt.executed.near_end && alt.executed.far_end
+                          )) ||
+                        (!order.line_of_sight.execute_with_all_alternatives &&
+                          order.alternative_far_ends.some(
+                            (alt) => alt.los_status === 1
+                          ) && // At least one `los_status === 1`
+                          order.alternative_far_ends.every(
+                            (alt) =>
+                              !alt.los_status || // Ignore `alt` with undefined `los_status`
+                              (alt.executed.near_end && alt.executed.far_end) // Validate only those with defined `los_status`
+                          ))
+                          ? "text-primary border-primary"
+                          : " text-n400 border-n400"
+                      }`}
                       onClick={() => {
-                        handleFinishLos(
+                        generateReport(
                           order.line_of_sight.id,
-                          setIsLoadingMainButton,
-                          setCurrentSlide,
-                          (message, options) =>
-                            enqueueSnackbar(message, { ...options }),
-                          fetchOneLOS
+                          setIsLoadingGeneration,
+                          undefined,
+                          true
                         );
                       }}
+                      disabled={
+                        (order.line_of_sight.execute_with_all_alternatives &&
+                          order.alternative_far_ends.every(
+                            (alt) =>
+                              alt.executed.near_end && alt.executed.far_end
+                          )) ||
+                        (!order.line_of_sight.execute_with_all_alternatives &&
+                          order.alternative_far_ends.every(
+                            (alt) =>
+                              alt.executed.near_end && alt.executed.far_end
+                          )) ||
+                        (!order.line_of_sight.execute_with_all_alternatives &&
+                          order.alternative_far_ends.some(
+                            (alt) => alt.los_status === 1
+                          ) && // At least one `los_status === 1`
+                          order.alternative_far_ends.every(
+                            (alt) =>
+                              !alt.los_status || // Ignore `alt` with undefined `los_status`
+                              (alt.executed.near_end && alt.executed.far_end) // Validate only those with defined `los_status`
+                          ))
+                          ? false
+                          : true
+                      }
                     >
-                      {isLoadingMainButton ? (
+                      {isLoadingGeneration ? (
                         <RotatingLines
                           visible={true}
                           width="20"
                           strokeWidth="3"
-                          strokeColor={"#FFF"}
+                          strokeColor={"#111"}
                         />
                       ) : (
-                        "Submit"
+                        "View PDF"
                       )}
                     </button>
-                  </div>
-                )}
+                  )}
+
+                 {[0,1,2].includes(getRole()!) && <button
+                    type="button"
+                    className="flex items-center justify-center text-white bg-primary text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px]"
+                    onClick={() => {
+                      handleFinishLos(
+                        order.line_of_sight.id,
+                        setIsLoadingMainButton,
+                        setCurrentSlide,
+                        (message, options) =>
+                          enqueueSnackbar(message, { ...options }),
+                        fetchOneLOS
+                      );
+                    }}
+                  >
+                    {isLoadingMainButton ? (
+                      <RotatingLines
+                        visible={true}
+                        width="20"
+                        strokeWidth="3"
+                        strokeColor={"#FFF"}
+                      />
+                    ) : (
+                      "Submit"
+                    )}
+                  </button>}
+                </div>
+              )}
               <div className="w-full rounded-[20px] overflow-hidden">
                 <MapWithMarkers markers={markers} />
               </div>

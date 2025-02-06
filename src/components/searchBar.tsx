@@ -1,6 +1,7 @@
 import React, { useState, SetStateAction, Dispatch } from "react";
 import { handleOpenDialog } from "../func/openDialog";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
+import { getRole } from "../func/getUserRole";
 
 interface SearchBarProps {
   openDialogRef: React.RefObject<HTMLDialogElement>;
@@ -67,24 +68,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
           />
         </svg>
       </div>
-      <button
-        className={`${
-          page === "los orders" ? "hidden md:flex" : "flex"
-        }  rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[12px] font-medium`}
-        onClick={() => {
-          handleOpenDialog(openDialogRef);
-        }}
-      >
-        {page === "groups"
-          ? "Create group"
-          : page === "mails"
-          ? "Add email"
-          : page === "Sites"
-          ? "Add Site"
-          : page === "los orders"
-          ? "New LOS Order "
-          : null}
-      </button>
+      {getRole() !== 3 && (
+        <button
+          className={`${
+            page === "los orders" ? "hidden md:flex" : "flex"
+          }  rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[12px] font-medium`}
+          onClick={() => {
+            handleOpenDialog(openDialogRef);
+          }}
+        >
+          {page === "groups"
+            ? "Create group"
+            : page === "mails"
+            ? "Add email"
+            : page === "Sites"
+            ? "Add Site"
+            : page === "los orders"
+            ? "New LOS Order "
+            : null}
+        </button>
+      )}
     </div>
   );
 };

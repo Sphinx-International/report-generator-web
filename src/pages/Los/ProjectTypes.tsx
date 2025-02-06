@@ -12,6 +12,7 @@ import { RotatingLines } from "react-loader-spinner";
 import { useSnackbar } from "notistack";
 import EditProjectType from "../../components/los/EditProjectType";
 import { handleOpenDialog } from "../../func/openDialog";
+import { getRole } from "../../func/getUserRole";
 
 const ProjectTypes = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -93,7 +94,7 @@ const ProjectTypes = () => {
                     <div className="flex-grow" />
                     <div className="flex items-center justify-center w-[30%] gap-[6px]">
                       <button
-                        className="rounded-[15px] bg-[#DB2C2C1A] py-[6px] sm:px-5 px-3 text-[#FF3B30] text-[12px] font-medium"
+                        className={`rounded-[15px] py-[6px] sm:px-5 px-3 text-[12px] font-medium ${[0, 1, 2].includes(getRole()!) ? "text-[#FF3B30] bg-[#DB2C2C1A]" :"text-[#9e9e9e] bg-[#e9e8e8] cursor-not-allowed"}`}
                         onClick={() => {
                           if (!deleteLoader) {
                             deleteProjectTypes(
@@ -105,15 +106,17 @@ const ProjectTypes = () => {
                             );
                           }
                         }}
+                        disabled={![0, 1, 2].includes(getRole()!)}
                       >
                         Delete
                       </button>
                       <button
-                        className="rounded-[30px] bg-[#48C1B54D] py-[6px] sm:px-5 px-3 text-[#23B4A6] text-[12px] font-medium"
+                        className={`rounded-[30px] py-[6px] sm:px-5 px-3  text-[12px] font-medium ${[0, 1, 2].includes(getRole()!) ? "text-[#23b4a6] bg-[#48C1B54D]" :"text-[#9e9e9e] bg-[#e9e8e8] cursor-not-allowed"}`}
                         onClick={() => {
                           setEditedPT(project);
                           handleOpenDialog(editPopup);
                         }}
+                        disabled={![0, 1, 2].includes(getRole()!)}
                       >
                         Edit
                       </button>
@@ -122,7 +125,7 @@ const ProjectTypes = () => {
                 );
               })}
 
-              <div className="mt-8 w-full flex items-center gap-2 flex-wrap">
+             {[0, 1, 2].includes(getRole()!) && <div className="mt-8 w-full flex items-center gap-2 flex-wrap">
                 <input
                   type="text"
                   name="add-pt"
@@ -156,7 +159,7 @@ const ProjectTypes = () => {
                     " Add new type"
                   )}
                 </button>
-              </div>
+              </div>}
             </div>
             {/* Add a reference to the bottom of the page */}
             <div ref={endOfPageRef} />

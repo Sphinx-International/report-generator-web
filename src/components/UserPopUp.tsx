@@ -25,7 +25,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     last_name: string;
     email: string;
     password: string;
-    role: null | 0 | 1 | 2;
+    role: null | 0 | 1 | 2 | 3;
   };
 
   const [formData, setFormData] = useState<User>({
@@ -81,7 +81,6 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     setIsLoading(true);
     try {
       const response = await fetch(`${baseUrl}/account/create-account`, {
-
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -131,7 +130,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     <dialog
       ref={ref}
       id="User-popup"
-      className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[40px] px-[20px] sm:pb-[35px] pt-[40px]  flex-col items-start gap-[20px] rounded-[34px] sm:w-[70vw] sm:h-fit w-[88vw] h-[80vh] overflow-y-visible`}
+      className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[40px] px-[20px] sm:pb-[35px] pt-[40px]  flex-col items-start gap-[20px] rounded-[34px] sm:w-[70vw] sm:h-fit w-[88vw] h-[80vh] overflow-visible`}
     >
       {/*   <div className="flex flex-col items-start gap-[10px]">
         <label
@@ -373,12 +372,14 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                   </svg>
                 </button>
                 {isOpen && (
-                  <ul className="absolute w-full bg-white rounded-[30px] shadow-lg mt-2 z-10">
-                    {["Engineer", "Coordinator"].map((option) => (
+                  <ul className="absolute w-full bg-white rounded-[20px] shadow-lg mt-2 z-10">
+                    {["Engineer", "Coordinator", "Client"].map((option) => (
                       <li
                         key={option}
-                        className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
-                          option === selectedOption ? "bg-gray-100" : ""
+                        className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 hover:rounded-full ${
+                          option === selectedOption
+                            ? "bg-gray-100 rounded-full"
+                            : ""
                         }`}
                         onClick={() => {
                           handleOptionClick(option);
@@ -389,6 +390,8 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
                                 ? 2
                                 : option === "Coordinator"
                                 ? 1
+                                : option === "Client"
+                                ? 3
                                 : null,
                           }));
                         }}
