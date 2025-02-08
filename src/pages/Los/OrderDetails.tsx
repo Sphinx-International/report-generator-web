@@ -1398,7 +1398,11 @@ const OrderDetails = () => {
                     )}
                 </div>
               )}
-              <UploadLosReport order={order} fetchOneLOS={fetchOneLOS} setOrder={setOrder}/>
+              <UploadLosReport
+                order={order}
+                fetchOneLOS={fetchOneLOS}
+                setOrder={setOrder}
+              />
             </div>
           ) : (
             <div className="flex flex-col items-start gap-8">
