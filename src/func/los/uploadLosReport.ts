@@ -1,164 +1,56 @@
-const baseUrl = import.meta.env.VITE_BASE_URL;
-import { AppDispatch } from "../Redux/store";
+import { AppDispatch } from "../../Redux/store";
+import { generateFileToken } from "../generateFileToken";
 import {
+  updateFileProgress,
   addUploadingFile,
   removeUploadingFile,
-  updateFileProgress,
-} from "../Redux/slices/uploadingFilesSlice";
+} from "../../Redux/slices/uploadingFilesSlice";
 import {
-  storeFileInIndexedDB,
   deleteFileFromIndexedDB,
-} from "./generateFileToken";
-import  { Dispatch, SetStateAction } from "react";
-import { TheUploadingFile } from "../assets/types/Mission";
+  storeFileInIndexedDB,
+} from "../generateFileToken";
 
-export const upload_or_delete_workorder_files_for_attachements = async (
-  workorder_id: string,
-  file_id: number,
-  method: "add" | "delete",
-  extantionType: "modernisation" | "workorder" | "new-site",
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  fetchOneWorkOrder?: () => void
-) => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
-  if (!token) {
-    console.error("No token found");
-    return;
-  }
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
-  let body: FormData | string;
-  const headers: HeadersInit = {
-    Authorization: `Token ${token}`,
-  };
-
-  if (extantionType === "workorder") {
-    // Use FormData for "workorder" extension type
-    const formData = new FormData();
-    formData.append("workorder_id", workorder_id.toString());
-    formData.append(method, file_id.toString());
-    body = formData;
-  } else {
-    // Use JSON for "modernisation" and "new-site" extension types
-    const jsonBody = {
-      ...(extantionType === "modernisation"
-        ? { modernisation_id: workorder_id.toString() }
-        : { new_site_id: workorder_id.toString() }),
-      [method]: [file_id.toString()],
-    };
-    body = JSON.stringify(jsonBody);
-    headers["Content-Type"] = "application/json"; // Set JSON content type
-
-    console.log("Request JSON body:", jsonBody);
-  }
-
-  setIsLoading(true);
-  try {
-    const response = await fetch(
-      `${baseUrl}/${extantionType}/update-${extantionType}-attachments`,
-      {
-        method: "PUT",
-        headers: headers,
-        body: body,
-      }
-    );
-
-    if (response) {
-      switch (response.status) {
-        case 200:
-          if (fetchOneWorkOrder) {
-            fetchOneWorkOrder();
-          }
-          break;
-        case 400:
-          console.log("Verify your data");
-          break;
-        default:
-          console.log("Error");
-          break;
-      }
-    }
-  } catch (err) {
-    console.error("Error submitting form", err);
-  } finally {
-    setIsLoading(false);
-    console.log("Finally");
-  }
-};
-
-export const upload_workorder_files = async (
-  workorder: string,
-  file: number,
-  fileType: "report" | "certificate" | "voucher",
-  extantionType: "modernisation" | "workorder" | "new-site" ,
+export const handleFileChangeWithRedux = async (
+  dispatch: AppDispatch,
+  los_id: number,
+  file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
-  fileStatus?: 0 | 1 | 2 | 3
+  fileInputRef?: React.RefObject<HTMLInputElement>,
 ) => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
-  if (!token) {
-    console.error("No token found");
-    return;
-  }
-  setIsLoading(true);
-
-  try {
-    // Construct the request body based on extantionType and fileType
-    const baseBody = {
-      [extantionType === "workorder"
-        ? "workorder"
-        : extantionType === "modernisation"
-        ? "modernisation"
-        : "new_site"]: workorder,
+  if (file.size > 20 * 1024 * 1024) {
+    alert(`${file.name} exceeds the 20MB limit.`);
+  } else if (file.size <= 32 * 1024) {
+    handle_files_with_one_chunk(
+      dispatch,
+      los_id,
       file,
-    };
+      setIsLoading,
+      fetchOneWorkOrder,
+    );
+  } else {
+    const file_token = await generateFileToken(file);
+    handle_chunck(
+      dispatch,
+      los_id,
+      file,
+      file_token,
+      setIsLoading,
+      fetchOneWorkOrder,
+    );
+  }
 
-    const body =
-      fileType === "certificate" || fileType === "report"
-        ? JSON.stringify({ ...baseBody, type: fileStatus })
-        : JSON.stringify(baseBody);
-
-    console.log("Request Body:", body);
-
-    // Construct the URL based on fileType and extantionType
-    const url = `${baseUrl}/${extantionType}/upload-${extantionType}${
-      fileType === "voucher" ? `-return-${fileType}` : `-${fileType}`
-    }`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${token}`,
-      },
-      body,
-    });
-
-    if (response) {
-      switch (response.status) {
-        case 200:
-          fetchOneWorkOrder();
-          break;
-        case 400:
-          console.log("Verify your data");
-          break;
-        default:
-          console.log("Error");
-          break;
-      }
-    }
-  } catch (err) {
-    console.error("Error submitting form", err);
-  } finally {
-    setIsLoading(false);
+  // Reset the file input value to allow re-selection of the same file
+  if (fileInputRef?.current) {
+    fileInputRef.current.value = "";
   }
 };
 
 const uploadRemainingChunks = async (
   dispatch: AppDispatch,
   file: File,
-  fileType: "attachements" | "report" | "certificate" | "voucher",
   fileId: number,
   chunkSize: number = 512 * 1024, // Default chunk size of 512KB for remaining chunks
   uploadedChunks: number[] = [], // Ensure uploadedChunks is an array
@@ -201,14 +93,13 @@ const uploadRemainingChunks = async (
         case 200:
           {
             const progress = ((index + 1) / (totalRemainingChunks + 1)) * 100;
-            dispatch(updateFileProgress({ type: fileType, fileId, progress }));
+            dispatch(updateFileProgress({ type: "report", fileId, progress }));
           }
           break;
         case 201:
           dispatch(
-            updateFileProgress({ type: fileType, fileId, progress: 100.0 })
+            updateFileProgress({ type: "report", fileId, progress: 100.0 })
           );
-          console.log("here");
           await deleteFileFromIndexedDB(fileId);
           break;
         default:
@@ -228,14 +119,11 @@ const uploadRemainingChunks = async (
 
 export const handle_chunck = async (
   dispatch: AppDispatch,
-  workorder_id: string,
-  fileType: "attachements" | "report" | "certificate" | "voucher",
-  extantionType: "modernisation" | "workorder" | "new-site",
+  los_id: number,
   file: File,
   file_token: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
-  fileStatus?: 0 | 1 | 2 | 3
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -269,41 +157,26 @@ export const handle_chunck = async (
       const data = await response.json();
       const fileId = data.id;
 
-      storeFileInIndexedDB(file, fileId, fileType, workorder_id);
+      storeFileInIndexedDB(file, fileId, "report", String(los_id));
       dispatch(
         addUploadingFile({
-          type: fileType,
+          type: "report",
           file: { id: fileId, progress: 0, file },
         })
       );
       setIsLoading(false);
 
-      if (fileType === "attachements") {
-        upload_or_delete_workorder_files_for_attachements(
-          workorder_id,
-          fileId,
-          "add",
-          extantionType,
-          setIsLoading,
-          fetchOneWorkOrder
-        );
-      } else {
-        await upload_workorder_files(
-          workorder_id,
-          fileId,
-          fileType,
-          extantionType,
-          setIsLoading,
-          fetchOneWorkOrder,
-          fileStatus
-        );
-      }
+      await upload_workorder_files(
+        los_id,
+        fileId,
+        setIsLoading,
+        fetchOneWorkOrder,
+      );
 
       if (totalChunks > 1) {
         await uploadRemainingChunks(
           dispatch,
           file,
-          fileType,
           fileId,
           chunkSize,
           [], // Start with an empty array for uploaded chunks
@@ -311,7 +184,7 @@ export const handle_chunck = async (
         );
       }
 
-      dispatch(removeUploadingFile({ type: fileType, fileId }));
+      dispatch(removeUploadingFile({ type: "report", fileId }));
       fetchOneWorkOrder();
     } else {
       console.error("Failed to upload first chunk");
@@ -327,9 +200,8 @@ export const handle_resuming_upload = async (
   dispatch: AppDispatch,
   fileId: number,
   file: File,
-  fileType: "attachements" | "report" | "certificate" | "voucher",
   file_token: string,
-  workorder_id: string,
+  los_id: string,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc: () => void,
   enqueueSnackbar: (message: string, options?: any) => void
@@ -374,16 +246,15 @@ export const handle_resuming_upload = async (
         // Update the progress with the calculated value
         dispatch(
           addUploadingFile({
-            type: fileType,
+            type: "report",
             file: { id: fileId, progress, file },
           })
         );
-        storeFileInIndexedDB(file, fileId, fileType, workorder_id);
+        storeFileInIndexedDB(file, fileId, "report", los_id);
 
         await uploadRemainingChunks(
           dispatch,
           file,
-          fileType,
           fileId,
           512 * 1024,
           uploaded_chunks,
@@ -391,7 +262,7 @@ export const handle_resuming_upload = async (
         );
 
         fetchFunc();
-        dispatch(removeUploadingFile({ type: fileType, fileId }));
+        dispatch(removeUploadingFile({ type: "report", fileId }));
         break;
       }
 
@@ -424,13 +295,10 @@ export const handle_resuming_upload = async (
 
 export const handle_files_with_one_chunk = async (
   dispatch: AppDispatch, // Add dispatch as a parameter
-  workorder_id: string,
-  fileType: "attachements" | "report" | "certificate" | "voucher",
-  extantionType: "modernisation" | "workorder" | "new-site",
+  los_id: number,
   file: File,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
   fetchOneWorkOrder: () => void,
-  fileStatus?: 0 | 1 | 2 | 3
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -463,33 +331,21 @@ export const handle_files_with_one_chunk = async (
       // here
       dispatch(
         addUploadingFile({
-          type: fileType,
+          type: "report",
           file: { id: fileId, progress: 0, file },
         })
       );
       setIsLoading(false);
-      if (fileType === "attachements") {
-        upload_or_delete_workorder_files_for_attachements(
-          workorder_id,
-          fileId,
-          "add",
-          extantionType,
-          setIsLoading,
-          fetchOneWorkOrder
-        );
-      } else {
-        await upload_workorder_files(
-          workorder_id,
-          fileId,
-          fileType,
-          extantionType,
-          setIsLoading,
-          fetchOneWorkOrder,
-          fileStatus
-        );
-      }
+
+      await upload_workorder_files(
+        los_id,
+        fileId,
+        setIsLoading,
+        fetchOneWorkOrder,
+      );
+
       fetchOneWorkOrder();
-      dispatch(removeUploadingFile({ type: fileType, fileId }));
+      dispatch(removeUploadingFile({ type: "report", fileId }));
     } else {
       console.error("Failed to upload file");
     }
@@ -503,7 +359,6 @@ export const handle_files_with_one_chunk = async (
 export const handleCancelUpload = async (
   fileId: number,
   dispatch?: AppDispatch,
-  fileType?: "attachements" | "report" | "certificate" | "voucher",
   setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc?: () => void,
   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>
@@ -534,8 +389,8 @@ export const handleCancelUpload = async (
       if (setFile) {
         setFile(undefined);
       }
-      if (fileType && dispatch) {
-        dispatch(removeUploadingFile({ type: fileType, fileId }));
+      if ( dispatch) {
+        dispatch(removeUploadingFile({ type: "report", fileId }));
       }
       await deleteFileFromIndexedDB(fileId);
     }
@@ -546,5 +401,56 @@ export const handleCancelUpload = async (
     if (setIsLoading) {
       setIsLoading(false);
     }
+  }
+};
+
+export const upload_workorder_files = async (
+  line_of_sight: number,
+  file: number,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  fetchOneWorkOrder: () => void
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+
+  try {
+    const body = JSON.stringify({ line_of_sight, file, type: 1 });
+
+    console.log("Request Body:", body);
+
+    // Construct the URL based on fileType and extantionType
+    const url = `${baseUrl}/line-of-sight/upload-line-of-sight-report`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+      body,
+    });
+
+    if (response) {
+      switch (response.status) {
+        case 200:
+          fetchOneWorkOrder();
+          break;
+        case 400:
+          console.log("Verify your data");
+          break;
+        default:
+          console.log("Error");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error submitting form", err);
+  } finally {
+    setIsLoading(false);
   }
 };

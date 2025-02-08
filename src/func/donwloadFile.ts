@@ -1,9 +1,8 @@
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-
 export const downloadFile = async (
   fileId: number | undefined,
-  type: "attachment" | "report" | "acceptance-certificate" | "return-voucher" ,
+  type: "attachment" | "report" | "acceptance-certificate" | "return-voucher",
   fileName: string | undefined,
   extantionType: "workorder" | "modernisation" | "new-site" | "line-of-sight",
   onProgress: (progress: number) => void,
@@ -15,6 +14,9 @@ export const downloadFile = async (
     console.error("No token found");
     return;
   }
+  console.log(
+    `${baseUrl}/${extantionType}/download-${extantionType}-${type}/${fileId}`
+  );
   try {
     const response = await fetch(
       `${baseUrl}/${extantionType}/download-${extantionType}-${type}/${fileId}`,
@@ -67,4 +69,3 @@ export const downloadFile = async (
     console.error("There was a problem with the fetch operation:", error);
   }
 };
-

@@ -1600,17 +1600,7 @@ const MissionDetails = () => {
                                         ? "border-[1px] border-n400"
                                         : attach.uploaded_by ===
                                           Number(
-                                            Number(
-                                              Number(
-                                                Number(
-                                                  Number(
-                                                    localStorage.getItem(
-                                                      "user_id"
-                                                    )!
-                                                  )
-                                                )
-                                              )
-                                            )
+                                            localStorage.getItem("user_id")!
                                           )
                                         ? "border-[2px] border-[#DB2C2C]"
                                         : "border-[2px] border-[#FFB84D]"
@@ -2177,17 +2167,7 @@ const MissionDetails = () => {
                                   className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
                                     (report.uploaded_by ===
-                                    Number(
-                                      Number(
-                                        Number(
-                                          Number(
-                                            Number(
-                                              localStorage.getItem("user_id")!
-                                            )
-                                          )
-                                        )
-                                      )
-                                    )
+                                    Number(localStorage.getItem("user_id")!)
                                       ? "border-[2px] border-[#db2c2c]"
                                       : "border-[2px] border-[#FFB84D]")
                                   } `}
@@ -2966,7 +2946,7 @@ const MissionDetails = () => {
                                 </span>
                               </div>
                             ) : (
-                              !workorder.acceptance_certificates  && (
+                              !workorder.acceptance_certificates && (
                                 <div className="w-full flex items-center justify-center font-medium py-4 text-n600">
                                   Still there is no acceptance certificates
                                   uploaded

@@ -39,6 +39,8 @@ import LosOrdersSmallScreens from "../../components/los/responsive screens/LosOr
 import LosOrdersLargeScreens from "../../components/los/responsive screens/LosOrdersLargeScreens";
 import LosValidationLargeScreens from "../../components/los/responsive screens/LosValidationLargeScreens";
 import LosValidationSmallScreens from "../../components/los/responsive screens/LosValidationSmallScreens";
+import UploadLosReport from "../../components/los/UploadLosReport";
+
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 export interface CGPS {
@@ -156,7 +158,7 @@ const OrderDetails = () => {
         case 200:
           {
             const data = await response.json();
-            // console.log(data)
+            console.log(data);
             setOrder(data);
             setbasicDataOrder({
               title: data.line_of_sight.near_end_location.site_code,
@@ -266,7 +268,6 @@ const OrderDetails = () => {
     setResults: setSearchSites,
     setLoader: setLoaderSiteSearch,
   });
-
 
   if (!HaveAccess) {
     return <Page404 />;
@@ -1248,7 +1249,6 @@ const OrderDetails = () => {
                   )}
                 </div>
               </div>
-
               {order.line_of_sight.status === 3 && getRole() !== 2 && (
                 <div className="w-full flex flex-col items-center gap-4 md:border-[1px] md:border-n400 rounded-[20px] md:p-[20px]">
                   <LosValidationLargeScreens
@@ -1293,11 +1293,10 @@ const OrderDetails = () => {
                   </div>
                 </div>
               )}
-
               {order.line_of_sight.status > 3 && (
                 <div className="w-full flex flex-col items-start gap-4 md:border-[1px] md:border-n400 rounded-[20px] md:p-[20px]">
                   <h1 className="text-[24px] font-semibold text-primary">
-                    Reports
+                    Generated report
                   </h1>
                   <div
                     className="relative p-[15px] cursor-pointer h-[60px] shadow-lg shadow-slate-200 rounded-[15px] flex flex-col items-start justify-start gap-3 sm:w-1/4 w-full"
@@ -1399,6 +1398,7 @@ const OrderDetails = () => {
                     )}
                 </div>
               )}
+              <UploadLosReport order={order} fetchOneLOS={fetchOneLOS} setOrder={setOrder}/>
             </div>
           ) : (
             <div className="flex flex-col items-start gap-8">
@@ -1446,7 +1446,7 @@ const OrderDetails = () => {
                   }`}
                 >
                   {" "}
-                  {[2,3].includes(getRole()!)  && (
+                  {[2, 3].includes(getRole()!) && (
                     <button
                       className={`flex items-center justify-center  text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px] ${
                         (order.line_of_sight.execute_with_all_alternatives &&
@@ -1515,32 +1515,33 @@ const OrderDetails = () => {
                       )}
                     </button>
                   )}
-
-                 {[0,1,2].includes(getRole()!) && <button
-                    type="button"
-                    className="flex items-center justify-center text-white bg-primary text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px]"
-                    onClick={() => {
-                      handleFinishLos(
-                        order.line_of_sight.id,
-                        setIsLoadingMainButton,
-                        setCurrentSlide,
-                        (message, options) =>
-                          enqueueSnackbar(message, { ...options }),
-                        fetchOneLOS
-                      );
-                    }}
-                  >
-                    {isLoadingMainButton ? (
-                      <RotatingLines
-                        visible={true}
-                        width="20"
-                        strokeWidth="3"
-                        strokeColor={"#FFF"}
-                      />
-                    ) : (
-                      "Submit"
-                    )}
-                  </button>}
+                  {[0, 1, 2].includes(getRole()!) && (
+                    <button
+                      type="button"
+                      className="flex items-center justify-center text-white bg-primary text-[15px] border-[2px] rounded-[30px] font-medium leading-5 py-[10px] px-[30px]"
+                      onClick={() => {
+                        handleFinishLos(
+                          order.line_of_sight.id,
+                          setIsLoadingMainButton,
+                          setCurrentSlide,
+                          (message, options) =>
+                            enqueueSnackbar(message, { ...options }),
+                          fetchOneLOS
+                        );
+                      }}
+                    >
+                      {isLoadingMainButton ? (
+                        <RotatingLines
+                          visible={true}
+                          width="20"
+                          strokeWidth="3"
+                          strokeColor={"#FFF"}
+                        />
+                      ) : (
+                        "Submit"
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
               <div className="w-full rounded-[20px] overflow-hidden">
