@@ -369,7 +369,7 @@ const UserManagment = () => {
                         <img
                           src="/avatar1.png"
                           alt="avatar"
-                          className="w-[52.5px] rounded-[11px] h-full"
+                          className="w-[54px] h-[54px] rounded-[11px]"
                         />
                         <span
                           className={` text-[12px] leading-[18px] ${
