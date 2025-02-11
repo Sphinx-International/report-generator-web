@@ -3,7 +3,7 @@ interface sideBarItem {
   svg: string;
   activeSvg: string;
   link: string;
-  access: "admin" | "all" | "coord";
+  access: "admin" | "all" | "coord" ;
   subItem?: sideBarItem[];
 }
 

@@ -4,6 +4,7 @@ import { selectCGPS_toWorkWith } from "../../../func/los/orders";
 import { resOfOneOrder } from "../../../assets/types/LosCommands";
 import { CGPS } from "../../../pages/Los/OrderDetails";
 import React from "react";
+import { getRole } from "../../../func/getUserRole";
 
 interface LosValidationLargeScreensProps {
   order: resOfOneOrder | null;
@@ -119,8 +120,8 @@ const LosValidationLargeScreens: React.FC<LosValidationLargeScreensProps> = ({
                 id={`CGPS-${order.line_of_sight.id}`}
                 className="hidden peer"
                 checked={order.line_of_sight.execution_cgps.is_valid}
+                disabled={getRole() === 3}
                 onChange={(e) => {
-                  console.log("first");
                   if (!isLoadingChoicingCGPS) {
                     if (e.target.checked) {
                       selectCGPS_toWorkWith(
@@ -255,8 +256,8 @@ const LosValidationLargeScreens: React.FC<LosValidationLargeScreensProps> = ({
                       id={`CGPS-${alt.id}`}
                       className="hidden peer"
                       checked={alt.execution_cgps.is_valid}
+                      disabled={getRole() === 3}
                       onChange={(e) => {
-                        console.log("first");
                         if (!isLoadingChoicingCGPS) {
                           if (e.target.checked) {
                             selectCGPS_toWorkWith(

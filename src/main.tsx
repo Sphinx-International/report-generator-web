@@ -52,7 +52,9 @@ const router = createBrowserRouter([
   },
   {
     path: "/my-account",
-    element: <ProtectedRoute element={<Account />} allowedRoles={[0, 1, 2]} />,
+    element: (
+      <ProtectedRoute element={<Account />} allowedRoles={[0, 1, 2, 3]} />
+    ),
   },
   {
     path: "/edit-user/:id",
@@ -74,18 +76,26 @@ const router = createBrowserRouter([
   },
   {
     path: "/workorders",
-    element: <ProtectedRoute element={<Missions />} allowedRoles={[0, 1, 2]} />,
+    element: (
+      <ProtectedRoute element={<Missions />} allowedRoles={[0, 1, 2, 3]} />
+    ),
   },
   {
     path: "/workorders/:id",
     element: (
-      <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute
+        element={<MissionDetails />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
     ),
   },
   {
     path: "/workorders-by-user/:userInfo",
     element: (
-      <ProtectedRoute element={<WorkorderByUser />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute
+        element={<WorkorderByUser />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
     ),
   },
   {
@@ -98,43 +108,47 @@ const router = createBrowserRouter([
   },
   {
     path: "/mails/individuals",
-    element: <ProtectedRoute element={<Individuals />} allowedRoles={[0, 1]} />,
+    element: (
+      <ProtectedRoute element={<Individuals />} allowedRoles={[0, 1]} />
+    ),
   },
 
   {
     path: "/los",
-    element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1]} />,
+    element: (
+      <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1, 2, 3]} />
+    ),
   },
   {
     path: "/los/site-management",
-    element: <ProtectedRoute element={<Sites />} allowedRoles={[0, 1]} />,
+    element: <ProtectedRoute element={<Sites />} allowedRoles={[0, 1, 3]} />,
   },
   {
     path: "/edit-site/:id",
-    element: <ProtectedRoute element={<EditSite />} allowedRoles={[0, 1]} />,
+    element: <ProtectedRoute element={<EditSite />} allowedRoles={[0, 1, 3]} />,
   },
   {
     path: "/los/orders",
     element: (
-      <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1, 2, 3]} />
     ),
   },
   {
     path: "/los/orders/:id",
     element: (
-      <ProtectedRoute element={<OrderDetails />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute element={<OrderDetails />} allowedRoles={[0, 1, 2, 3]} />
     ),
   },
   {
     path: "/los/projects",
     element: (
-      <ProtectedRoute element={<ProjectTypes />} allowedRoles={[0, 1]} />
+      <ProtectedRoute element={<ProjectTypes />} allowedRoles={[0, 1, 3]} />
     ),
   },
   {
     path: "/modernisations",
     element: (
-      <ProtectedRoute element={<Modernisation />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute element={<Modernisation />} allowedRoles={[0, 1, 2, 3]} />
     ),
   },
   {
@@ -142,7 +156,7 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute
         element={<ModernisationDetails />}
-        allowedRoles={[0, 1, 2]}
+        allowedRoles={[0, 1, 2, 3]}
       />
     ),
   },
@@ -151,25 +165,33 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute
         element={<ModernisationByUser />}
-        allowedRoles={[0, 1, 2]}
+        allowedRoles={[0, 1, 2, 3]}
       />
     ),
   },
 
   {
     path: "/newsites",
-    element: <ProtectedRoute element={<NewSites />} allowedRoles={[0, 1, 2]} />,
+    element: (
+      <ProtectedRoute element={<NewSites />} allowedRoles={[0, 1, 2, 3]} />
+    ),
   },
   {
     path: "/newsites/:id",
     element: (
-      <ProtectedRoute element={<NewSiteDetails />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute
+        element={<NewSiteDetails />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
     ),
   },
   {
     path: "/newsites-by-user/:userInfo",
     element: (
-      <ProtectedRoute element={<NewSitesByUser />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute
+        element={<NewSitesByUser />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
     ),
   },
 

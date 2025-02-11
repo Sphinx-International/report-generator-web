@@ -9,6 +9,8 @@ import {
   calculateDistance,
 } from "../../../func/los/geographicFunctions";
 import { updateLosResult, losResult } from "../../../func/los/orders";
+import { getRole } from "../../../func/getUserRole";
+import { get } from "node:http";
 
 interface LosOrdersLargeScreensProps {
   order: resOfOneOrder | null;
@@ -87,19 +89,22 @@ const LosOrdersLargeScreens: React.FC<LosOrdersLargeScreensProps> = ({
                       : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
                   }`}
                   onClick={() => {
-                    setSelectedSiteInfo(() => ({
-                      losId: order.line_of_sight.id,
-                      altId: alt.id,
-                      site_type: 1,
-                      site_location: order.line_of_sight.near_end_location,
-                      losStatus: alt.los_status,
-                      accessibility: order.line_of_sight.near_end_accessibility,
-                      image_count: alt.image_count.near_end,
-                      siteIndex: index,
-                      secondSiteCode: alt.site_location.site_code,
-                    }));
+                    if ([0, 1, 2].includes(getRole()!)) {
+                      setSelectedSiteInfo(() => ({
+                        losId: order.line_of_sight.id,
+                        altId: alt.id,
+                        site_type: 1,
+                        site_location: order.line_of_sight.near_end_location,
+                        losStatus: alt.los_status,
+                        accessibility:
+                          order.line_of_sight.near_end_accessibility,
+                        image_count: alt.image_count.near_end,
+                        siteIndex: index,
+                        secondSiteCode: alt.site_location.site_code,
+                      }));
 
-                    handleOpenDialog(executeLosPopupRef);
+                      handleOpenDialog(executeLosPopupRef);
+                    }
                   }}
                 >
                   <span className="truncate">
@@ -139,18 +144,20 @@ const LosOrdersLargeScreens: React.FC<LosOrdersLargeScreensProps> = ({
                       : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
                   }`}
                   onClick={() => {
-                    setSelectedSiteInfo(() => ({
-                      losId: order.line_of_sight.id,
-                      altId: alt.id,
-                      site_type: 2,
-                      site_location: alt.site_location,
-                      losStatus: alt.los_status,
-                      accessibility: alt.far_end_accessibility,
-                      image_count: alt.image_count.far_end,
-                      secondSiteCode:
-                        order.line_of_sight.near_end_location.site_code,
-                    }));
-                    handleOpenDialog(executeLosPopupRef);
+                    if ([0, 1, 2].includes(getRole()!)) {
+                      setSelectedSiteInfo(() => ({
+                        losId: order.line_of_sight.id,
+                        altId: alt.id,
+                        site_type: 2,
+                        site_location: alt.site_location,
+                        losStatus: alt.los_status,
+                        accessibility: alt.far_end_accessibility,
+                        image_count: alt.image_count.far_end,
+                        secondSiteCode:
+                          order.line_of_sight.near_end_location.site_code,
+                      }));
+                      handleOpenDialog(executeLosPopupRef);
+                    }
                   }}
                 >
                   {alt.site_location.site_code}
@@ -194,17 +201,19 @@ const LosOrdersLargeScreens: React.FC<LosOrdersLargeScreensProps> = ({
                 </span>
                 <div className="relative">
                   <svg
-                    className="cursor-pointer"
+                    className={`${[0,1,2].includes(getRole()!) && "cursor-pointers"}`}
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
                     height="16"
                     viewBox="0 0 16 16"
                     fill="none"
-                    onClick={() =>
-                      setOpenDropdownIndex(
-                        openDropdownIndex === index ? null : index
-                      )
-                    }
+                    onClick={() => {
+                      if ([0, 1, 2].includes(getRole()!)) {
+                        setOpenDropdownIndex(
+                          openDropdownIndex === index ? null : index
+                        );
+                      }
+                    }}
                   >
                     <g clip-path="url(#clip0_3005_9269)">
                       <path

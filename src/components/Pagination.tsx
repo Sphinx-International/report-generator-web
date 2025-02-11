@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
-
+import { getRole } from "../func/getUserRole";
 interface PaginationProps {
   buttonTitle: string;
   buttonFunc: () => void;
@@ -65,7 +65,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
           {"Last >>"}
         </span>
       </div>
-      {localStorage.getItem("role") !== "2" && (
+      {getRole() !== 3 && getRole() !== 2 && (
         <button
           className="md:hidden capitalize flex items-center gap-[3px] text-center justify-center leading-[21px] font-semibold sm:w-[90%] w-[80%] xl:px-[20px] px-[16px]  py-[12px] text-white rounded-[21px] bg-primary"
           onClick={props.buttonFunc}

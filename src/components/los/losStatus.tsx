@@ -55,9 +55,9 @@ const LosStatus: React.FC<WorkOrderStatusProps> = ({
         : status === 1
         ? "Assigned"
         : status === 2
-        ? "Executed"
+        ? "Launched"
         : status === 3
-        ? "Submitted"
+        ? "Executed"
         : status === 4
         ? "Generated"
         : status === 5

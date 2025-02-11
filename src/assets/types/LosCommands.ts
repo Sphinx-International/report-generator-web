@@ -63,6 +63,16 @@ type FarEndAlt = {
   };
 };
 
+export type ResReport = {
+  id: number;
+  file_name: string;
+  uploaded_at: Date;
+  uploaded_by: number;
+  line_of_sight: number;
+  downloadProgress?: string;
+  is_completed: boolean;
+};
+
 export interface resOfOneOrder {
   line_of_sight: {
     id: number;
@@ -88,6 +98,7 @@ export interface resOfOneOrder {
   alternative_far_ends: FarEndAlt[];
   mails: MailTo[];
   attachments: ResFile[];
+  uploaded_reports: ResReport[];
 }
 
 export interface ReqLosExecution {

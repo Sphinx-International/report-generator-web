@@ -528,7 +528,6 @@ export const updateCGPS = async (
     latitude: result.latitude,
   });
 
-  console.log(requestBody);
 
   try {
     const response = await fetch(
@@ -1430,6 +1429,67 @@ export const closeLineOfSight = async (
   }
 };
 
+
+export const uploadReport = async (
+  losId: number | null,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  fetchOrders?: () => void,
+) => {
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  if (!token) {
+    console.error("No token found");
+    return;
+  }
+  setIsLoading(true);
+  const url = `${baseUrl}/line-of-sight/upload-line-of-sight-report`
+  const requestBody = JSON.stringify({line_of_sight: losId,});
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (response) {
+      switch (response.status) {
+        case 200: {
+          // Handle PDF download
+          const blob = await response.blob(); // Get the response as a Blob
+          const url = window.URL.createObjectURL(blob); // Create a URL for the Blob
+          const link = document.createElement("a"); // Create an anchor element
+          link.href = url;
+          link.download = `report_${losId}.pdf`; // Set the filename
+          document.body.appendChild(link);
+          link.click(); // Trigger the download
+          document.body.removeChild(link); // Remove the anchor element
+          console.log("Report generated and downloaded.");
+          if (fetchOrders) {
+            fetchOrders();
+          }
+          break;
+        }
+        default:
+          console.log("An unexpected error occurred");
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error generating report", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+
+
+
+
+//upload of file:
+
 const uploadRemainingChunks = async (
   file: File,
   fileId: number,
@@ -1617,3 +1677,5 @@ export const handleFileChange = async (
     handle_chunck(file, file_token, setFile, setIsLoading, setUpdateThisTime);
   }
 };
+
+

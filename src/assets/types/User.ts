@@ -4,7 +4,7 @@ export type User = {
     email:string,
     id:number,
     is_active: boolean,
-    role: 0 |1 | 2,
+    role: 0 |1 | 2 | 3,
     groups?: string[],
     is_superuser?:boolean,
     last_login?:null,

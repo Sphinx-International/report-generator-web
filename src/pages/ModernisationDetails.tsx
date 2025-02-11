@@ -516,7 +516,7 @@ const ModernisationDetails = () => {
                         {basicDataModernisation.id}
                       </span>
                     )}
-                    {!isEditing_Title_tic && getRole() !== 2 && (
+                    {!isEditing_Title_tic && [0, 1].includes(getRole()!) && (
                       <svg
                         onClick={() => {
                           setIsEditing_Title_tic(true);
@@ -629,7 +629,7 @@ const ModernisationDetails = () => {
                         className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
                           if (
-                            getRole() !== 2 &&
+                            [0, 1].includes(getRole()!) &&
                             modernisation.modernisation.status < 2
                           ) {
                             setVisibleEngPopup(!visibleEngPopup);
@@ -641,7 +641,7 @@ const ModernisationDetails = () => {
                           alt="avatar"
                           className="rounded-[50%] w-full h-full relative z-0"
                         />
-                        {getRole() !== 2 && (
+                        {[0, 1].includes(getRole()!) && (
                           <span className="bg-550 bg-opacity-0 w-full h-full absolute z-30 top-0 group rounded-[50%] hover:bg-opacity-40 cursor-pointer flex items-center justify-center">
                             <svg
                               className="opacity-0 transition-opacity duration-100 ease-in-out group-hover:opacity-100"
@@ -1025,7 +1025,7 @@ const ModernisationDetails = () => {
                   <div className="flex flex-col gap-[10px] items-start w-full">
                     <span className="text-[17px] font-medium leading-[30px] text-n700 flex items-center gap-[6px]">
                       Description
-                      {!isEditing_desc && getRole() !== 2 && (
+                      {!isEditing_desc && [0, 1].includes(getRole()!) && (
                         <svg
                           onClick={() => {
                             setIsEditing_desc(true);
@@ -1070,7 +1070,7 @@ const ModernisationDetails = () => {
 
                   <div className="flex items-center gap-[4px]">
                     <div className="relative">
-                      {getRole() !== 2 && (
+                      {[0, 1].includes(getRole()!) && (
                         <span
                           className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
                           onClick={() => {
@@ -1279,7 +1279,7 @@ const ModernisationDetails = () => {
                               alt="avatar"
                               className="w-[40px] rounded-[50%]"
                             />
-                            {getRole() !== 2 && (
+                            {[0, 1].includes(getRole()!) && (
                               <span
                                 className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
                                 onClick={() => {
@@ -1346,7 +1346,7 @@ const ModernisationDetails = () => {
                             : "text-[#DB2C2C]"
                         }`}
                         onClick={() => {
-                          if (getRole() !== 2) {
+                          if ([0, 1].includes(getRole()!)) {
                             setShowPriority(!showPriority);
                           }
                         }}
@@ -1503,7 +1503,7 @@ const ModernisationDetails = () => {
                         />
                         {visibleReqVoucherPopup &&
                           modernisation.modernisation.status < 2 &&
-                          getRole() !== 2 && (
+                          [0, 1].includes(getRole()!) && (
                             <RequirementPopup
                               woId={modernisation.modernisation.id}
                               RequirementType="return voucher"
@@ -1518,14 +1518,14 @@ const ModernisationDetails = () => {
                           )}
                       </div>
                     ) : modernisation.modernisation.status < 2 &&
-                      getRole() !== 2 ? (
+                    [0, 1].includes(getRole()!) ? (
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededVo"}
                           styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqVoucherPopup}
                         />
-                        {visibleReqVoucherPopup && getRole() !== 2 && (
+                        {visibleReqVoucherPopup && [0, 1].includes(getRole()!) && (
                           <RequirementPopup
                             woId={modernisation.modernisation.id}
                             RequirementType="return voucher"
@@ -1547,7 +1547,7 @@ const ModernisationDetails = () => {
                   <div className="w-full flex flex-col items-end gap-[16px]">
                     <>
                       <div className="w-full flex flex-col gap-[12px]">
-                        {getRole() !== 2 ? (
+                        {[0, 1].includes(getRole()!) ? (
                           <label
                             htmlFor="attachements"
                             className="text-[17px] text-n700 leading-[30px] font-medium"
@@ -1717,7 +1717,7 @@ const ModernisationDetails = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 &&
+                                    {[0, 1].includes(getRole()!) &&
                                       (attach.is_completed ? (
                                         <span
                                           className="w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
@@ -1920,7 +1920,7 @@ const ModernisationDetails = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 && (
+                                    {[0, 1].includes(getRole()!) && (
                                       <span
                                         className={`w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-centers`}
                                         onClick={async (e) => {
@@ -1995,7 +1995,7 @@ const ModernisationDetails = () => {
                                   </div>
                                 );
                               })}
-                          {getRole() !== 2 && (
+                          {[0, 1].includes(getRole()!) && (
                             <div
                               className="flex flex-col sm:w-[46%] w-full"
                               onDragOver={(e) => {
@@ -2460,6 +2460,7 @@ const ModernisationDetails = () => {
                             modernisation.reports[
                               modernisation.reports?.length - 1
                             ].type !== 1)) && (
+                              [0, 1, 2].includes(getRole()!) ?
                           <div
                             className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
                             onClick={() => {
@@ -2467,9 +2468,14 @@ const ModernisationDetails = () => {
                             }}
                           >
                             <span className="text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
-                              Upload new files
+                              Upload new report
                             </span>
-                          </div>
+                          </div>  :  
+                            modernisation.reports === null && (
+                              <div className="w-full flex items-center justify-center font-medium py-4 text-n600">
+                                Still there is no report uploaded
+                              </div>
+                            )
                         )}
                       </div>
                       <div className="flex justify-end w-full">
@@ -2477,7 +2483,7 @@ const ModernisationDetails = () => {
                           modernisation.reports[
                             modernisation.reports?.length - 1
                           ].type === 1 &&
-                          getRole() !== 2 && (
+                          [0, 1].includes(getRole()!) && (
                             <div className="flex items-center gap-[12px]">
                               <button
                                 className="sm:px-[26px] px-[16px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
@@ -2697,8 +2703,7 @@ const ModernisationDetails = () => {
                                           modernisation.acceptance_certificates
                                             .length - 1
                                         ].is_completed &&
-                                        localStorage.getItem("role") !==
-                                          "2" && (
+                                        [0, 1].includes(getRole()!) && (
                                           <div
                                             className="absolute right-2 top-[80%] translate-y-[-50%]"
                                             onClick={(e) => {
@@ -2919,7 +2924,8 @@ const ModernisationDetails = () => {
                             (modernisation.acceptance_certificates.length > 0 &&
                               modernisation.acceptance_certificates[
                                 modernisation.acceptance_certificates.length - 1
-                              ].type !== 1)) && (
+                              ].type !== 1)) && ( 
+                                [0, 1, 2].includes(getRole()!) ?
                             <div
                               className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
                               onClick={() => {
@@ -2929,7 +2935,12 @@ const ModernisationDetails = () => {
                               <span className=" text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
                                 Add new certificate
                               </span>
-                            </div>
+                            </div>  : (
+                            !modernisation.acceptance_certificates  && 
+                              <div className="w-full flex items-center justify-center font-medium py-4 text-n600">
+                                Still there is no acceptance certificates uploaded
+                              </div>
+                            )
                           )}
                       </div>
                     </div>
@@ -3201,7 +3212,7 @@ const ModernisationDetails = () => {
                                   !modernisation.return_vouchers[
                                     modernisation.return_vouchers.length - 1
                                   ].is_last)) &&
-                              (localStorage.getItem("role") !== "2" ? (
+                              ([0, 1, 2].includes(getRole()!) ? (
                                 <div
                                   className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
                                   onClick={() => {
@@ -3221,7 +3232,7 @@ const ModernisationDetails = () => {
                               ))}
                           </div>
                         </div>
-                        {localStorage.getItem("role") !== "2" && (
+                        {[0, 1].includes(getRole()!) && (
                           <button
                             className={`py-[10px] px-[45px] rounded-[30px] border-[2px] border-primary text-[14px] font-semibold ${
                               modernisation.return_vouchers &&
@@ -3278,7 +3289,8 @@ const ModernisationDetails = () => {
                 )}
               </div>
             </div>
-            {modernisation.modernisation.status === 0 ? (
+        
+            {  [0, 1, 2].includes(getRole()!) && (  modernisation.modernisation.status === 0 ? (
               <div
                 className={`w-full flex items-center ${
                   undoMessageVisible
@@ -3364,8 +3376,8 @@ const ModernisationDetails = () => {
                 </button>
               </div>
             ) : (
-              ""
-            )}
+              null
+            )) }
           </div>
         )}
       </div>

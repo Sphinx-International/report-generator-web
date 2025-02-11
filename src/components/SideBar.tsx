@@ -13,6 +13,7 @@ interface SubMenu {
   link: string;
   svg: string;
   activeSvg: string;
+  access: "admin" | "all" | "coord";
 }
 
 const SideBar = () => {
@@ -57,28 +58,38 @@ const SideBar = () => {
 
     return (
       <div className="ml-3 flex flex-col gap-[13px]">
-        {subItems.map((subItem, index) => (
-          <NavLink
-            to={subItem.link}
-            key={index}
-            className={({ isActive }) =>
-              `flex items-center gap-[15px] ${
-                isActive ? "text-primary" : "text-[#6F6C90]"
-              } font-medium w-[150px] xl:w-[190px] text-[14px]`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: isActive ? subItem.activeSvg : subItem.svg,
-                  }}
-                />
-                {subItem.title}
-              </>
-            )}
-          </NavLink>
-        ))}
+        {subItems.map((subItem, index) => {
+          if (
+            ((getRole() === 1 || getRole() === 3) &&
+              subItem.access === "admin") ||
+            (getRole() === 2 && subItem.access !== "all")
+          ) {
+            return null;
+          }
+
+          return (
+            <NavLink
+              to={subItem.link}
+              key={index}
+              className={({ isActive }) =>
+                `flex items-center gap-[15px] ${
+                  isActive ? "text-primary" : "text-[#6F6C90]"
+                } font-medium w-[150px] xl:w-[190px] text-[14px]`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: isActive ? subItem.activeSvg : subItem.svg,
+                    }}
+                  />
+                  {subItem.title}
+                </>
+              )}
+            </NavLink>
+          );
+        })}
       </div>
     );
   };
@@ -118,7 +129,7 @@ const SideBar = () => {
             {sideBarTab.map((item, index) => {
               if (
                 (getRole() === 1 && item.access === "admin") ||
-                (getRole() === 2 && item.access !== "all")
+                ((getRole() === 2 || getRole() === 3) && item.access !== "all")
               )
                 return null;
 

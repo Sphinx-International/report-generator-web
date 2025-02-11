@@ -31,18 +31,13 @@ const NewSites = () => {
   const missionDialogRef = useRef<HTMLDialogElement>(null);
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
-  const [newSites, setNewSites] = useState<
-  ResNewSite[] | null
-  >(null);
+  const [newSites, setNewSites] = useState<ResNewSite[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [usersWs, setUsersWs] = useState<User[] | null>(null);
   const [isLoadingUsersWs, setIsLoadingUsersWs] = useState<boolean>(true);
-  const [newSiteWs, setNewSiteWs] = useState<
-    ResNewSite[] | null
-  >(null);
-  const [isLoadingNewSiteWsWs, setIsLoadingNewSiteWs] =
-    useState<boolean>(true);
+  const [newSiteWs, setNewSiteWs] = useState<ResNewSite[] | null>(null);
+  const [isLoadingNewSiteWsWs, setIsLoadingNewSiteWs] = useState<boolean>(true);
 
   const [totalWorkorders, setTotalWorkorders] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,11 +73,7 @@ const NewSites = () => {
     }
   };
 
-  const fetchNewSites = async (
-    offset = 0,
-    limit = 6,
-    status?: string
-  ) => {
+  const fetchNewSites = async (offset = 0, limit = 6, status?: string) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
@@ -217,9 +208,7 @@ const NewSites = () => {
       typeOfSearch === "User" ? "search-account" : "search-new-site",
     setResults: typeOfSearch === "User" ? setUsersWs : setNewSiteWs,
     setLoader:
-      typeOfSearch === "User"
-        ? setIsLoadingUsersWs
-        : setIsLoadingNewSiteWs,
+      typeOfSearch === "User" ? setIsLoadingUsersWs : setIsLoadingNewSiteWs,
   });
   return (
     <div className="flex w-full md:h-[100vh]">
@@ -393,10 +382,10 @@ const NewSites = () => {
             searchQuery
               ? typeOfSearch === "Wo"
                 ? []
-                : ["0", "1"].includes(localStorage.getItem("role")!)
+                : ["0", "1", "3"].includes(localStorage.getItem("role")!)
                 ? ["All", "Created", "Assigned", "Executed", "Closed"]
                 : ["All", "To do", "Executed"]
-              : ["0", "1"].includes(localStorage.getItem("role")!)
+              : ["0", "1", "3"].includes(localStorage.getItem("role")!)
               ? ["All", "Created", "Assigned", "Executed", "Closed"]
               : ["All", "To do", "Executed", "Closed"]
           }
@@ -415,109 +404,7 @@ const NewSites = () => {
               newSiteWs.length > 0 ? (
                 <>
                   <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
-                    {newSiteWs.map(
-                      (newSite: ResNewSite, index: number) => (
-                        <div
-                          key={newSite.id}
-                          className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
-                        >
-                          <div
-                            className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
-                            onClick={() =>
-                              navigate(
-                                `/newsites/${encodeURIComponent(
-                                  newSite.id
-                                )}`
-                              )
-                            }
-                          >
-                            <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
-                              {newSite.title}
-                            </h2>
-                            <p
-                              className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
-                              style={{
-                                display: "-webkit-box",
-                                WebkitLineClamp: "2",
-                                WebkitBoxOrient: "vertical",
-                              }}
-                            >
-                              {newSite.description}
-                            </p>
-                            <div className="flex items-center gap-[8px]">
-                              <WorkOrderStatus
-                                status={newSite.status}
-                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                              />
-                              <WorkOrderpriority
-                                priority={newSite.priority}
-                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="w-full h-[65px] flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px] px-[24px] py-[16px]">
-                            {newSite.assigned_to ? (
-                              <div className="w-full flex items-center gap-[5px]">
-                                <img
-                                  src="/avatar1.png"
-                                  alt="avatar"
-                                  className="sm:w-[29px] w-[26px]"
-                                />
-                                <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
-                                  {newSite.assigned_to.email}
-                                </span>
-                              </div>
-                            ) : null}
-                            {localStorage.getItem("role") === "0" && (
-                              <input
-                                type="checkbox"
-                                name="select-workOrder"
-                                id={`${index}`}
-                                className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCheckboxChange(`${newSite.id}`);
-                                }}
-                              />
-                            )}
-                          </div>
-
-                          <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                            {++index}
-                          </span>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col gap-6 items-center justify-center">
-                  <img
-                    src="/astronaut/astronaut.png"
-                    alt="astro"
-                    className="w-[230px]"
-                  />
-                  <h3 className="text-[30px] font-bold text-n800">
-                    No Workorder Founded
-                  </h3>
-                </div>
-              )
-            ) : (
-              <div className="w-full flex items-center justify-center py-[40px]">
-                <RotatingLines
-                  strokeWidth="4"
-                  strokeColor="#4A3AFF"
-                  width="60"
-                />
-              </div>
-            )
-          ) : newSites && !isLoading ? (
-            <>
-              <div className="w-full flex flex-col gap-[40px]">
-                <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
-                  {newSites.map(
-                    (newSite: ResNewSite, index: number) => (
+                    {newSiteWs.map((newSite: ResNewSite, index: number) => (
                       <div
                         key={newSite.id}
                         className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
@@ -526,9 +413,7 @@ const NewSites = () => {
                           className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
                           onClick={() =>
                             navigate(
-                              `/newsites/${encodeURIComponent(
-                                newSite.id
-                              )}`
+                              `/newsites/${encodeURIComponent(newSite.id)}`
                             )
                           }
                         >
@@ -545,7 +430,7 @@ const NewSites = () => {
                           >
                             {newSite.description}
                           </p>
-                          <div className="flex items-center gap-[8px] flex-wrap">
+                          <div className="flex items-center gap-[8px]">
                             <WorkOrderStatus
                               status={newSite.status}
                               styles={{ fontSize: 10, px: 6, py: 4.5 }}
@@ -554,28 +439,6 @@ const NewSites = () => {
                               priority={newSite.priority}
                               styles={{ fontSize: 10, px: 6, py: 4.5 }}
                             />
-                            {newSite.report_status === 1 ? (
-                              <WorkOrderStatus
-                                status="rep"
-                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                              />
-                            ) : (
-                              <WorkOrderStatus
-                                status="noRep"
-                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                              />
-                            )}
-                            {newSite.certificate_status === 1 ? (
-                              <WorkOrderStatus
-                                status="acc"
-                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                              />
-                            ) : (
-                              <WorkOrderStatus
-                                status="noAcc"
-                                styles={{ fontSize: 10, px: 6, py: 4.5 }}
-                              />
-                            )}
                           </div>
                         </div>
 
@@ -610,8 +473,126 @@ const NewSites = () => {
                           {++index}
                         </span>
                       </div>
-                    )
-                  )}
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-6 items-center justify-center">
+                  <img
+                    src="/astronaut/astronaut.png"
+                    alt="astro"
+                    className="w-[230px]"
+                  />
+                  <h3 className="text-[30px] font-bold text-n800">
+                    No Workorder Founded
+                  </h3>
+                </div>
+              )
+            ) : (
+              <div className="w-full flex items-center justify-center py-[40px]">
+                <RotatingLines
+                  strokeWidth="4"
+                  strokeColor="#4A3AFF"
+                  width="60"
+                />
+              </div>
+            )
+          ) : newSites && !isLoading ? (
+            <>
+              <div className="w-full flex flex-col gap-[40px]">
+                <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
+                  {newSites.map((newSite: ResNewSite, index: number) => (
+                    <div
+                      key={newSite.id}
+                      className="group relative flex flex-col flex-grow sm:flex-grow-0 items-start gap-[12px] rounded-[20px] border-[1px] border-[#E6EDFF] w-[48%] lg:w-[31%] cursor-pointer hover:bg-slate-50 hover:shadow-xl transition-all duration-300"
+                    >
+                      <div
+                        className="flex flex-col items-start gap-[12px] w-full px-[24px] py-[16px] relative z-20"
+                        onClick={() =>
+                          navigate(
+                            `/newsites/${encodeURIComponent(newSite.id)}`
+                          )
+                        }
+                      >
+                        <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
+                          {newSite.title}
+                        </h2>
+                        <p
+                          className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
+                          style={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: "2",
+                            WebkitBoxOrient: "vertical",
+                          }}
+                        >
+                          {newSite.description}
+                        </p>
+                        <div className="flex items-center gap-[8px] flex-wrap">
+                          <WorkOrderStatus
+                            status={newSite.status}
+                            styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                          />
+                          <WorkOrderpriority
+                            priority={newSite.priority}
+                            styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                          />
+                          {newSite.report_status === 1 ? (
+                            <WorkOrderStatus
+                              status="rep"
+                              styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            />
+                          ) : (
+                            <WorkOrderStatus
+                              status="noRep"
+                              styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            />
+                          )}
+                          {newSite.certificate_status === 1 ? (
+                            <WorkOrderStatus
+                              status="acc"
+                              styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            />
+                          ) : (
+                            <WorkOrderStatus
+                              status="noAcc"
+                              styles={{ fontSize: 10, px: 6, py: 4.5 }}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="w-full h-[65px] flex items-center justify-between border-t-[1px] border-t-[#E6EDFF] pt-[10px] px-[24px] py-[16px]">
+                        {newSite.assigned_to ? (
+                          <div className="w-full flex items-center gap-[5px]">
+                            <img
+                              src="/avatar1.png"
+                              alt="avatar"
+                              className="sm:w-[29px] w-[26px]"
+                            />
+                            <span className="sm:text-[12px] text-[10px] leading-[21px] text-n600">
+                              {newSite.assigned_to.email}
+                            </span>
+                          </div>
+                        ) : null}
+                        {localStorage.getItem("role") === "0" && (
+                          <input
+                            type="checkbox"
+                            name="select-workOrder"
+                            id={`${index}`}
+                            className="checked:opacity-100 opacity-0 group-hover:opacity-100 peer cursor-pointer w-[15px] h-[15px] transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCheckboxChange(`${newSite.id}`);
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
+                        {++index}
+                      </span>
+                    </div>
+                  ))}
 
                   <Pagination
                     buttonTitle="Add new site"
@@ -641,10 +622,7 @@ const NewSites = () => {
           )}
         </Main>
       </div>
-      <NewSitePopup
-        ref={missionDialogRef}
-        fetchNewSites={fetchNewSites}
-      />
+      <NewSitePopup ref={missionDialogRef} fetchNewSites={fetchNewSites} />
       <DeletePopup
         page="new site"
         ref={deleteDialogRef}

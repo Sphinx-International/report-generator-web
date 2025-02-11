@@ -8,6 +8,7 @@ import {
   calculateDistance,
 } from "../../../func/los/geographicFunctions";
 import { updateLosResult, losResult } from "../../../func/los/orders";
+import { getRole } from "../../../func/getUserRole";
 
 interface LosOrdersSmallScreensProps {
   order: resOfOneOrder | null;
@@ -78,20 +79,22 @@ const LosOrdersSmallScreens: React.FC<LosOrdersSmallScreensProps> = ({
                         : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
                     }`}
                     onClick={() => {
-                      setSelectedSiteInfo(() => ({
-                        losId: order.line_of_sight.id,
-                        altId: alt.id,
-                        site_type: 1,
-                        site_location: order.line_of_sight.near_end_location,
-                        losStatus: alt.los_status,
-                        accessibility:
-                          order.line_of_sight.near_end_accessibility,
-                        image_count: alt.image_count.near_end,
-                        siteIndex: index,
-                        secondSiteCode: alt.site_location.site_code,
-                      }));
+                      if ([0, 1, 2].includes(getRole()!)) {
+                        setSelectedSiteInfo(() => ({
+                          losId: order.line_of_sight.id,
+                          altId: alt.id,
+                          site_type: 1,
+                          site_location: order.line_of_sight.near_end_location,
+                          losStatus: alt.los_status,
+                          accessibility:
+                            order.line_of_sight.near_end_accessibility,
+                          image_count: alt.image_count.near_end,
+                          siteIndex: index,
+                          secondSiteCode: alt.site_location.site_code,
+                        }));
 
-                      handleOpenDialog(executeLosPopupRef);
+                        handleOpenDialog(executeLosPopupRef);
+                      }
                     }}
                   >
                     <span className="truncate">
@@ -136,18 +139,20 @@ const LosOrdersSmallScreens: React.FC<LosOrdersSmallScreensProps> = ({
                         : "bg-[#DB2C2C1A] text-[#DB2C2C] cursor-pointer"
                     }`}
                     onClick={() => {
-                      setSelectedSiteInfo(() => ({
-                        losId: order.line_of_sight.id,
-                        altId: alt.id,
-                        site_type: 2,
-                        site_location: alt.site_location,
-                        losStatus: alt.los_status,
-                        accessibility: alt.far_end_accessibility,
-                        image_count: alt.image_count.far_end,
-                        secondSiteCode:
-                          order.line_of_sight.near_end_location.site_code,
-                      }));
-                      handleOpenDialog(executeLosPopupRef);
+                      if ([0, 1, 2].includes(getRole()!)) {
+                        setSelectedSiteInfo(() => ({
+                          losId: order.line_of_sight.id,
+                          altId: alt.id,
+                          site_type: 2,
+                          site_location: alt.site_location,
+                          losStatus: alt.los_status,
+                          accessibility: alt.far_end_accessibility,
+                          image_count: alt.image_count.far_end,
+                          secondSiteCode:
+                            order.line_of_sight.near_end_location.site_code,
+                        }));
+                        handleOpenDialog(executeLosPopupRef);
+                      }
                     }}
                   >
                     {alt.site_location.site_code}
@@ -243,9 +248,7 @@ const LosOrdersSmallScreens: React.FC<LosOrdersSmallScreensProps> = ({
               </div>
 
               <div className="flex flex-col items-center gap-3">
-                <span className="text-n800 font-medium text-[14x]">
-                  Distance
-                </span>
+                <span className="text-n800 font-medium text-[14x]">Status</span>
                 <div className="w-fit flex items-end gap-3 justify-center">
                   <span
                     className={`text-[15px] ${
@@ -274,11 +277,13 @@ const LosOrdersSmallScreens: React.FC<LosOrdersSmallScreensProps> = ({
                       height="16"
                       viewBox="0 0 16 16"
                       fill="none"
-                      onClick={() =>
-                        setOpenDropdownIndex(
-                          openDropdownIndex === index ? null : index
-                        )
-                      }
+                      onClick={() => {
+                        if ([0, 1, 2].includes(getRole()!)) {
+                          setOpenDropdownIndex(
+                            openDropdownIndex === index ? null : index
+                          );
+                        }
+                      }}
                     >
                       <g clip-path="url(#clip0_3005_9269)">
                         <path
@@ -382,7 +387,9 @@ const LosOrdersSmallScreens: React.FC<LosOrdersSmallScreensProps> = ({
               </div>
 
               <div className="flex flex-col items-center gap-3">
-                <span className="text-n800 font-medium text-[14x]">Status</span>
+                <span className="text-n800 font-medium text-[14x]">
+                  Distance
+                </span>
                 <div className="w-fit flex items-center justify-center">
                   <span
                     className={`text-[14px]  ${
