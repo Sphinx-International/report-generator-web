@@ -9,6 +9,7 @@ import {
   deleteFileFromIndexedDB,
   storeFileInIndexedDB,
 } from "../generateFileToken";
+import { TheUploadingFile } from "../../assets/types/Mission";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -361,7 +362,7 @@ export const handleCancelUpload = async (
   dispatch?: AppDispatch,
   setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>,
   fetchFunc?: () => void,
-  setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>
+  setFile?: React.Dispatch<React.SetStateAction<TheUploadingFile | undefined>>
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
