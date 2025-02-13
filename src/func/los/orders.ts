@@ -528,7 +528,6 @@ export const updateCGPS = async (
     latitude: result.latitude,
   });
 
-
   try {
     const response = await fetch(
       site_type === 1
@@ -1429,11 +1428,10 @@ export const closeLineOfSight = async (
   }
 };
 
-
 export const uploadReport = async (
   losId: number | null,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  fetchOrders?: () => void,
+  fetchOrders?: () => void
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -1442,9 +1440,7 @@ export const uploadReport = async (
     return;
   }
   setIsLoading(true);
-  const url = `${baseUrl}/line-of-sight/upload-line-of-sight-report`
-  const requestBody = JSON.stringify({line_of_sight: losId,});
-
+  const url = `${baseUrl}/line-of-sight/upload-line-of-sight-report`;
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -1482,11 +1478,6 @@ export const uploadReport = async (
     setIsLoading(false);
   }
 };
-
-
-
-
-
 
 //upload of file:
 
@@ -1677,5 +1668,3 @@ export const handleFileChange = async (
     handle_chunck(file, file_token, setFile, setIsLoading, setUpdateThisTime);
   }
 };
-
-
