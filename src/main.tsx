@@ -13,9 +13,17 @@ import EditUsers from "./pages/EditUsers.tsx";
 import Groups from "./pages/Groups.tsx";
 import Individuals from "./pages/Individuals.tsx";
 import WorkorderByUser from "./pages/WorkordersByUser.tsx";
-import Sites from "./pages/Sites.tsx";
-import LosCommands from "./pages/LosCommands.tsx";
+import Sites from "./pages/Los/Sites.tsx";
+import LosCommands from "./pages/Los/LosCommands.tsx";
 import UsersPerformance from "./pages/usersPerformance.tsx";
+import Modernisation from "./pages/Modernisation.tsx";
+import ModernisationDetails from "./pages/ModernisationDetails.tsx";
+import ModernisationByUser from "./pages/ModernisationByUser.tsx";
+import NewSites from "./pages/newSites.tsx";
+import NewSiteDetails from "./pages/newSiteDetails.tsx";
+import NewSitesByUser from "./pages/newSitesByUser.tsx";
+import OrderDetails from "./pages/Los/OrderDetails.tsx";
+import EditSite from "./pages/Los/EditSite.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -23,6 +31,7 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GlobalBeforeUnload from "./routes middlewares/GlobalBeforeUnload.tsx";
 import { SnackbarProvider } from "notistack";
+import ProjectTypes from "./pages/Los/ProjectTypes.tsx";
 
 const router = createBrowserRouter([
   {
@@ -43,7 +52,9 @@ const router = createBrowserRouter([
   },
   {
     path: "/my-account",
-    element: <ProtectedRoute element={<Account />} allowedRoles={[0, 1, 2]} />,
+    element: (
+      <ProtectedRoute element={<Account />} allowedRoles={[0, 1, 2, 3]} />
+    ),
   },
   {
     path: "/edit-user/:id",
@@ -65,18 +76,26 @@ const router = createBrowserRouter([
   },
   {
     path: "/workorders",
-    element: <ProtectedRoute element={<Missions />} allowedRoles={[0, 1, 2]} />,
+    element: (
+      <ProtectedRoute element={<Missions />} allowedRoles={[0, 1, 2, 3]} />
+    ),
   },
   {
     path: "/workorders/:id",
     element: (
-      <ProtectedRoute element={<MissionDetails />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute
+        element={<MissionDetails />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
     ),
   },
   {
     path: "/workorders-by-user/:userInfo",
     element: (
-      <ProtectedRoute element={<WorkorderByUser />} allowedRoles={[0, 1, 2]} />
+      <ProtectedRoute
+        element={<WorkorderByUser />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
     ),
   },
   {
@@ -89,20 +108,91 @@ const router = createBrowserRouter([
   },
   {
     path: "/mails/individuals",
-    element: <ProtectedRoute element={<Individuals />} allowedRoles={[0, 1]} />,
+    element: (
+      <ProtectedRoute element={<Individuals />} allowedRoles={[0, 1]} />
+    ),
   },
 
   {
     path: "/los",
-    element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1]} />,
+    element: (
+      <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1, 2, 3]} />
+    ),
   },
   {
     path: "/los/site-management",
-    element: <ProtectedRoute element={<Sites />} allowedRoles={[0, 1]} />,
+    element: <ProtectedRoute element={<Sites />} allowedRoles={[0, 1, 3]} />,
   },
   {
-    path: "/los/commands",
-    element: <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1]} />,
+    path: "/edit-site/:id",
+    element: <ProtectedRoute element={<EditSite />} allowedRoles={[0, 1, 3]} />,
+  },
+  {
+    path: "/los/orders",
+    element: (
+      <ProtectedRoute element={<LosCommands />} allowedRoles={[0, 1, 2, 3]} />
+    ),
+  },
+  {
+    path: "/los/orders/:id",
+    element: (
+      <ProtectedRoute element={<OrderDetails />} allowedRoles={[0, 1, 2, 3]} />
+    ),
+  },
+  {
+    path: "/los/projects",
+    element: (
+      <ProtectedRoute element={<ProjectTypes />} allowedRoles={[0, 1, 3]} />
+    ),
+  },
+  {
+    path: "/modernisations",
+    element: (
+      <ProtectedRoute element={<Modernisation />} allowedRoles={[0, 1, 2, 3]} />
+    ),
+  },
+  {
+    path: "/modernisations/:id",
+    element: (
+      <ProtectedRoute
+        element={<ModernisationDetails />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
+    ),
+  },
+  {
+    path: "/modernisations-by-user/:userInfo",
+    element: (
+      <ProtectedRoute
+        element={<ModernisationByUser />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
+    ),
+  },
+
+  {
+    path: "/newsites",
+    element: (
+      <ProtectedRoute element={<NewSites />} allowedRoles={[0, 1, 2, 3]} />
+    ),
+  },
+  {
+    path: "/newsites/:id",
+    element: (
+      <ProtectedRoute
+        element={<NewSiteDetails />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
+    ),
+  },
+  {
+    path: "/newsites-by-user/:userInfo",
+    element: (
+      <ProtectedRoute
+        element={<NewSitesByUser />}
+        allowedRoles={[0, 1, 2, 3]}
+      />
+    ),
   },
 
   {

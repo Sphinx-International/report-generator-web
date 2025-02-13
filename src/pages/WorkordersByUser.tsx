@@ -1,18 +1,13 @@
 import { useRef, useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
 import Header from "../components/Header";
-import Main from "../components/Main";
 import Pagination from "../components/Pagination";
-import MissionPopup from "../components/MissionPopup";
 import WorkOrderStatus from "../components/workorder/WorkOrderStatus";
 import WorkOrderpriority from "../components/workorder/WorkOrderPriorities";
-import DeletePopup from "../components/DeletePopup";
 import { useNavigate, useParams } from "react-router-dom";
-import { RootState } from "../Redux/store";
 import { ResMission } from "../assets/types/Mission";
-import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
+import { toggleExtantionInTab } from "../Redux/slices/selectedExtantionsSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 
@@ -23,12 +18,8 @@ const WorkorderByUser = () => {
   const { userInfo } = useParams<{ userInfo?: string }>();
 
   const dispatch = useDispatch<AppDispatch>();
-  const selectedWorkorders = useSelector(
-    (state: RootState) => state.selectedWorkorders.workOrdersTab
-  );
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
-  const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
   const [workorders, setWorkorders] = useState<ResMission[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -48,7 +39,7 @@ const WorkorderByUser = () => {
   };
 
   const handleCheckboxChange = (userId: string) => {
-    dispatch(toggleWorkorderInTab(userId));
+    dispatch(toggleExtantionInTab({ tab: "workOrdersTab", id: userId }));
   };
   useEffect(() => {
     fetchWorkOrders((currentPage - 1) * limit, limit);
@@ -110,17 +101,10 @@ const WorkorderByUser = () => {
     }
   };
 
-  const handleFirstPage = () => setCurrentPage(1);
-  const handlePreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleLastPage = () => setCurrentPage(totalPages);
-
   return (
     <div className="flex w-full md:h-[100vh]">
       <SideBar />
-      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[0px] w-full md:h-[100vh] overflow-y-auto">
+      <div className="lg:pl-[26px] md:pt-[32px] pt-[20px] lg:pr-[30px] sm:px-[30px] px-[15px] pb-[20px] flex flex-col gap-[10px] w-full md:h-[100vh] overflow-y-auto">
         <Header
           pageSentence="Here are information about all missions"
           searchBar={false}
@@ -157,12 +141,7 @@ const WorkorderByUser = () => {
             </span>
           </div>
         </div>
-        <Main
-          page="workorders"
-          flitration={[]}
-          FiltrationFunc={fetchWorkOrders}
-          setCurrentPage={setCurrentPage}
-        >
+
           {workorders && !isLoading ? (
             <>
               <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">
@@ -237,11 +216,8 @@ const WorkorderByUser = () => {
                   buttonTitle="Add workorder"
                   buttonFunc={handladdMissionButtonClick}
                   currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
                   totalPages={totalPages}
-                  onFirstPage={handleFirstPage}
-                  onPreviousPage={handlePreviousPage}
-                  onNextPage={handleNextPage}
-                  onLastPage={handleLastPage}
                 />
               </div>
             </>
@@ -261,21 +237,7 @@ const WorkorderByUser = () => {
               </h3>
             </div>
           )}
-        </Main>
       </div>
-      <MissionPopup ref={missionDialogRef} fetchWorkOrders={fetchWorkOrders} />
-      <DeletePopup
-        page="workorders"
-        ref={deleteDialogRef}
-        deleteItems={selectedWorkorders}
-        deleteUrl={`${baseUrl}/workorder/delete-workorders`}
-        jsonTitle="workorders"
-        fetchFunc={fetchWorkOrders}
-        fetchUrl={`${baseUrl}/workorder/get-workorders`}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        limit={limit}
-      />
     </div>
   );
 };

@@ -9,10 +9,6 @@ import { RotatingLines } from "react-loader-spinner";
 import { getRole } from "../func/getUserRole";
 import Page404 from "./Page404";
 const baseUrl = import.meta.env.VITE_BASE_URL;
-import {
-  handle_Assignment_and_execute,
-  handle_add_or_delete_mailedPerson,
-} from "../func/changeWorkorderStatus";
 import { downloadFile } from "../func/donwloadFile";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
 import handleChange from "../func/handleChangeFormsInput";
@@ -38,6 +34,8 @@ import {
   handle_update_cert_type,
   handleFileChange,
   handle_open_or_close_returnVoucher,
+  handle_Assignment_and_execute,
+  handle_add_or_delete_mailedPerson,
 } from "../func/otherworkorderApis";
 import {
   generateFileToken,
@@ -64,8 +62,6 @@ type WorkorderProperties = {
 const MissionDetails = () => {
   const { id } = useParams();
   // const decodedId = decodeURIComponent(id || "");
-
-  console.log(id);
 
   const dispatch = useDispatch<AppDispatch>();
   const uploadingFiles = useSelector(
@@ -276,6 +272,7 @@ const MissionDetails = () => {
           workorder_id,
           "execute-workorder",
           "PUT",
+          "workorder",
           setIsLoading,
           fetchOneWorkOrder
         );
@@ -308,8 +305,6 @@ const MissionDetails = () => {
     }
     const url = `${baseUrl}/workorder/get-workorder/${encodeURIComponent(id!)}`;
 
-    console.log(url);
-
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -323,7 +318,6 @@ const MissionDetails = () => {
           {
             const data = await response.json();
             setWorkorder(data);
-            console.log(data);
             setBasicDataWorkorder({
               title: data.workorder.title,
               id: data.workorder.id,
@@ -516,7 +510,7 @@ const MissionDetails = () => {
                         {basicDataWorkorder.id}
                       </span>
                     )}
-                    {!isEditing_Title_tic && getRole() !== 2 && (
+                    {!isEditing_Title_tic && [0, 1].includes(getRole()!) && (
                       <svg
                         onClick={() => {
                           setIsEditing_Title_tic(true);
@@ -629,7 +623,7 @@ const MissionDetails = () => {
                         className="relative w-[36px] h-[36px] sm:w-[41px] sm:h-[41px] rounded-[50%]"
                         onClick={() => {
                           if (
-                            getRole() !== 2 &&
+                            [0, 1].includes(getRole()!) &&
                             workorder.workorder.status < 2
                           ) {
                             setVisibleEngPopup(!visibleEngPopup);
@@ -641,7 +635,7 @@ const MissionDetails = () => {
                           alt="avatar"
                           className="rounded-[50%] w-full h-full relative z-0"
                         />
-                        {getRole() !== 2 && (
+                        {[0, 1].includes(getRole()!) && (
                           <span className="bg-550 bg-opacity-0 w-full h-full absolute z-30 top-0 group rounded-[50%] hover:bg-opacity-40 cursor-pointer flex items-center justify-center">
                             <svg
                               className="opacity-0 transition-opacity duration-100 ease-in-out group-hover:opacity-100"
@@ -727,6 +721,7 @@ const MissionDetails = () => {
                                           workorder.workorder.id,
                                           "reassign-workorder",
                                           "PATCH",
+                                          "workorder",
                                           setIsLoading,
                                           undefined,
                                           user.id
@@ -1024,7 +1019,7 @@ const MissionDetails = () => {
                   <div className="flex flex-col gap-[10px] items-start w-full">
                     <span className="text-[17px] font-medium leading-[30px] text-n700 flex items-center gap-[6px]">
                       Description
-                      {!isEditing_desc && getRole() !== 2 && (
+                      {!isEditing_desc && [0, 1].includes(getRole()!) && (
                         <svg
                           onClick={() => {
                             setIsEditing_desc(true);
@@ -1069,7 +1064,7 @@ const MissionDetails = () => {
 
                   <div className="flex items-center gap-[4px]">
                     <div className="relative">
-                      {getRole() !== 2 && (
+                      {[0, 1].includes(getRole()!) && (
                         <span
                           className="px-[11px] rounded-[50%] relative z-0 bg-[#EDEBFF] hover:bg-[#d5d4f0] cursor-pointer text-primary text-[26px] font-semibold"
                           onClick={() => {
@@ -1204,6 +1199,7 @@ const MissionDetails = () => {
                                             workorder.workorder.id,
                                             user.email,
                                             "add",
+                                            "workorder",
                                             setIsLoadingMaildPersons,
                                             setVisibleCoordPopup,
                                             fetchOneWorkOrder
@@ -1277,7 +1273,7 @@ const MissionDetails = () => {
                               alt="avatar"
                               className="w-[40px] rounded-[50%]"
                             />
-                            {getRole() !== 2 && (
+                            {[0, 1].includes(getRole()!) && (
                               <span
                                 className="absolute top-0 flex items-center justify-center w-full h-full text-white bg-550 opacity-0 hover:bg-opacity-40 z-20 hover:opacity-100 cursor-pointer rounded-[50%]"
                                 onClick={() => {
@@ -1285,6 +1281,7 @@ const MissionDetails = () => {
                                     workorder.workorder.id,
                                     mail.id,
                                     "delete",
+                                    "workorder",
                                     setIsLoadingMaildPersons,
                                     setVisibleCoordPopup,
                                     fetchOneWorkOrder
@@ -1314,7 +1311,7 @@ const MissionDetails = () => {
                       })}
                   </div>
 
-                  <div className="flex items-center gap-[8px] relative">
+                  <div className="flex items-center gap-[8px] relative flex-wrap">
                     <WorkOrderStatus
                       status={
                         workorder.workorder.report_status === 1 &&
@@ -1342,7 +1339,7 @@ const MissionDetails = () => {
                             : "text-[#DB2C2C]"
                         }`}
                         onClick={() => {
-                          if (getRole() !== 2) {
+                          if ([0, 1].includes(getRole()!)) {
                             setShowPriority(!showPriority);
                           }
                         }}
@@ -1471,32 +1468,35 @@ const MissionDetails = () => {
                         />
                         {visibleReqAccPopup &&
                           workorder.workorder.status < 2 &&
-                          getRole() !== 2 && (
+                          [0, 1].includes(getRole()!) && (
                             <RequirementPopup
                               woId={workorder.workorder.id}
                               RequirementType="acceptance"
                               Requirement={
                                 workorder.workorder.require_acceptence
                               }
+                              extantionType="workorder"
                               setState={setVisibleReqAccPopup}
                               fetchOneWorkOrder={fetchOneWorkOrder}
                             />
                           )}
                       </div>
-                    ) : workorder.workorder.status < 2 && getRole() !== 2 ? (
+                    ) : workorder.workorder.status < 2 &&
+                      [0, 1].includes(getRole()!) ? (
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededAcc"}
                           styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqAccPopup}
                         />
-                        {visibleReqAccPopup && getRole() !== 2 && (
+                        {visibleReqAccPopup && [0, 1].includes(getRole()!) && (
                           <RequirementPopup
                             woId={workorder.workorder.id}
                             RequirementType="acceptance"
                             Requirement={
                               workorder.workorder.require_acceptence!
                             }
+                            extantionType="workorder"
                             setState={setVisibleReqAccPopup}
                             fetchOneWorkOrder={fetchOneWorkOrder}
                           />
@@ -1524,36 +1524,40 @@ const MissionDetails = () => {
                         />
                         {visibleReqVoucherPopup &&
                           workorder.workorder.status < 2 &&
-                          getRole() !== 2 && (
+                          [0, 1].includes(getRole()!) && (
                             <RequirementPopup
                               woId={workorder.workorder.id}
                               RequirementType="return voucher"
                               Requirement={
                                 workorder.workorder.require_return_voucher
                               }
+                              extantionType="workorder"
                               setState={setVisibleReqVoucherPopup}
                               fetchOneWorkOrder={fetchOneWorkOrder}
                             />
                           )}
                       </div>
-                    ) : workorder.workorder.status < 2 && getRole() !== 2 ? (
+                    ) : workorder.workorder.status < 2 &&
+                      [0, 1].includes(getRole()!) ? (
                       <div className="relative">
                         <WorkOrderStatus
                           status={"unneededVo"}
                           styles={{ fontSize: 13, px: 22, py: 8.5 }}
                           setState={setVisibleReqVoucherPopup}
                         />
-                        {visibleReqVoucherPopup && getRole() !== 2 && (
-                          <RequirementPopup
-                            woId={workorder.workorder.id}
-                            RequirementType="return voucher"
-                            Requirement={
-                              workorder.workorder.require_return_voucher!
-                            }
-                            setState={setVisibleReqVoucherPopup}
-                            fetchOneWorkOrder={fetchOneWorkOrder}
-                          />
-                        )}
+                        {visibleReqVoucherPopup &&
+                          [0, 1].includes(getRole()!) && (
+                            <RequirementPopup
+                              woId={workorder.workorder.id}
+                              RequirementType="return voucher"
+                              Requirement={
+                                workorder.workorder.require_return_voucher!
+                              }
+                              extantionType="workorder"
+                              setState={setVisibleReqVoucherPopup}
+                              fetchOneWorkOrder={fetchOneWorkOrder}
+                            />
+                          )}
                       </div>
                     ) : null}
                   </div>
@@ -1563,7 +1567,7 @@ const MissionDetails = () => {
                   <div className="w-full flex flex-col items-end gap-[16px]">
                     <>
                       <div className="w-full flex flex-col gap-[12px]">
-                        {getRole() !== 2 ? (
+                        {[0, 1].includes(getRole()!) ? (
                           <label
                             htmlFor="attachements"
                             className="text-[17px] text-n700 leading-[30px] font-medium"
@@ -1596,17 +1600,7 @@ const MissionDetails = () => {
                                         ? "border-[1px] border-n400"
                                         : attach.uploaded_by ===
                                           Number(
-                                            Number(
-                                              Number(
-                                                Number(
-                                                  Number(
-                                                    localStorage.getItem(
-                                                      "user_id"
-                                                    )!
-                                                  )
-                                                )
-                                              )
-                                            )
+                                            localStorage.getItem("user_id")!
                                           )
                                         ? "border-[2px] border-[#DB2C2C]"
                                         : "border-[2px] border-[#FFB84D]"
@@ -1615,8 +1609,9 @@ const MissionDetails = () => {
                                       if (attach.is_completed) {
                                         downloadFile(
                                           attach.id,
-                                          "download-workorder-attachment",
+                                          "attachment",
                                           attach.file_name,
+                                          "workorder",
                                           (progress) => {
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
@@ -1732,7 +1727,7 @@ const MissionDetails = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 &&
+                                    {[0, 1].includes(getRole()!) &&
                                       (attach.is_completed ? (
                                         <span
                                           className="w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-center"
@@ -1742,6 +1737,7 @@ const MissionDetails = () => {
                                               workorder.workorder.id,
                                               attach.id,
                                               "delete",
+                                              "workorder",
                                               setIsLoadingDeleteFile,
                                               fetchOneWorkOrder
                                             );
@@ -1869,8 +1865,9 @@ const MissionDetails = () => {
                                     onClick={() => {
                                       downloadFile(
                                         attach.id,
-                                        "download-workorder-attachment",
+                                        "attachment",
                                         attach.file_name,
+                                        "workorder",
                                         (progress) => {
                                           dispatch(
                                             setDownloadProgress({
@@ -1932,7 +1929,7 @@ const MissionDetails = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {getRole() !== 2 && (
+                                    {[0, 1].includes(getRole()!) && (
                                       <span
                                         className={`w-[8%] border-l-[2px] h-full border-n400 px-[3px] text-[12px] hidden group-hover:flex items-center justify-centers`}
                                         onClick={async (e) => {
@@ -1942,6 +1939,7 @@ const MissionDetails = () => {
                                             workorder.workorder.id,
                                             attach.id,
                                             "delete",
+                                            "workorder",
                                             setIsLoadingDeleteFile,
                                             fetchOneWorkOrder
                                           );
@@ -2006,7 +2004,7 @@ const MissionDetails = () => {
                                   </div>
                                 );
                               })}
-                          {getRole() !== 2 && (
+                          {[0, 1].includes(getRole()!) && (
                             <div
                               className="flex flex-col sm:w-[46%] w-full"
                               onDragOver={(e) => {
@@ -2025,6 +2023,7 @@ const MissionDetails = () => {
                                       dispatch,
                                       workorder.workorder.id,
                                       "attachements",
+                                      "workorder",
                                       file,
                                       setIsLoadingAttach,
                                       fetchOneWorkOrder,
@@ -2049,6 +2048,7 @@ const MissionDetails = () => {
                                       dispatch,
                                       workorder.workorder.id,
                                       "attachements",
+                                      "workorder",
                                       file,
                                       setIsLoadingAttach,
                                       fetchOneWorkOrder,
@@ -2167,17 +2167,7 @@ const MissionDetails = () => {
                                   className={`cursor-pointer sm:w-[48%] lg:w-[31%] w-full flex items-center justify-between py-[9px] bg-white shadow-lg rounded-[15px] ${
                                     !report.is_completed &&
                                     (report.uploaded_by ===
-                                    Number(
-                                      Number(
-                                        Number(
-                                          Number(
-                                            Number(
-                                              localStorage.getItem("user_id")!
-                                            )
-                                          )
-                                        )
-                                      )
-                                    )
+                                    Number(localStorage.getItem("user_id")!)
                                       ? "border-[2px] border-[#db2c2c]"
                                       : "border-[2px] border-[#FFB84D]")
                                   } `}
@@ -2185,8 +2175,9 @@ const MissionDetails = () => {
                                     if (report.is_completed) {
                                       downloadFile(
                                         report.id,
-                                        "download-workorder-report",
+                                        "report",
                                         report.file_name,
+                                        "workorder",
                                         (progress) => {
                                           // You can update the progress in the state to show it in the UI
                                           setWorkorder((prev) => {
@@ -2466,24 +2457,31 @@ const MissionDetails = () => {
                         {(workorder.reports === null ||
                           (workorder.reports &&
                             workorder.reports[workorder.reports?.length - 1]
-                              .type !== 1)) && (
-                          <div
-                            className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
-                            onClick={() => {
-                              handleOpenDialog(addReportDialogRef);
-                            }}
-                          >
-                            <span className="text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
-                              Upload new files
-                            </span>
-                          </div>
-                        )}
+                              .type !== 1)) &&
+                          ([0, 1, 2].includes(getRole()!) ? (
+                            <div
+                              className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[10px] px-[45px] flex items-center justify-center bg-white shadow-lg shadow-slate-300 rounded-[15px]"
+                              onClick={() => {
+                                handleOpenDialog(addReportDialogRef);
+                              }}
+                            >
+                              <span className="text-[12px] text-primary font-semibold leading-[13px] py-[30px] px-[5px] text-center flex flex-col items-center">
+                                Upload new report
+                              </span>
+                            </div>
+                          ) : (
+                            workorder.reports === null && (
+                              <div className="w-full flex items-center justify-center font-medium py-4 text-n600">
+                                Still there is no report uploaded
+                              </div>
+                            )
+                          ))}
                       </div>
                       <div className="flex justify-end w-full">
                         {workorder.reports &&
                           workorder.reports[workorder.reports?.length - 1]
                             .type === 1 &&
-                          getRole() !== 2 && (
+                          [0, 1].includes(getRole()!) && (
                             <div className="flex items-center gap-[12px]">
                               <button
                                 className="sm:px-[26px] px-[16px] py-[10px] rounded-[30px] border-[2px] border-primary text-primary text-[13px] font-semibold leading-[20px] w-fit"
@@ -2491,6 +2489,7 @@ const MissionDetails = () => {
                                   handle_edit_or_reqUpdate_report(
                                     workorder.workorder.id,
                                     false,
+                                    "workorder",
                                     setisLoadingFinalize,
                                     fetchOneWorkOrder
                                   );
@@ -2562,8 +2561,9 @@ const MissionDetails = () => {
                                       if (certificate.is_completed) {
                                         downloadFile(
                                           certificate.id,
-                                          "download-workorder-acceptance-certificate",
+                                          "acceptance-certificate",
                                           certificate.file_name,
+                                          "workorder",
                                           (progress) => {
                                             setWorkorder((prev) => {
                                               if (!prev) return null;
@@ -2712,8 +2712,7 @@ const MissionDetails = () => {
                                             workorder.acceptance_certificates
                                               .length - 1
                                           ].is_completed &&
-                                          localStorage.getItem("role") !==
-                                            "2" && (
+                                          [0, 1].includes(getRole()!) && (
                                             <div
                                               className="absolute right-2 top-[80%] translate-y-[-50%]"
                                               onClick={(e) => {
@@ -2806,6 +2805,7 @@ const MissionDetails = () => {
                                                             workorder.workorder
                                                               .id,
                                                             certType,
+                                                            "workorder",
                                                             fetchOneWorkOrder
                                                           );
                                                           setShowEditCertificatType(
@@ -2933,7 +2933,8 @@ const MissionDetails = () => {
                               (workorder.acceptance_certificates.length > 0 &&
                                 workorder.acceptance_certificates[
                                   workorder.acceptance_certificates.length - 1
-                                ].type !== 1)) && (
+                                ].type !== 1)) &&
+                            ([0, 1, 2].includes(getRole()!) ? (
                               <div
                                 className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
                                 onClick={() => {
@@ -2944,7 +2945,14 @@ const MissionDetails = () => {
                                   Add new certificate
                                 </span>
                               </div>
-                            )}
+                            ) : (
+                              !workorder.acceptance_certificates && (
+                                <div className="w-full flex items-center justify-center font-medium py-4 text-n600">
+                                  Still there is no acceptance certificates
+                                  uploaded
+                                </div>
+                              )
+                            ))}
                         </div>
                       </div>
                     )}
@@ -2994,8 +3002,9 @@ const MissionDetails = () => {
                                         if (voucher.is_completed) {
                                           downloadFile(
                                             voucher.id,
-                                            "download-workorder-return-voucher",
+                                            "return-voucher",
                                             voucher.file_name,
+                                            "workorder",
                                             (progress) => {
                                               setWorkorder((prev) => {
                                                 if (!prev) return null;
@@ -3215,7 +3224,7 @@ const MissionDetails = () => {
                                   !workorder.return_vouchers[
                                     workorder.return_vouchers.length - 1
                                   ].is_last)) &&
-                              (localStorage.getItem("role") !== "2" ? (
+                              ([0, 1].includes(getRole()!) ? (
                                 <div
                                   className="cursor-pointer w-full sm:w-[48%] lg:w-[31%] py-[18px] px-[45px] flex items-center justify-center bg-white shadow-lg rounded-[15px]"
                                   onClick={() => {
@@ -3235,7 +3244,7 @@ const MissionDetails = () => {
                               ))}
                           </div>
                         </div>
-                        {localStorage.getItem("role") !== "2" && (
+                        {[0, 1].includes(getRole()!) && (
                           <button
                             className={`py-[10px] px-[45px] rounded-[30px] border-[2px] border-primary text-[14px] font-semibold ${
                               workorder.return_vouchers &&
@@ -3253,12 +3262,14 @@ const MissionDetails = () => {
                                 ? handle_open_or_close_returnVoucher(
                                     workorder.workorder.id,
                                     "open",
+                                    "workorder",
                                     fetchOneWorkOrder,
                                     setIsLoadingVoucher
                                   )
                                 : handle_open_or_close_returnVoucher(
                                     workorder.workorder.id,
                                     "close",
+                                    "workorder",
                                     fetchOneWorkOrder,
                                     setIsLoadingVoucher
                                   );
@@ -3290,92 +3301,92 @@ const MissionDetails = () => {
                 )}
               </div>
             </div>
-            {workorder.workorder.status === 0 ? (
-              <div
-                className={`w-full flex items-center ${
-                  undoMessageVisible
-                    ? "justify-between lg:flex-row flex-col "
-                    : "justify-end"
-                } `}
-              >
-                <button
-                  className={`py-[12px] px-[48px] rounded-[30px] ${
-                    selectedEng
-                      ? "text-primary border-primary"
-                      : "text-n400 border-n400"
-                  } border-[2px]  leading-[20px] font-semibold text-[14px]`}
-                  disabled={selectedEng ? false : true}
-                  onClick={() => {
-                    handle_Assignment_and_execute(
-                      workorder.workorder.id,
-                      "assign-workorder",
-                      "PUT",
-                      setIsLoading,
-                      fetchOneWorkOrder,
-                      selectedEng!.id
-                    );
-                  }}
+            {[0, 1, 2].includes(getRole()!) &&
+              (workorder.workorder.status === 0 ? (
+                <div
+                  className={`w-full flex items-center ${
+                    undoMessageVisible
+                      ? "justify-between lg:flex-row flex-col "
+                      : "justify-end"
+                  } `}
                 >
-                  {isLoading ? (
-                    <RotatingLines
-                      visible={true}
-                      width="20"
-                      strokeWidth="3"
-                      strokeColor="#4A3AFF"
-                    />
-                  ) : (
-                    "Assing"
-                  )}
-                </button>
-              </div>
-            ) : workorder.workorder.status > 0 ? (
-              <div
-                className={`w-full flex items-center ${
-                  undoMessageVisible
-                    ? "justify-between lg:flex-row flex-col "
-                    : "justify-end"
-                } `}
-              >
-                {undoMessageVisible && (
-                  <span className="text-[13px] font-medium leading-[30px] text-n700 flex sm:flex-row flex-col items-center text-center lg:pb-4">
-                    This workorder is set to be Executed!{" "}
-                    <span
-                      className="text-primary font-semibold cursor-pointer"
-                      onClick={handleUndo}
-                    >
-                      {"  "}
-                      Undo This action before {timeLeft} seconds
-                    </span>
-                  </span>
-                )}
-
-                <button
-                  className={`py-[12px] px-[48px] w-full md:w-auto rounded-[30px] bg-primary text-white  border-[2px] leading-[20px] font-semibold text-[14px]
-                   ${workorder.workorder.status !== 1 && "hidden"}  `}
-                  disabled={isLoading ? true : false}
-                  onClick={() => {
-                    workorder.workorder.status === 1
-                      ? handleExecute(workorder.workorder.id)
-                      : null;
-                  }}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center w-full">
+                  <button
+                    className={`py-[12px] px-[48px] rounded-[30px] ${
+                      selectedEng
+                        ? "text-primary border-primary"
+                        : "text-n400 border-n400"
+                    } border-[2px]  leading-[20px] font-semibold text-[14px]`}
+                    disabled={selectedEng ? false : true}
+                    onClick={() => {
+                      handle_Assignment_and_execute(
+                        workorder.workorder.id,
+                        "assign-workorder",
+                        "PUT",
+                        "workorder",
+                        setIsLoading,
+                        fetchOneWorkOrder,
+                        selectedEng!.id
+                      );
+                    }}
+                  >
+                    {isLoading ? (
                       <RotatingLines
                         visible={true}
                         width="20"
                         strokeWidth="3"
-                        strokeColor="white"
+                        strokeColor="#4A3AFF"
                       />
-                    </div>
-                  ) : (
-                    workorder.workorder.status === 1 && "Execution Finished"
+                    ) : (
+                      "Assing"
+                    )}
+                  </button>
+                </div>
+              ) : workorder.workorder.status > 0 ? (
+                <div
+                  className={`w-full flex items-center ${
+                    undoMessageVisible
+                      ? "justify-between lg:flex-row flex-col "
+                      : "justify-end"
+                  } `}
+                >
+                  {undoMessageVisible && (
+                    <span className="text-[13px] font-medium leading-[30px] text-n700 flex sm:flex-row flex-col items-center text-center lg:pb-4">
+                      This workorder is set to be Executed!{" "}
+                      <span
+                        className="text-primary font-semibold cursor-pointer"
+                        onClick={handleUndo}
+                      >
+                        {"  "}
+                        Undo This action before {timeLeft} seconds
+                      </span>
+                    </span>
                   )}
-                </button>
-              </div>
-            ) : (
-              ""
-            )}
+
+                  <button
+                    className={`py-[12px] px-[48px] w-full md:w-auto rounded-[30px] bg-primary text-white  border-[2px] leading-[20px] font-semibold text-[14px]
+                   ${workorder.workorder.status !== 1 && "hidden"}  `}
+                    disabled={isLoading ? true : false}
+                    onClick={() => {
+                      workorder.workorder.status === 1
+                        ? handleExecute(workorder.workorder.id)
+                        : null;
+                    }}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center w-full">
+                        <RotatingLines
+                          visible={true}
+                          width="20"
+                          strokeWidth="3"
+                          strokeColor="white"
+                        />
+                      </div>
+                    ) : (
+                      workorder.workorder.status === 1 && "Execution Finisheds"
+                    )}
+                  </button>
+                </div>
+              ) : null)}
           </div>
         )}
       </div>
@@ -3397,21 +3408,25 @@ const MissionDetails = () => {
       <AddCertificatPopup
         ref={addCertificatDialogRef}
         workorderId={workorder?.workorder.id}
+        extantionType="workorder"
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
       <AddReportPopup
         ref={addReportDialogRef}
         workorderId={workorder?.workorder.id}
+        extantionType="workorder"
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
       <RequestUpdatePopup
         ref={requestUpdateDialogRef}
         workorderId={workorder?.workorder.id}
+        extantionType="workorder"
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
       <AddVoucherPopup
         ref={addVoucherDialogRef}
         workorderId={workorder?.workorder.id}
+        extantionType="workorder"
         fetchOneWorkOrder={fetchOneWorkOrder}
       />
     </div>

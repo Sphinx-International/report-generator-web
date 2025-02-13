@@ -1,6 +1,8 @@
 import React, { ReactNode, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
+import MonthCalender from "./monthCalender";
+import { getRole } from "../func/getUserRole";
 
 type SecondaryFunc = {
   name: string;
@@ -8,12 +10,16 @@ type SecondaryFunc = {
 };
 
 type Functionalities = {
-  primaryFunc: SecondaryFunc;
+  primaryFunc?: SecondaryFunc;
   secondaryFuncs?: SecondaryFunc[];
+  setState?: React.Dispatch<React.SetStateAction<unknown>>;
+  State?: unknown;
+  setState2?: React.Dispatch<React.SetStateAction<unknown>>;
+  State2?: unknown;
 };
 
-interface HeaderProps {
-  page: "workorders" | "accounts";
+interface MainProps {
+  page: "workorders" | "accounts" | "modernisation" | "new site" | "los orders";
   flitration: string[];
   FiltrationFunc?: (offset: number, limit: number, status?: string) => void;
   subFilterFunc?: (
@@ -53,20 +59,33 @@ const excutedFilter: ExcutedFilter[] = [
     voucher: false,
   },
 ];
-const Main: React.FC<HeaderProps> = (props) => {
+const Main: React.FC<MainProps> = (props) => {
   const getDefaultFilter = () => {
     const storedFilter =
       props.page === "accounts"
         ? localStorage.getItem("selectedFilterForUsers")
+        : props.page === "los orders"
+        ? localStorage.getItem("selectedFilterForLos")
         : localStorage.getItem("selectedFilterForWorkorders");
     if (storedFilter) {
       return storedFilter;
     }
-    return ["0", "1"].includes(localStorage.getItem("role")!) ? "all" : "To do";
+    return ["0", "1"].includes(localStorage.getItem("role")!)
+      ? "all"
+      : props.page === "workorders"
+      ? "To do"
+      : "all";
   };
-
-  const selectedWorkorders = useSelector(
-    (state: RootState) => state.selectedWorkorders.workOrdersTab
+  const selectedExtension = useSelector((state: RootState) =>
+    props.page === "workorders"
+      ? state.selectedExtantions.workOrdersTab
+      : props.page === "modernisation"
+      ? state.selectedExtantions.modernisationsTab
+      : props.page === "new site"
+      ? state.selectedExtantions.newSitesTab
+      : props.page === "los orders"
+      ? state.selectedLosOrders.OrdersTab
+      : null
   );
   const [selectedFilter, setSelectedFilter] =
     useState<string>(getDefaultFilter);
@@ -82,6 +101,9 @@ const Main: React.FC<HeaderProps> = (props) => {
       : ""
   );
 
+  const [visibleMonthCalender, setVisibleMonthCalender] =
+    useState<boolean>(false);
+
   const handleFilterClick = (item: string) => {
     if (
       item === "Missing reports" ||
@@ -95,6 +117,8 @@ const Main: React.FC<HeaderProps> = (props) => {
     }
     props.page === "accounts"
       ? localStorage.setItem("selectedFilterForUsers", item.toLowerCase())
+      : props.page === "los orders"
+      ? localStorage.setItem("selectedFilterForLos", item.toLowerCase())
       : item === "Missing reports" ||
         item === "Missing acceptance certificate" ||
         item === "Missing return voucher"
@@ -147,17 +171,20 @@ const Main: React.FC<HeaderProps> = (props) => {
                     : "text-n600"
                 } leading-[36px] cursor-pointer text-[15px] flex items-center gap-[6px] relative`}
                 onClick={() => {
-                  if (item === "Executed") {
+                  if (item === "Executed" && props.page !== "los orders") {
                     setVisibleExcutedPopup(!visibleExcutedPopup);
                   } else {
                     handleFilterClick(item.toLowerCase());
                     setSelectedExcutedFilter("");
                     setVisibleExcutedPopup(false);
+                    if (props.functionalties && props.functionalties.setState) {
+                      props.functionalties.setState(null);
+                    }
                   }
                 }}
               >
                 {item}
-                {item === "Executed" && (
+                {item === "Executed" && props.page !== "los orders" && (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="11"
@@ -174,41 +201,54 @@ const Main: React.FC<HeaderProps> = (props) => {
                   </svg>
                 )}
               </span>
-              {item === "Executed" && visibleExcutedPopup && (
-                <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
-                  {excutedFilter.map((filter, index) => {
-                    return (
-                      <span
-                        key={index}
-                        className={`text-[14px] text-nowrap cursor-pointer ${
-                          selectedExcutedFilter === filter.title
-                            ? "text-primary"
-                            : "text-n600"
-                        }`}
-                        onClick={() => {
-                          if (filter.title === "All") {
-                            handleFilterClick("executed");
-                          } else {
-                            handleFilterClick(filter.title);
-                          }
-                          setSelectedExcutedFilter(filter.title);
-                          setVisibleExcutedPopup(false);
-                          localStorage.setItem(
-                            "selectedSubExecutedFilter",
-                            filter.title
-                          );
-                        }}
-                      >
-                        {filter.title}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+              {item === "Executed" &&
+                visibleExcutedPopup &&
+                props.page !== "los orders" && (
+                  <div className="absolute rounded-[20px] z-40 p-5 bg-white shadow-md shadow-slate-200 flex flex-col items-start gap-[15px]">
+                    {excutedFilter.map((filter, index) => {
+                      // Only render if the page is not "new site" and filter.title is not "Missing return voucher"
+                      if (
+                        !(
+                          props.page === "new site" &&
+                          filter.title === "Missing return voucher"
+                        )
+                      ) {
+                        return (
+                          <span
+                            key={index}
+                            className={`text-[14px] text-nowrap cursor-pointer ${
+                              selectedExcutedFilter === filter.title
+                                ? "text-primary"
+                                : "text-n600"
+                            }`}
+                            onClick={() => {
+                              // Handle the filter click logic
+                              if (filter.title === "All") {
+                                handleFilterClick("executed");
+                              } else {
+                                handleFilterClick(filter.title);
+                              }
+                              setSelectedExcutedFilter(filter.title);
+                              setVisibleExcutedPopup(false);
+                              localStorage.setItem(
+                                "selectedSubExecutedFilter",
+                                filter.title
+                              );
+                            }}
+                          >
+                            {filter.title}
+                          </span>
+                        );
+                      }
+                      // Return null if the condition is not met
+                      return null;
+                    })}
+                  </div>
+                )}
             </div>
           ))}
         </div>
-        {["0", "1"].includes(localStorage.getItem("role")!) && (
+        {[0, 1].includes(getRole()!) && (
           <div className="flex items-center gap-[7px]">
             {props.functionalties &&
             props.functionalties.secondaryFuncs &&
@@ -218,14 +258,14 @@ const Main: React.FC<HeaderProps> = (props) => {
                     <button
                       key={index}
                       className={`flex items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
-                        selectedWorkorders.length === 0
+                        selectedExtension?.length === 0
                           ? "text-n600 border-n400"
                           : button.name === "Delete"
                           ? "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
                           : "text-n600 border-n400"
                       }`}
                       aria-disabled={
-                        selectedWorkorders.length === 0 &&
+                        selectedExtension?.length === 0 &&
                         button.name === "Delete"
                           ? true
                           : false
@@ -240,13 +280,34 @@ const Main: React.FC<HeaderProps> = (props) => {
                   );
                 })
               : null}
-            {props.functionalties && (
-              <button
-                className="flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-                onClick={props.handleAddPrimaryButtonClick}
-              >
-                {props.functionalties.primaryFunc.name}
-              </button>
+            {props.functionalties && props.functionalties.primaryFunc && (
+              <div className="relative">
+                <button
+                  className={`flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] ${
+                    props.page === "los orders"
+                      ? "text-primary border-[2px] border-primary"
+                      : "text-white bg-primary"
+                  }  rounded-[21px] `}
+                  onClick={() => {
+                    if (props.page === "los orders") {
+                      setVisibleMonthCalender(!visibleMonthCalender);
+                    }
+                    props.handleAddPrimaryButtonClick!();
+                  }}
+                >
+                  {props.functionalties.primaryFunc.name}
+                </button>
+                {props.page === "los orders" && visibleMonthCalender && (
+                  <MonthCalender
+                    setMonth={props.functionalties.setState!}
+                    selectedMonth={props.functionalties.State as number}
+                    setYear={props.functionalties.setState2!}
+                    selectedYear={props.functionalties.State2 as number}
+                    setVisibility={setVisibleMonthCalender}
+                    setFilter={setSelectedFilter}
+                  />
+                )}
+              </div>
             )}
           </div>
         )}
@@ -285,18 +346,21 @@ const Main: React.FC<HeaderProps> = (props) => {
                       option === selectedFilter ? "bg-gray-100" : ""
                     }`}
                     onClick={() => {
-                      if (option !== "Executed") {
+                      if (
+                        option === "Executed" &&
+                        props.page !== "los orders"
+                      ) {
+                        setVisibleExcutedPopup(!visibleExcutedPopup);
+                      } else {
                         setSelectedFilter(option);
                         setIsOpen(false);
                         handleFilterClick(option.toLowerCase());
-                        setSelectedExcutedFilter("")
-                      } else {
-                        setVisibleExcutedPopup(!visibleExcutedPopup);
+                        setSelectedExcutedFilter("");
                       }
                     }}
                   >
                     {option}
-                    {option === "Executed" && (
+                    {option === "Executed" && props.page !== "los orders" && (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="9"
@@ -313,34 +377,46 @@ const Main: React.FC<HeaderProps> = (props) => {
                       </svg>
                     )}
                   </li>
-                  {option === "Executed" && (
+                  {option === "Executed" && props.page !== "los orders" && (
                     <div
                       className={`flex flex-col items-start gap-2 transition-all duration-1000 overflow-hidden ${
                         visibleExcutedPopup ? "h-[145px]" : "h-0"
                       }`}
                     >
                       {excutedFilter.map((filter, index) => {
-                        return (
-                          <sub
-                            key={`sub-${index}`}
-                            className={`w-full px-[28px] py-[14px] ${selectedExcutedFilter === filter.title ? "text-primary":"text-n600"}  sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
-                            onClick={() => {
-                              if (filter.title === "All") {
-                                handleFilterClick("executed");
-                              } else {
-                                handleFilterClick(filter.title);
-                              }
-                              setSelectedExcutedFilter(filter.title);
-                              setIsOpen(false);
-                              localStorage.setItem(
-                                "selectedSubExecutedFilter",
-                                filter.title
-                              );
-                            }}
-                         >
-                            {filter.title}
-                          </sub>
-                        );
+                        if (
+                          !(
+                            props.page === "new site" &&
+                            filter.title === "Missing return voucher"
+                          )
+                        ) {
+                          return (
+                            <sub
+                              key={`sub-${index}`}
+                              className={`w-full px-[28px] py-[14px] ${
+                                selectedExcutedFilter === filter.title
+                                  ? "text-primary"
+                                  : "text-n600"
+                              } sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 text-nowrap`}
+                              onClick={() => {
+                                if (filter.title === "All") {
+                                  handleFilterClick("executed");
+                                } else {
+                                  handleFilterClick(filter.title);
+                                }
+                                setSelectedExcutedFilter(filter.title);
+                                setIsOpen(false);
+                                localStorage.setItem(
+                                  "selectedSubExecutedFilter",
+                                  filter.title
+                                );
+                              }}
+                            >
+                              {filter.title}
+                            </sub>
+                          );
+                        }
+                        return null; // Don't render anything for this filter
                       })}
                     </div>
                   )}
@@ -349,36 +425,55 @@ const Main: React.FC<HeaderProps> = (props) => {
             </ul>
           )}
         </div>
-        
-        
+
         <div className="flex items-center gap-3 flex-row-reverse">
-        {props.functionalties && (
-          <button
-            className=" hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-white rounded-[21px] bg-primary"
-            onClick={props.handleAddPrimaryButtonClick}
-          >
-            {props.functionalties && props.functionalties.primaryFunc.name}
-          </button>
-        )}
-
-        {props.functionalties &&
-          props.functionalties.secondaryFuncs?.some(
-            (func) => func.name === "Delete"
-          ) && localStorage.getItem("role") === "0" && (
-            <button
-              className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
-                selectedWorkorders.length === 0
-                  ? "text-n600 border-n400"
-                  : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
-              }`}
-              onClick={props.handleSecondaryButtonClick}
-            >
-              Delete
-            </button>
+          {props.functionalties && props.functionalties.primaryFunc && [0, 1].includes(getRole()!) && (
+            <div className="relative">
+              <button
+                className={`hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] rounded-[21px] ${
+                  props.page === "los orders"
+                    ? "text-primary border-[2px] border-primary"
+                    : "text-white bg-primary"
+                }`}
+                onClick={() => {
+                  if (props.page === "los orders") {
+                    setVisibleMonthCalender(!visibleMonthCalender);
+                  }
+                  props.handleAddPrimaryButtonClick;
+                }}
+              >
+                {props.functionalties && props.functionalties.primaryFunc.name}
+              </button>
+              {props.page === "los orders" && visibleMonthCalender && (
+                <MonthCalender
+                  setMonth={props.functionalties.setState!}
+                  selectedMonth={props.functionalties.State as number}
+                  setYear={props.functionalties.setState2!}
+                  selectedYear={props.functionalties.State2 as number}
+                  setVisibility={setVisibleMonthCalender}
+                  setFilter={setSelectedFilter}
+                />
+              )}
+            </div>
           )}
-      </div>
-        
 
+          {props.functionalties &&
+            props.functionalties.secondaryFuncs?.some(
+              (func) => func.name === "Delete"
+            ) &&
+            localStorage.getItem("role") === "0" && (
+              <button
+                className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                  selectedExtension?.length === 0
+                    ? "text-n600 border-n400"
+                    : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
+                }`}
+                onClick={props.handleSecondaryButtonClick}
+              >
+                Delete
+              </button>
+            )}
+        </div>
       </div>
 
       {props.children}

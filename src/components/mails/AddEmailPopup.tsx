@@ -8,7 +8,7 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface AddOrUpdateEmailPopup {
   method: "POST" | "PUT";
-  fetchFunc: () => void,
+  fetchFunc: () => void;
   editMail?: Resmail;
 }
 
@@ -73,7 +73,7 @@ const AddEmailPopup = forwardRef<HTMLDialogElement, AddOrUpdateEmailPopup>(
               setEmail("");
               setErr("");
               setVisibleErr(false);
-              props.fetchFunc()
+              props.fetchFunc();
               break;
             case 400:
               setErr("Verify your email.");

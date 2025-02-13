@@ -167,13 +167,6 @@ const UserManagment = () => {
 
   const totalPages = Math.ceil(total / limit);
 
-  const handleFirstPage = () => setCurrentPage(1);
-  const handlePreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleLastPage = () => setCurrentPage(totalPages);
-
   const handleSpanClick = () => {
     if (selectedUsers.length === 0) {
       return;
@@ -279,6 +272,8 @@ const UserManagment = () => {
                               ? "Coordinator"
                               : user.role === 2
                               ? "Engineer"
+                              : user.role === 3
+                              ? "Client"
                               : null}
                           </span>
                           <div className="w-[12%] text-center">
@@ -372,9 +367,9 @@ const UserManagment = () => {
                         }}
                       >
                         <img
-                          src="/avatar2.jpg"
+                          src="/avatar1.png"
                           alt="avatar"
-                          className="w-[52.5px] rounded-[11px] h-full"
+                          className="w-[54px] h-[54px] rounded-[11px]"
                         />
                         <span
                           className={` text-[12px] leading-[18px] ${
@@ -443,11 +438,8 @@ const UserManagment = () => {
               buttonTitle="add user +"
               buttonFunc={handleAddUserButtonClick}
               currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
               totalPages={totalPages}
-              onFirstPage={handleFirstPage}
-              onPreviousPage={handlePreviousPage}
-              onNextPage={handleNextPage}
-              onLastPage={handleLastPage}
             />
           </div>
         </Main>

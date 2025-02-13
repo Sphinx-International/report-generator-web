@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../Redux/store";
 
 interface UploadingFilePopup extends TheUploadingFile {
-  fileType: "attachements" | "report" | "certificate" | "voucher" | "voucher";
+  fileType?: "attachements" | "report" | "certificate" | "voucher" ;
   fetchFunc?: () => void;
   setFile?: Dispatch<SetStateAction<TheUploadingFile | undefined>>;
 }
@@ -77,7 +77,9 @@ const UploadingFile: React.FC<UploadingFilePopup> = (props) => {
           />
         </div>
         <span className="text-[10px] font-semibold leading-[20px] text-primary">
-          {props.progress !== undefined ? `${props.progress}%` : "100%"}
+          {props.progress !== undefined
+            ? `${props.progress.toFixed(2)}%`
+            : "100%"}
         </span>
       </div>
     </div>

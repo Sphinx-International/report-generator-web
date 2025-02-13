@@ -11,7 +11,7 @@ import { ReqMission } from "../assets/types/Mission";
 import {
   validateForm1,
   validateForm2,
-  FormErrors,
+  MissionFormErrors,
 } from "../func/missionsValidation";
 // import { formatFileSize } from "../func/formatFileSize";
 import UploadingFile from "./uploadingFile";
@@ -91,7 +91,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const [formErrs, setFormErrs] = useState<FormErrors>({});
+    const [formErrs, setFormErrs] = useState<MissionFormErrors>({});
 
     const closeDialog = (
       eo: MouseEvent<HTMLButtonElement> | React.FormEvent
@@ -198,13 +198,13 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     ) => {
       e.preventDefault();
       setFormErrs({});
-      const formErrors = validateForm1(formValues);
-      if (Object.keys(formErrors).length === 0) {
+      const MissionFormErrors = validateForm1(formValues);
+      if (Object.keys(MissionFormErrors).length === 0) {
         setCurrentSliderIndex(2);
         setFormErrs({});
         // Handle form submission logic here
       } else {
-        setFormErrs(formErrors);
+        setFormErrs(MissionFormErrors);
       }
     };
 
@@ -280,14 +280,14 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
     ) => {
       e.preventDefault();
       setFormErrs({});
-      const formErrors = validateForm2(formValues);
+      const MissionFormErrors = validateForm2(formValues);
 
-      if (Object.keys(formErrors).length === 0) {
+      if (Object.keys(MissionFormErrors).length === 0) {
         handleCreateWorkorder(e);
         setFormErrs({});
         // Handle form submission logic here
       } else {
-        setFormErrs(formErrors);
+        setFormErrs(MissionFormErrors);
       }
     };
 
@@ -552,7 +552,7 @@ const MissionPopup = forwardRef<HTMLDialogElement, MissionPopupProps>(
                       handleChange(e, setformValues);
                     }}
                   />
-                  {formErrs.id !== "" && formErrs.title !== undefined && (
+                  {formErrs.id !== "" && formErrs.id !== undefined && (
                     <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
                       {formErrs.id}
                     </span>

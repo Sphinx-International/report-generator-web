@@ -12,7 +12,7 @@ import { RootState } from "../Redux/store";
 import { ResMission } from "../assets/types/Mission";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { toggleWorkorderInTab } from "../Redux/slices/selectedWorkordersSlice";
+import { toggleExtantionInTab } from "../Redux/slices/selectedExtantionsSlice";
 import { AppDispatch } from "../Redux/store";
 import { RotatingLines } from "react-loader-spinner";
 import useWebSocketSearch from "../hooks/useWebSocketSearch";
@@ -25,7 +25,7 @@ const Missions = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const selectedWorkorders = useSelector(
-    (state: RootState) => state.selectedWorkorders.workOrdersTab
+    (state: RootState) => state.selectedExtantions.workOrdersTab
   );
 
   const missionDialogRef = useRef<HTMLDialogElement>(null);
@@ -59,14 +59,13 @@ const Missions = () => {
   };
 
   const handleCheckboxChange = (userId: string) => {
-    dispatch(toggleWorkorderInTab(userId));
+    dispatch(toggleExtantionInTab({ tab: "workOrdersTab", id: userId }));
   };
 
   const handleDeleteButtonClick = () => {
     if (selectedWorkorders.length === 0) {
       return;
     }
-    // Perform the action when users are selected
     const dialog = deleteDialogRef.current;
     if (dialog) {
       dialog.style.display = "flex";
@@ -184,13 +183,6 @@ const Missions = () => {
       setIsLoading(false);
     }
   };
-
-  const handleFirstPage = () => setCurrentPage(1);
-  const handlePreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleLastPage = () => setCurrentPage(totalPages);
 
   useEffect(() => {
     const filter = localStorage.getItem("selectedFilterForWorkorders");
@@ -391,10 +383,10 @@ const Missions = () => {
             searchQuery
               ? typeOfSearch === "Wo"
                 ? []
-                : ["0", "1"].includes(localStorage.getItem("role")!)
+                : ["0", "1", "3"].includes(localStorage.getItem("role")!)
                 ? ["All", "Created", "Assigned", "Executed", "Closed"]
                 : ["All", "To do", "Executed"]
-              : ["0", "1"].includes(localStorage.getItem("role")!)
+              : ["0", "1", "3"].includes(localStorage.getItem("role")!)
               ? ["All", "Created", "Assigned", "Executed", "Closed"]
               : ["All", "To do", "Executed", "Closed"]
           }
@@ -626,11 +618,8 @@ const Missions = () => {
                     buttonTitle="Add workorder"
                     buttonFunc={handladdMissionButtonClick}
                     currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
                     totalPages={totalPages}
-                    onFirstPage={handleFirstPage}
-                    onPreviousPage={handlePreviousPage}
-                    onNextPage={handleNextPage}
-                    onLastPage={handleLastPage}
                   />
                 </div>
               </div>

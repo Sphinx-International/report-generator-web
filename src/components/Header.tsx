@@ -317,7 +317,7 @@ const Header: React.FC<headerProps> = (props) => {
 
               {uploadingFiles.acceptenceFiles.length +
                 uploadingFiles.attachFiles.length +
-                uploadingFiles.reportFiles.length >
+                uploadingFiles.reportFiles.length + uploadingFiles.voucherFiles.length >
                 0 && (
                 <div className="relative">
                   <svg
@@ -414,6 +414,30 @@ const Header: React.FC<headerProps> = (props) => {
                                         progress={cert.progress}
                                         file={cert.file}
                                         fileType="certificate"
+                                      />
+                                    );
+                                  }
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-[8px] w-full">
+                          {uploadingFiles.voucherFiles.length > 0 && (
+                            <div className="flex items-start flex-col gap-[10px] w-full">
+                              <span className="text-[15px] font-semibold text-n600 ">
+                              Return Voucher:
+                              </span>
+                              <div className="flex flex-col gap-[8px] w-full">
+                                {uploadingFiles.voucherFiles.map(
+                                  (vchr, index) => {
+                                    return (
+                                      <UploadingFile
+                                        key={index}
+                                        id={vchr.id}
+                                        progress={vchr.progress}
+                                        file={vchr.file}
+                                        fileType="voucher"
                                       />
                                     );
                                   }

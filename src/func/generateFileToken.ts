@@ -2,7 +2,7 @@ import { ResOfOneMission } from "../assets/types/Mission";
 
 export async function generateFileToken(file: File): Promise<string> {
     const crypto = window.crypto; // For compatibility with older browsers
-
+    console.log(file)
     // Read the file content as an ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
 
@@ -82,7 +82,6 @@ export async function storeFileInIndexedDB(
 }
 
 
-
   
  export interface IndexedDBFile {
     fileId: number;
@@ -156,6 +155,7 @@ export async function storeFileInIndexedDB(
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("fileStorageDB", 3);
   
+      console.log("entered")
       request.onsuccess = function (event) {
         const db = (event.target as IDBOpenDBRequest).result;
         const transaction = db.transaction("files", "readwrite");
@@ -260,7 +260,8 @@ export async function storeFileInIndexedDB(
       fetchedData.attachments.forEach((file) => fetchedFileIds.add(file.id));
       fetchedData.reports?.forEach((file) => fetchedFileIds.add(file.id));
       fetchedData.acceptance_certificates?.forEach((file) => fetchedFileIds.add(file.id));
-  
+      fetchedData.return_vouchers?.forEach((file) => fetchedFileIds.add(file.id));
+
       // Filter out files that are present in IndexedDB but not in the fetched data
       const filesToDelete = indexedDBFiles.filter((file) => {
         // Check if the file is not in the fetched data

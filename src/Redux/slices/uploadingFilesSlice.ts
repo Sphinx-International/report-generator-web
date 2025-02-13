@@ -17,17 +17,17 @@ const initialState: SliceState = {
 };
 
 interface AddFilePayload {
-  type: "attachements" | "report" | "certificate" | "voucher"| "voucher";
+  type: "attachements" | "report" | "certificate" | "voucher";
   file: TheUploadingFile;
 }
 
 interface RemoveFilePayload {
-  type: "attachements" | "report" | "certificate" | "voucher"|"voucher";
+  type: "attachements" | "report" | "certificate" | "voucher";
   fileId: number;
 }
 
 interface UpdateProgressPayload {
-    type: "attachements" | "report" | "certificate" | "voucher" | "voucher";
+    type: "attachements" | "report" | "certificate" | "voucher";
     fileId: number;
     progress: number;
   }
