@@ -179,7 +179,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
         method="post"
         className="flex flex-col items-end gap-[30px] w-full"
       >
-        <div className="flex flex-col gap-[28px] w-full">
+        <div className="flex flex-col gap-[28px] w-full sm:h-[100%] h-[85%] sm:overflow-visible overflow-auto sm:pb-0 pb-2">
           <div className="flex items-center flew-wrap gap-[22px] w-full sm:flex-row flex-col">
             <div className="flex flex-col items-start gap-[8px] sm:w-[50%] w-[100%]">
               <label
@@ -422,7 +422,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
             </div> */}
           </div>
         </div>
-        <div className="w-full flex sm:flex-row-reverse flex-col-reverse sm:gap-0 gap-[14px] items-center justify-between sm:relative sticky bottom-0 bg-white py-[13px] sm:py-0">
+        <div className="w-full flex sm:flex-row-reverse flex-col-reverse sm:gap-0 gap-[14px] items-center justify-between sm:relative absolute translate-x-[-50%] left-[50%] bottom-0 py-[9px] sm:py-0 rounded-[34px] bg-white z-50">
           <div className="flex items-center gap-[5px] flex-row-reverse">
             <button
               className="bg-primary rounded-[86px] px-[26.5px] py-[8.5px] font-semibold text-[14px] leading-[20px] text-white"
