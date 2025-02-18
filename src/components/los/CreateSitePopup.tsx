@@ -110,7 +110,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
       }
     };
 
-    const handleSecondSubmit = (
+    const handleSecondSubmit = async (
       e: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>
     ) => {
       e.preventDefault();
@@ -118,8 +118,8 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
       const formErrors = validateForm2(formValue);
       if (Object.keys(formErrors).length === 0) {
         method === "create"
-          ? handleCreateSite(formValue, setloading, ref, fetchSites)
-          : addSiteLocation(
+          ? await handleCreateSite(formValue, setloading, ref, fetchSites)
+          : await addSiteLocation(
               {
                 site: siteId!,
                 district: formValue.district,
@@ -133,6 +133,31 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
               setloading
             );
         setvalidationErrors({});
+        setFormValue({
+          code: "",
+          region: regionNumber,
+          state: "",
+          district: "",
+          municipality: "",
+          type: siteType,
+          building_height: null,
+          site_height: null,
+          latitude: null,
+          longitude: null,
+        });
+        setCurrPage(1);
+        setLatitude({
+          degrees: null,
+          minutes: null,
+          seconds: null,
+          direction: "N",
+        });
+        setLongitude({
+          degrees: null,
+          minutes: null,
+          seconds: null,
+          direction: "E",
+        });
       } else {
         setvalidationErrors(formErrors);
       }
