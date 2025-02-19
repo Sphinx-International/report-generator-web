@@ -112,7 +112,7 @@ const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
       const newIndex = (
         prevIndex === 0 ? priorities.length - 1 : prevIndex - 1
       ) as PriorityIndex;
-      // setformValues((prev) => ({ ...prev, priority: newIndex }));
+      setformValues((prev) => ({ ...prev, priority: newIndex }));
       return newIndex;
     });
   };
@@ -122,7 +122,7 @@ const LosPopup = forwardRef<HTMLDialogElement, LosPopupProps>((props, ref) => {
       const newIndex = (
         prevIndex === priorities.length - 1 ? 0 : prevIndex + 1
       ) as PriorityIndex;
-      // setformValues((prev) => ({ ...prev, priority: newIndex }));
+      setformValues((prev) => ({ ...prev, priority: newIndex }));
       return newIndex;
     });
   };
