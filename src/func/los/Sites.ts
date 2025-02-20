@@ -9,7 +9,8 @@ export const handleCreateSite = async (
   formValues: ReqSite,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
   ref: React.ForwardedRef<HTMLDialogElement>,
-  fetchSites: () => void
+  fetchSites: () => void,
+  onSuccess: () => void
 ) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -35,6 +36,7 @@ export const handleCreateSite = async (
 
       if (response.status === 200) {
         handleCloseDialog(ref);
+        onSuccess();
         fetchSites();
       }
     } else {
