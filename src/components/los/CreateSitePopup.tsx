@@ -56,7 +56,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
       site_height: null,
       latitude: null,
       longitude: null,
-    });
+    });    
 
     const [loading, setloading] = useState<boolean>(false);
 
@@ -68,6 +68,37 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
         ...prevState,
         [key]: value,
       }));
+    };
+
+    const clearState = () => {
+      console.log('SUCCESS');
+      setvalidationErrors({});
+        setFormValue({
+          code: "",
+          region: regionNumber,
+          state: "",
+          district: "",
+          municipality: "",
+          type: siteType,
+          building_height: null,
+          site_height: null,
+          latitude: null,
+          longitude: null,
+        });
+        setCurrPage(1);
+        setLatitude({
+          degrees: null,
+          minutes: null,
+          seconds: null,
+          direction: "N",
+        });
+        setLongitude({
+          degrees: null,
+          minutes: null,
+          seconds: null,
+          direction: "E",
+        });
+        setSiteType(1);
     };
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,7 +149,7 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
       const formErrors = validateForm2(formValue);
       if (Object.keys(formErrors).length === 0) {
         method === "create"
-          ? await handleCreateSite(formValue, setloading, ref, fetchSites)
+          ? await handleCreateSite(formValue, setloading, ref, fetchSites, clearState)
           : await addSiteLocation(
               {
                 site: siteId!,
@@ -132,32 +163,6 @@ const CreateSitePopup = forwardRef<HTMLDialogElement, CreateSitePopupProps>(
               },
               setloading
             );
-        setvalidationErrors({});
-        setFormValue({
-          code: "",
-          region: regionNumber,
-          state: "",
-          district: "",
-          municipality: "",
-          type: siteType,
-          building_height: null,
-          site_height: null,
-          latitude: null,
-          longitude: null,
-        });
-        setCurrPage(1);
-        setLatitude({
-          degrees: null,
-          minutes: null,
-          seconds: null,
-          direction: "N",
-        });
-        setLongitude({
-          degrees: null,
-          minutes: null,
-          seconds: null,
-          direction: "E",
-        });
       } else {
         setvalidationErrors(formErrors);
       }
