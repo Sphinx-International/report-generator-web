@@ -450,7 +450,6 @@ const Modernisation = () => {
             >,
             State2: selectedYear,
           }}
-          handleAddPrimaryButtonClick={handladdMissionButtonClick}
           handleSecondaryButtonClick={handleDeleteButtonClick}
           setCurrentPage={setCurrentPage}
         >

@@ -285,10 +285,14 @@ const Main: React.FC<MainProps> = (props) => {
                 <button
                   className={`flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-primary border-[2px] border-primary rounded-[21px] `}
                   onClick={() => {
-                    setVisibleMonthCalender(!visibleMonthCalender);
+                    if (props.page !== "accounts") {
+                      setVisibleMonthCalender(!visibleMonthCalender);
+                    }
+                    props.handleAddPrimaryButtonClick &&
+                      props.handleAddPrimaryButtonClick();
                   }}
                 >
-                  filter by month
+                  {props.page === "accounts" ? "Add User +" : "filter by month"}
                 </button>
                 {visibleMonthCalender && (
                   <MonthCalender
@@ -427,13 +431,14 @@ const Main: React.FC<MainProps> = (props) => {
                 <button
                   className={`inline-block capitalize lg:hidden sm:text-[14px] text-[11px]  items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] rounded-[21px] text-primary border-[2px] border-primary`}
                   onClick={() => {
-                    if (props.page === "los orders") {
+                    if (props.page !== "accounts") {
                       setVisibleMonthCalender(!visibleMonthCalender);
                     }
-                    props.handleAddPrimaryButtonClick;
+                    props.handleAddPrimaryButtonClick &&
+                      props.handleAddPrimaryButtonClick();
                   }}
                 >
-                  filter by month
+                  {props.page === "accounts" ? "Add User +" : "filter by month"}
                 </button>
                 {visibleMonthCalender && (
                   <MonthCalender
