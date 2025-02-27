@@ -470,7 +470,7 @@ const NewSites = () => {
                         </div>
 
                         <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                          {++index}
+                          {newSite.id}
                         </span>
                       </div>
                     ))}
@@ -589,7 +589,7 @@ const NewSites = () => {
                       </div>
 
                       <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                        {++index}
+                        {newSite.id}
                       </span>
                     </div>
                   ))}
