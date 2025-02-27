@@ -48,10 +48,12 @@ const EditUsers = () => {
     "Coordinator" | "Engineer" | "Client" | undefined
   >();
 
+  const options = ["Engineer", "Coordinator", "Client"] as const;
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
-  const handleOptionClick = (option: string) => {
+  const handleOptionClick = (option: "Coordinator" | "Engineer" | "Client") => {
     setSelectedOption(option);
     setIsOpen(false);
   };
@@ -396,7 +398,7 @@ const EditUsers = () => {
                   </button>
                   {isOpen && (
                     <ul className="absolute w-full bg-white rounded-[30px] shadow-lg mt-2 z-10">
-                      {["Engineer", "Coordinator", "Client"].map((option) => (
+                      {options.map((option) => (
                         <li
                           key={option}
                           className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
