@@ -24,6 +24,7 @@ import NewSiteDetails from "./pages/newSiteDetails.tsx";
 import NewSitesByUser from "./pages/newSitesByUser.tsx";
 import OrderDetails from "./pages/Los/OrderDetails.tsx";
 import EditSite from "./pages/Los/EditSite.tsx";
+import LosCommandByUser from "./pages/Los/LosCommandsByUser.tsx";
 import ProtectedRoute from "./routes middlewares/ProtectedRoute.tsx";
 import RedirectBasedOnRole from "./routes middlewares/RedirectBasedOnRole.tsx";
 import Page404 from "./pages/Page404.tsx";
@@ -174,6 +175,16 @@ const router = createBrowserRouter([
         element={<ProjectTypes />}
         allowedRoles={[0, 1, 3]}
         projectAccess={0}
+      />
+    ),
+  },
+  {
+    path: "/los/orders-by-user/:userInfo",
+    element: (
+      <ProtectedRoute
+        element={<LosCommandByUser />}
+        allowedRoles={[0, 1, 2, 3]}
+        projectAccess={3}
       />
     ),
   },
