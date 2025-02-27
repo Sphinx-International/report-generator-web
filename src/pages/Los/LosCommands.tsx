@@ -177,16 +177,11 @@ const LosCommands = () => {
     const filter = localStorage.getItem("selectedFilterForLos");
 
     if (filter !== "all" && filter) {
-      console.log("first");
       fetchOrders(offset, limit, filter);
     } else {
       if (selectedMonth) {
-        console.log("second");
-
         fetchOrders(offset, limit, undefined, selectedMonth, selectedYear);
       } else {
-        console.log("third");
-
         fetchOrders(offset, limit);
       }
     }
@@ -365,7 +360,7 @@ const LosCommands = () => {
             )}
           </div>
           <button
-            className="rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[11px] font-medium text-nowrap"
+            className="hidden md:inline-block rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[11px] font-medium text-nowrap"
             onClick={() => {
               handleOpenDialog(losRef);
             }}
@@ -431,10 +426,10 @@ const LosCommands = () => {
                               return (
                                 <span
                                   key={index}
-                                  className="sm:text-[14px] text-[12px] leading-[21px] text-n500 pl-[6px]"
+                                  className="sm:text-[14px] text-[12px] leading-[21px] text-n500"
                                 >
                                   {" "}
-                                  - {site.site_location.site_code}
+                                  -{site.site_location.site_code}
                                 </span>
                               );
                             })}
@@ -534,10 +529,10 @@ const LosCommands = () => {
                             return (
                               <span
                                 key={index}
-                                className="sm:text-[14px] text-[12px] leading-[21px] text-n500 pl-[6px]"
+                                className="sm:text-[14px] text-[12px] leading-[21px] text-n500"
                               >
                                 {" "}
-                                - {site.site_location.site_code}
+                                -{site.site_location.site_code}
                               </span>
                             );
                           })}

@@ -167,10 +167,10 @@ const LosCommandByUser = () => {
                         return (
                           <span
                             key={index}
-                            className="sm:text-[14px] text-[12px] leading-[21px] text-n500 pl-[6px]"
+                            className="sm:text-[14px] text-[12px] leading-[21px] text-n500"
                           >
                             {" "}
-                            - {site.site_location.site_code}
+                            -{site.site_location.site_code}
                           </span>
                         );
                       })}

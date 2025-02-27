@@ -283,21 +283,14 @@ const Main: React.FC<MainProps> = (props) => {
             {props.functionalties && props.functionalties.primaryFunc && (
               <div className="relative">
                 <button
-                  className={`flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] ${
-                    props.page === "los orders"
-                      ? "text-primary border-[2px] border-primary"
-                      : "text-white bg-primary"
-                  }  rounded-[21px] `}
+                  className={`flex items-center gap-[3px] text-[14px] leading-[21px] font-medium xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] text-primary border-[2px] border-primary rounded-[21px] `}
                   onClick={() => {
-                    if (props.page === "los orders") {
-                      setVisibleMonthCalender(!visibleMonthCalender);
-                    }
-                    props.handleAddPrimaryButtonClick!();
+                    setVisibleMonthCalender(!visibleMonthCalender);
                   }}
                 >
-                  {props.functionalties.primaryFunc.name}
+                  filter by month
                 </button>
-                {props.page === "los orders" && visibleMonthCalender && (
+                {visibleMonthCalender && (
                   <MonthCalender
                     setMonth={props.functionalties.setState!}
                     selectedMonth={props.functionalties.State as number}
@@ -427,35 +420,33 @@ const Main: React.FC<MainProps> = (props) => {
         </div>
 
         <div className="flex items-center gap-3 flex-row-reverse">
-          {props.functionalties && props.functionalties.primaryFunc && [0, 1].includes(getRole()!) && (
-            <div className="relative">
-              <button
-                className={`hidden md:inline-block capitalize lg:hidden text-[14px] items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] rounded-[21px] ${
-                  props.page === "los orders"
-                    ? "text-primary border-[2px] border-primary"
-                    : "text-white bg-primary"
-                }`}
-                onClick={() => {
-                  if (props.page === "los orders") {
-                    setVisibleMonthCalender(!visibleMonthCalender);
-                  }
-                  props.handleAddPrimaryButtonClick;
-                }}
-              >
-                {props.functionalties && props.functionalties.primaryFunc.name}
-              </button>
-              {props.page === "los orders" && visibleMonthCalender && (
-                <MonthCalender
-                  setMonth={props.functionalties.setState!}
-                  selectedMonth={props.functionalties.State as number}
-                  setYear={props.functionalties.setState2!}
-                  selectedYear={props.functionalties.State2 as number}
-                  setVisibility={setVisibleMonthCalender}
-                  setFilter={setSelectedFilter}
-                />
-              )}
-            </div>
-          )}
+          {props.functionalties &&
+            props.functionalties.primaryFunc &&
+            [0, 1].includes(getRole()!) && (
+              <div className="relative">
+                <button
+                  className={`inline-block capitalize lg:hidden sm:text-[14px] text-[11px]  items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] rounded-[21px] text-primary border-[2px] border-primary`}
+                  onClick={() => {
+                    if (props.page === "los orders") {
+                      setVisibleMonthCalender(!visibleMonthCalender);
+                    }
+                    props.handleAddPrimaryButtonClick;
+                  }}
+                >
+                  filter by month
+                </button>
+                {visibleMonthCalender && (
+                  <MonthCalender
+                    setMonth={props.functionalties.setState!}
+                    selectedMonth={props.functionalties.State as number}
+                    setYear={props.functionalties.setState2!}
+                    selectedYear={props.functionalties.State2 as number}
+                    setVisibility={setVisibleMonthCalender}
+                    setFilter={setSelectedFilter}
+                  />
+                )}
+              </div>
+            )}
 
           {props.functionalties &&
             props.functionalties.secondaryFuncs?.some(
@@ -463,7 +454,7 @@ const Main: React.FC<MainProps> = (props) => {
             ) &&
             localStorage.getItem("role") === "0" && (
               <button
-                className={`flex capitalize lg:hidden items-center gap-[3px] text-[14px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
+                className={`flex capitalize lg:hidden items-center gap-[3px] sm:text-[14px] text-[11px] font-medium leading-[21px] xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] border-[1.2px] rounded-[21px] ${
                   selectedExtension?.length === 0
                     ? "text-n600 border-n400"
                     : "cursor-pointer text-[#DB2C2C] border-[#DB2C2C] bg-[#FFECEC]"
