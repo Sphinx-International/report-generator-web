@@ -437,7 +437,7 @@ const LosCommands = () => {
                                   - {site.site_location.site_code}
                                 </span>
                               );
-                            }) }
+                            })}
                           </div>
                           <div className="flex items-center gap-[8px]">
                             <LosStatus
@@ -481,7 +481,7 @@ const LosCommands = () => {
                         </div>
 
                         <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                          {++index}
+                          {order.id}
                         </span>
                       </div>
                     ))}
@@ -584,7 +584,7 @@ const LosCommands = () => {
                       </div>
 
                       <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                        {++index}
+                        {order.id}
                       </span>
                     </div>
                   ))}
