@@ -2,7 +2,6 @@ import React, { ReactNode, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../Redux/store";
 import MonthCalender from "./monthCalender";
-import { getRole } from "../func/getUserRole";
 
 type SecondaryFunc = {
   name: string;
@@ -248,12 +247,12 @@ const Main: React.FC<MainProps> = (props) => {
             </div>
           ))}
         </div>
-        {[0, 1].includes(getRole()!) && (
+        { (
           <div className="flex items-center gap-[7px]">
             {props.functionalties &&
             props.functionalties.secondaryFuncs &&
             localStorage.getItem("role") === "0"
-              ? props.functionalties.secondaryFuncs.map((button, index) => {
+              && props.functionalties.secondaryFuncs.map((button, index) => {
                   return (
                     <button
                       key={index}
@@ -279,7 +278,7 @@ const Main: React.FC<MainProps> = (props) => {
                     </button>
                   );
                 })
-              : null}
+              }
             {props.functionalties && props.functionalties.primaryFunc && (
               <div className="relative">
                 <button
@@ -426,7 +425,7 @@ const Main: React.FC<MainProps> = (props) => {
         <div className="flex items-center gap-3 flex-row-reverse">
           {props.functionalties &&
             props.functionalties.primaryFunc &&
-            [0, 1].includes(getRole()!) && (
+             (
               <div className="relative">
                 <button
                   className={`inline-block capitalize lg:hidden sm:text-[14px] text-[11px]  items-center gap-[3px] text-center justify-center leading-[21px] font-semibold xl:px-[18px] px-[15px] xl:py-[8px] py-[6.5px] rounded-[21px] text-primary border-[2px] border-primary`}

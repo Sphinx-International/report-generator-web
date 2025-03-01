@@ -137,10 +137,8 @@ const LosCommands = () => {
           const data = await response.json();
           setOrders(data.data);
           setTotalWorkorders(data.total);
-          console.log(data.total);
           return { total: data.total, current_offset: offset };
         }
-
         case 204:
           setOrders(null);
           break;
@@ -359,14 +357,16 @@ const LosCommands = () => {
               </>
             )}
           </div>
-          <button
-            className="hidden md:inline-block rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[11px] font-medium text-nowrap"
-            onClick={() => {
-              handleOpenDialog(losRef);
-            }}
-          >
-            New LOS Order
-          </button>
+          {[0, 1, 2].includes(getRole()!) && (
+            <button
+              className="hidden md:inline-block rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[11px] font-medium text-nowrap"
+              onClick={() => {
+                handleOpenDialog(losRef);
+              }}
+            >
+              New LOS Order
+            </button>
+          )}
         </div>
 
         <Main
@@ -502,7 +502,7 @@ const LosCommands = () => {
                 />
               </div>
             )
-          ) : orders && !isLoading ? (
+          ) : !isLoading ? (
             orders ? (
               <>
                 <div className="flex items-center gap-[20px] flex-wrap w-full mt-[8px]">

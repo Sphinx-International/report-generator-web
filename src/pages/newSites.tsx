@@ -406,14 +406,14 @@ const NewSites = () => {
             )}
           </div>
 
-          <button
+          { [0, 1, 2].includes(getRole()!) && <button
             className="hidden md:inline-block rounded-[30px] py-[12px] sm:px-[25px] px-[15px] bg-primary text-white sm:text-[14px] text-[11px] font-medium text-nowrap"
             onClick={() => {
               handleOpenDialog(newSiteDialogRef);
             }}
           >
             Add new site
-          </button>
+          </button>}
         </div>
 
         <Main
