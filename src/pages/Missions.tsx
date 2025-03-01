@@ -470,7 +470,7 @@ const Missions = () => {
                             }
                           >
                             <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
-                              {workorder.title}
+                              {workorder.id}
                             </h2>
                             <p
                               className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
@@ -568,7 +568,7 @@ const Missions = () => {
                         }
                       >
                         <h2 className="sm:text-[20.5px] text-[18px] text-primary font-semibold text-nowrap overflow-hidden w-full text-ellipsis whitespace-nowrap">
-                          {workorder.title}
+                          {workorder.id}
                         </h2>
                         <p
                           className="sm:text-[14px] text-[12px] leading-[21px] text-n500 h-[43px] overflow-hidden text-ellipsis w-full"
