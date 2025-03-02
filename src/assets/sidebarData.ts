@@ -3,7 +3,8 @@ interface sideBarItem {
   svg: string;
   activeSvg: string;
   link: string;
-  access: "admin" | "all" | "coord" ;
+  access: "admin" | "all" | "coord";
+  projectAccess?: 0 | 1 | 2 | 3;
   subItem?: sideBarItem[];
 }
 
@@ -98,6 +99,7 @@ export const sideBarTab: sideBarItem[] = [
 </svg>`,
     link: "/workorders",
     access: "all",
+    projectAccess: 3,
   },
 
   {
@@ -110,6 +112,7 @@ export const sideBarTab: sideBarItem[] = [
 </svg>`,
     link: "/modernisations",
     access: "all",
+    projectAccess: 1,
   },
   {
     title: "New Site",
@@ -121,6 +124,7 @@ export const sideBarTab: sideBarItem[] = [
 </svg>`,
     link: "/newsites",
     access: "all",
+    projectAccess: 2,
   },
 
   {
@@ -214,6 +218,7 @@ export const sideBarTab: sideBarItem[] = [
 </svg>`,
     link: "/los",
     access: "all",
+    projectAccess: 0,
     subItem: [
       {
         title: "Site management",

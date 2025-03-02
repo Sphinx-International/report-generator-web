@@ -33,6 +33,7 @@ export interface resOrders {
     name: string;
   };
   near_end_location: NearEndLocation;
+  alternative_far_ends: FarEndAlt[];
   created_at: Date;
 }
 

@@ -93,6 +93,7 @@ const MonthCalender: React.FC<MonthCalenderProps> = ({
               onClick={() => {
                 setVisibility(false);
                 localStorage.setItem("selectedFilterForLos", "all");
+                localStorage.setItem("selectedFilterForWorkorders", "all");
                 setFilter("all");
                 if (selectedMonth === month.number) {
                   setMonth!(null);

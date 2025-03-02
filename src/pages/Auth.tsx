@@ -62,7 +62,7 @@ const Auth = () => {
 
       if (response) {
         const data = await response.json();
-
+        console.log(data);
         switch (response.status) {
           case 200:
             if (rememberMe) {
@@ -71,14 +71,8 @@ const Auth = () => {
             sessionStorage.setItem("token", data.token);
             localStorage.setItem("user_id", data.account.id);
             localStorage.setItem("user", JSON.stringify(data.account));
-
-            if (data.account.role === 0) {
-              navigate("/users");
-              localStorage.setItem("role", data.account.role.toString());
-            } else {
-              navigate("/workorders");
-              localStorage.setItem("role", data.account.role.toString());
-            }
+            navigate("/");
+            localStorage.setItem("role", data.account.role.toString());
             break;
 
           case 401:

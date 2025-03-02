@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 const baseUrl = import.meta.env.VITE_BASE_WS_URL;
 
@@ -14,12 +14,10 @@ const useWebSocketSearch = ({
   searchQuery,
   endpointPath,
   setResults,
-  setLoader
+  setLoader,
 }: UseWebSocketSearchProps) => {
   useEffect(() => {
-    // Handle empty query case
     if (!searchQuery) {
-      // Clear the results and stop the loader
       setResults(null);
       setLoader(false);
       return;
@@ -45,15 +43,17 @@ const useWebSocketSearch = ({
     };
 
     socket.onmessage = (event) => {
-      console.log("WebSocket message received");
       try {
-        const data = event.data;
-        setResults(JSON.parse(data));
+        const data = JSON.parse(event.data);
+        setResults(data);
       } catch (error) {
         console.error("Error processing WebSocket message:", error);
-      } finally {
-        setLoader(false);
       }
+
+      // Add delay to simulate loader
+      setTimeout(() => {
+        setLoader(false);
+      }, 300); // Adjust delay if needed
     };
 
     socket.onerror = (error) => {
@@ -64,7 +64,6 @@ const useWebSocketSearch = ({
       console.log("WebSocket connection closed");
     };
 
-    // Cleanup: Close WebSocket when component unmounts or query changes
     return () => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.close();

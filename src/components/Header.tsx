@@ -224,7 +224,16 @@ const Header: React.FC<headerProps> = (props) => {
                                         : notif.action >= 200 &&
                                           notif.action < 300
                                         ? "mails/groups"
-                                        : `workorders/${notif.on}`
+                                        : notif.action >= 300 &&
+                                          notif.action < 500
+                                        ? `workorders/${notif.on}`
+                                        : notif.action >= 500 &&
+                                          notif.action < 700
+                                        ? `modernisation/${notif.on}`
+                                        : notif.action >= 700 &&
+                                          notif.action < 1000
+                                        ? `newsites/${notif.on}`
+                                        :  `los/orders/${notif.on}`
                                     }`
                                   );
                                   setOffset(0);
@@ -317,7 +326,8 @@ const Header: React.FC<headerProps> = (props) => {
 
               {uploadingFiles.acceptenceFiles.length +
                 uploadingFiles.attachFiles.length +
-                uploadingFiles.reportFiles.length + uploadingFiles.voucherFiles.length >
+                uploadingFiles.reportFiles.length +
+                uploadingFiles.voucherFiles.length >
                 0 && (
                 <div className="relative">
                   <svg
@@ -426,7 +436,7 @@ const Header: React.FC<headerProps> = (props) => {
                           {uploadingFiles.voucherFiles.length > 0 && (
                             <div className="flex items-start flex-col gap-[10px] w-full">
                               <span className="text-[15px] font-semibold text-n600 ">
-                              Return Voucher:
+                                Return Voucher:
                               </span>
                               <div className="flex flex-col gap-[8px] w-full">
                                 {uploadingFiles.voucherFiles.map(
@@ -670,7 +680,15 @@ const Header: React.FC<headerProps> = (props) => {
                             {" "}
                             {user.email} ({user.first_name} {user.last_name})
                           </span>
-                          <span className={`text-[12px] font-medium leading-[18px] ${user.is_active ? "text-[#23B4A6]" :"text-[#DB2C2C]"}`}>{user.is_active ? "active" : "banned"}</span>
+                          <span
+                            className={`text-[12px] font-medium leading-[18px] ${
+                              user.is_active
+                                ? "text-[#23B4A6]"
+                                : "text-[#DB2C2C]"
+                            }`}
+                          >
+                            {user.is_active ? "active" : "banned"}
+                          </span>
                         </div>
                       </div>
                     );

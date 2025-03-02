@@ -69,6 +69,8 @@ const Sites = () => {
     useState<boolean>(false);
   const [isloadingUploadCsv, setIsloadingUploadCsv] = useState<boolean>(false);
   const [sites, setSites] = useState<ResSite[] | null>(null);
+  const [fetchedSites, setFetchedSites] = useState<ResSite[] | null>(null);
+  const [wsSites, setWsSites] = useState<ResSite[] | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 6;
@@ -109,6 +111,7 @@ const Sites = () => {
           {
             const data = await response.json();
             setSites(data.data);
+            setFetchedSites(data.data)
             console.log(data);
             setTotal(data.total);
             return { total: data.total, current_offset: offset };
@@ -144,6 +147,18 @@ const Sites = () => {
     fetchSites(offset, limit);
     return () => {};
   }, [currentPage]);
+
+  console.log(wsSites);
+  
+
+  useEffect(() => {
+    if(wsSites === null) {
+      setSites(fetchedSites);
+    } else {
+      setSites(wsSites);
+    }
+  }, [wsSites]);
+
   return (
     <div className="w-full flex md:h-[100vh]">
       <SideBar />
@@ -156,8 +171,8 @@ const Sites = () => {
         <SearchBar
           openDialogRef={createSite}
           page="Sites"
-          wsUrl=""
-          setSearchResult={setSites}
+          wsUrl="search-site"
+          setSearchResult={setWsSites}
           setLoaderSearch={setIsloading}
         />
         <div className="flex flex-col gap-[15px] items-center w-full h-[90%]">

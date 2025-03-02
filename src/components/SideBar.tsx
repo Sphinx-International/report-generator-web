@@ -6,6 +6,7 @@ import { RootState } from "../Redux/store";
 import { AppDispatch } from "../Redux/store";
 import { useState } from "react";
 import { getRole } from "../func/getUserRole";
+import { getUserAccess } from "../func/getAccess";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface SubMenu {
@@ -129,7 +130,11 @@ const SideBar = () => {
             {sideBarTab.map((item, index) => {
               if (
                 (getRole() === 1 && item.access === "admin") ||
-                ((getRole() === 2 || getRole() === 3) && item.access !== "all")
+                ((getRole() === 2 || getRole() === 3) &&
+                  item.access !== "all") ||
+                (item.projectAccess !== undefined &&
+                  item.projectAccess !== null &&
+                  !getUserAccess().includes(item.projectAccess))
               )
                 return null;
 
