@@ -6,7 +6,12 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { ThreeDots, RotatingLines } from "react-loader-spinner";
 import { User } from "../assets/types/User";
-import { handle_active_or_deactivate_user } from "../func/editUseraApis";
+import {
+  handle_active_or_deactivate_user,
+  handleSaveGeneralEdit,
+  handleSaveRoleEdit,
+  handleSaveAccessibilityEdit,
+} from "../func/editUseraApis";
 import CustomDeletePopup from "../components/CustomDeletePopup";
 import { handleOpenDialog } from "../func/openDialog";
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -16,41 +21,39 @@ const EditUsers = () => {
   const { id } = useParams();
   const { enqueueSnackbar } = useSnackbar();
 
-  const handleCancelGeneral = () => {
-    setIsEditingGeneral(false);
-    setFirstName(User?.first_name);
-    setLastName(User?.last_name);
-    setEmail(User?.email);
-  };
-  const handleCancelRole = () => {
-    setIsEditingRole(false);
-    setSelectedOption(User?.role === 1 ? "Coordinator" : "Engineer");
-  };
   const deletePopupRef = useRef<HTMLDialogElement>(null);
   const deactivatePopupRef = useRef<HTMLDialogElement>(null);
 
-
   const [isEditingGeneral, setIsEditingGeneral] = useState<boolean>(false);
   const [isEditingRole, setIsEditingRole] = useState<boolean>(false);
+  const [isEditingAccessibility, setIsEditingAccessibility] =
+    useState<boolean>(false);
+
   const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
 
   const [isLoadingGeneral, setIsLoadingGeneral] = useState<boolean>(false);
   const [isLoadingRole, setIsLoadingRole] = useState<boolean>(false);
+  const [isLoadingAccessibility, setIsLoadingAccessibility] =
+    useState<boolean>(false);
   const [User, setUser] = useState<User>();
+
+  const [errGeneral, setErrGeneral] = useState<string>("");
 
   const [firstName, setFirstName] = useState<string | undefined>("");
   const [lastName, setLastName] = useState<string | undefined>("");
   const [email, setEmail] = useState<string | undefined>("");
+  const [hasAccessTo, setHasAccessTo] = useState<number[]>([]);
 
-  const [selectedOption, setSelectedOption] = useState<string | undefined>("");
+  const [selectedOption, setSelectedOption] = useState<
+    "Coordinator" | "Engineer" | "Client" | undefined
+  >();
+
+  const options = ["Engineer", "Coordinator", "Client"] as const;
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const [errGeneral, setErrGeneral] = useState<string>("");
-  const [errRole, setErrRole] = useState<string>("");
-
   const toggleDropdown = () => setIsOpen(!isOpen);
-  const handleOptionClick = (option: string) => {
+  const handleOptionClick = (option: "Coordinator" | "Engineer" | "Client") => {
     setSelectedOption(option);
     setIsOpen(false);
   };
@@ -84,10 +87,17 @@ const EditUsers = () => {
       const data = await response.json();
       // console.log("Response data: ", data); // Log the data for debugging
       setUser(data);
+      setHasAccessTo(data.has_access_to);
       setFirstName(data.first_name);
       setLastName(data.last_name);
       setEmail(data.email);
-      setSelectedOption(data.role === 1 ? "Coordinator" : "Engineer");
+      setSelectedOption(
+        data.role === 1
+          ? "Coordinator"
+          : data.role === 2
+          ? "Engineer"
+          : "Client"
+      );
     } catch (err) {
       console.error("Error: ", err);
     } finally {
@@ -95,108 +105,34 @@ const EditUsers = () => {
     }
   };
 
-  const handleSaveGeneralEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-    setIsLoadingGeneral(true);
-    setErrGeneral("");
-    try {
-      const response = await fetch(
-        `${baseUrl}/account/update-account/generals`,
-        {
-          // Added a leading slash
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-          body: JSON.stringify({
-            account_id: User!.email,
-            new_data: { first_name: firstName, last_name: lastName },
-          }),
-        }
-      );
-
-      if (response) {
-        switch (response.status) {
-          case 200:
-            setIsEditingGeneral(false);
-            fetchUser();
-            break;
-
-          case 400:
-            setErrGeneral("data can not be empty");
-            break;
-
-          default:
-            console.error("Unexpected error: ");
-            break;
-        }
-      }
-    } catch (err) {
-      console.error("Error submitting form", err);
-    } finally {
-      setIsLoadingGeneral(false);
-      /* if (props.fetchUsers) {
-        props.fetchUsers()
-      }*/
-    }
+  const handleCancelGeneral = () => {
+    setIsEditingGeneral(false);
+    setFirstName(User?.first_name);
+    setLastName(User?.last_name);
+    setEmail(User?.email);
+  };
+  const handleCancelRole = () => {
+    setIsEditingRole(false);
+    setSelectedOption(
+      User?.role === 1
+        ? "Coordinator"
+        : User?.role === 2
+        ? "Engineer"
+        : "Client"
+    );
+  };
+  const handleCancelAccessibility = () => {
+    setIsEditingAccessibility(false);
+    setHasAccessTo(User ? User.has_access_to : []);
   };
 
-  const handleSaveRolelEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-    setIsLoadingRole(true);
-    setErrRole("");
-    try {
-      const response = await fetch(`${baseUrl}/account/update-account/role`, {
-        // Added a leading slash
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({
-          account_id: User!.email,
-          role_id: selectedOption === "Coordinator" ? 1 : 2,
-        }),
-      });
-
-      if (response) {
-        switch (response.status) {
-          case 200:
-            setIsEditingRole(false);
-            fetchUser();
-            break;
-
-          case 400:
-            setErrRole("data can not be empty");
-            break;
-
-          default:
-            console.error("Unexpected error: ");
-            break;
-        }
-      }
-    } catch (err) {
-      console.error("Error submitting form", err);
-    } finally {
-      setIsLoadingRole(false);
-      /* if (props.fetchUsers) {
-        props.fetchUsers()
-      }*/
+  const handleChangeCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setHasAccessTo((prev) => [...prev, Number(e.target.name)]);
+    } else {
+      setHasAccessTo((prev) =>
+        prev.filter((item) => item !== Number(e.target.name))
+      );
     }
   };
 
@@ -367,7 +303,16 @@ const EditUsers = () => {
                         type="submit"
                         className="md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
                         onClick={(eo) => {
-                          handleSaveGeneralEdit(eo);
+                          handleSaveGeneralEdit(
+                            eo,
+                            setIsLoadingGeneral,
+                            setIsEditingGeneral,
+                            setErrGeneral,
+                            User!.email,
+                            firstName!,
+                            lastName!,
+                            fetchUser
+                          );
                         }}
                       >
                         {isLoadingGeneral ? (
@@ -382,45 +327,47 @@ const EditUsers = () => {
               </form>
             </div>
             <div className="rounded-[20px] border-n400 border-[1px] p-[21px] w-full flex items-start flex-col gap-[23px]">
-              <div className="w-full flex items-center justify-between">
-                <h3 className="text-n800 md:text-[17px] text-[15px] leading-[25.5px] font-medium">
-                  Personal information
-                </h3>
+              <h3 className="text-n800 md:text-[17px] text-[15px] leading-[25.5px] font-medium">
+                Account Information
+              </h3>
 
-                {!isEditingRole && (
-                  <button
-                    className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] md:px-[17px] md:py-[6px] px-[13px] py-[3px] leading text-[13px] font-medium"
-                    onClick={() => {
-                      setIsEditingRole(true);
-                    }}
+              <div className="flex flex-col items-start gap-[9px] w-full">
+                <div className="w-full flex items-center justify-between">
+                  <label
+                    htmlFor="role"
+                    className="text-600 text-[15px] leading-[20px] font-medium text-n600"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="17"
-                      height="17"
-                      viewBox="0 0 17 17"
-                      fill="none"
+                    Role
+                  </label>
+
+                  {!isEditingRole && (
+                    <button
+                      className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] md:px-[17px] md:py-[6px] px-[13px] py-[3px] leading text-[13px] font-medium"
+                      onClick={() => {
+                        setIsEditingRole(true);
+                      }}
                     >
-                      <path
-                        d="M10.5003 4.49996L12.5003 6.49996M9.16699 13.8333H14.5003M3.83366 11.1666L3.16699 13.8333L5.83366 13.1666L13.5577 5.44263C13.8076 5.19259 13.948 4.85351 13.948 4.49996C13.948 4.14641 13.8076 3.80733 13.5577 3.55729L13.443 3.44263C13.193 3.19267 12.8539 3.05225 12.5003 3.05225C12.1468 3.05225 11.8077 3.19267 11.5577 3.44263L3.83366 11.1666Z"
-                        stroke="#4A3AFF"
-                        strokeWidth="1.66667"
-                        fillOpacity="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>{" "}
-                    Edit
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-col items-start gap-[9px] md:w-[45%] w-[90%]">
-                <label
-                  htmlFor="role"
-                  className="text-600 text-[15px] leading-[20px] font-medium text-n600"
-                >
-                  Role
-                </label>
-                <div className="relative w-full">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="17"
+                        height="17"
+                        viewBox="0 0 17 17"
+                        fill="none"
+                      >
+                        <path
+                          d="M10.5003 4.49996L12.5003 6.49996M9.16699 13.8333H14.5003M3.83366 11.1666L3.16699 13.8333L5.83366 13.1666L13.5577 5.44263C13.8076 5.19259 13.948 4.85351 13.948 4.49996C13.948 4.14641 13.8076 3.80733 13.5577 3.55729L13.443 3.44263C13.193 3.19267 12.8539 3.05225 12.5003 3.05225C12.1468 3.05225 11.8077 3.19267 11.5577 3.44263L3.83366 11.1666Z"
+                          stroke="#4A3AFF"
+                          strokeWidth="1.66667"
+                          fillOpacity="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>{" "}
+                      Edit
+                    </button>
+                  )}
+                </div>
+
+                <div className="relative sm:w-[45%] w-[70%]">
                   <button
                     className={`rounded-[46px] h-[50px] px-[19px] w-full flex items-center justify-between ${
                       isEditingRole ? "shadow-lg" : "cursor-default"
@@ -451,7 +398,7 @@ const EditUsers = () => {
                   </button>
                   {isOpen && (
                     <ul className="absolute w-full bg-white rounded-[30px] shadow-lg mt-2 z-10">
-                      {["Engineer", "Coordinator"].map((option) => (
+                      {options.map((option) => (
                         <li
                           key={option}
                           className={`px-[18px] py-[10px] text-n600 sm:text-[16px] text-[14px] cursor-pointer hover:bg-gray-100 ${
@@ -468,36 +415,225 @@ const EditUsers = () => {
                   )}
                 </div>
               </div>
+
               <div className="flex justify-end w-full ">
                 {isEditingRole && (
-                  <div className="flex items-center w-full justify-between">
-                    <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-                      {errRole}
-                    </span>
+                  <div className="flex items-center gap-[6px]">
+                    {" "}
+                    <button
+                      type="submit"
+                      className="md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-n600 rounded-[86px] font-semibold bg-n300 leading-[20px]"
+                      onClick={handleCancelRole}
+                    >
+                      cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className=" md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
+                      onClick={(eo) => {
+                        handleSaveRoleEdit(
+                          eo,
+                          setIsLoadingRole,
+                          setIsEditingRole,
+                          User!.email,
+                          selectedOption!,
+                          fetchUser
+                        );
+                      }}
+                    >
+                      {isLoadingRole ? (
+                        <ThreeDots color="#fff" width="50" height="20" />
+                      ) : (
+                        "confirme"
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
 
-                    <div className="flex items-center gap-[6px]">
-                      {" "}
-                      <button
-                        type="submit"
-                        className="md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-n600 rounded-[86px] font-semibold bg-n300 leading-[20px]"
-                        onClick={handleCancelRole}
+              <div className="flex flex-col items-start gap-[9px] w-full">
+                <div className="w-full flex items-center justify-between">
+                  <label
+                    htmlFor="role"
+                    className="text-600 text-[15px] leading-[20px] font-medium text-n600"
+                  >
+                    Accessibility
+                  </label>
+                  {!isEditingAccessibility && (
+                    <button
+                      className="rounded-[20px] text-primary border-[1px] border-primary flex items-center gap-[3px] md:px-[17px] md:py-[6px] px-[13px] py-[3px] leading text-[13px] font-medium"
+                      onClick={() => {
+                        setIsEditingAccessibility(true);
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="17"
+                        height="17"
+                        viewBox="0 0 17 17"
+                        fill="none"
                       >
-                        cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className=" md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
-                        onClick={(eo) => {
-                          handleSaveRolelEdit(eo);
-                        }}
-                      >
-                        {isLoadingRole ? (
-                          <ThreeDots color="#fff" width="50" height="20" />
-                        ) : (
-                          "confirme"
-                        )}
-                      </button>
-                    </div>
+                        <path
+                          d="M10.5003 4.49996L12.5003 6.49996M9.16699 13.8333H14.5003M3.83366 11.1666L3.16699 13.8333L5.83366 13.1666L13.5577 5.44263C13.8076 5.19259 13.948 4.85351 13.948 4.49996C13.948 4.14641 13.8076 3.80733 13.5577 3.55729L13.443 3.44263C13.193 3.19267 12.8539 3.05225 12.5003 3.05225C12.1468 3.05225 11.8077 3.19267 11.5577 3.44263L3.83366 11.1666Z"
+                          stroke="#4A3AFF"
+                          strokeWidth="1.66667"
+                          fillOpacity="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>{" "}
+                      Edit
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-center lg:justify-between lg:gap-0 gap-[20px] flex-wrap w-full sm:px-4">
+                  <div
+                    className={`flex items-center gap-2 flex-grow ${
+                      !isEditingAccessibility && " opacity-65"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="0"
+                      id="los"
+                      className={`custom-checkbox ${
+                        !isEditingAccessibility && " border-neutral-300"
+                      }`}
+                      onChange={handleChangeCheckbox}
+                      checked={hasAccessTo.some((item) => item === 0)}
+                      disabled={!isEditingAccessibility}
+                    />
+                    <label
+                      htmlFor="los"
+                      className={`text-n700 sm:text-[17px] text-[14px] ${
+                        isEditingAccessibility
+                          ? "cursor-pointer"
+                          : "cursor-default"
+                      }`}
+                    >
+                      Line Of Sight{" "}
+                    </label>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 flex-grow ${
+                      !isEditingAccessibility && " opacity-65"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="1"
+                      id="mod"
+                      className={`custom-checkbox ${
+                        !isEditingAccessibility && " border-neutral-300"
+                      }`}
+                      onChange={handleChangeCheckbox}
+                      checked={hasAccessTo.some((item) => item === 1)}
+                      disabled={!isEditingAccessibility}
+                    />
+                    <label
+                      htmlFor="mod"
+                      className={`text-n700 sm:text-[17px] text-[14px] ${
+                        isEditingAccessibility
+                          ? "cursor-pointer"
+                          : "cursor-default"
+                      }`}
+                    >
+                      Modernisation{" "}
+                    </label>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 flex-grow ${
+                      !isEditingAccessibility && " opacity-65"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="2"
+                      id="new-site"
+                      className={`custom-checkbox ${
+                        !isEditingAccessibility && " border-neutral-300"
+                      }`}
+                      onChange={handleChangeCheckbox}
+                      checked={hasAccessTo.some((item) => item === 2)}
+                      disabled={!isEditingAccessibility}
+                    />
+                    <label
+                      htmlFor="new-site"
+                      className={`text-n700 sm:text-[17px] text-[14px] ${
+                        isEditingAccessibility
+                          ? "cursor-pointer"
+                          : "cursor-default"
+                      }`}
+                    >
+                      New Site{" "}
+                    </label>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 flex-grow ${
+                      !isEditingAccessibility && " opacity-65"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="3"
+                      id="workorder"
+                      className={`custom-checkbox ${
+                        !isEditingAccessibility && " border-neutral-300"
+                      }`}
+                      onChange={handleChangeCheckbox}
+                      checked={hasAccessTo.some((item) => item === 3)}
+                      disabled={!isEditingAccessibility}
+                    />
+                    <label
+                      htmlFor="workorder"
+                      className={`text-n700 sm:text-[17px] text-[14px] ${
+                        isEditingAccessibility
+                          ? "cursor-pointer"
+                          : "cursor-default"
+                      }`}
+                    >
+                      Workorder{" "}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end w-full ">
+                {isEditingAccessibility && (
+                  <div className="flex items-center gap-[6px]">
+                    {" "}
+                    <button
+                      type="submit"
+                      className="md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-n600 rounded-[86px] font-semibold bg-n300 leading-[20px]"
+                      onClick={handleCancelAccessibility}
+                    >
+                      cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className=" md:py-[8px] md:px-[30px] py-[6px] px-[21px] text-white rounded-[86px] font-semibold bg-primary leading-[20px]"
+                      onClick={(eo) => {
+                        handleSaveAccessibilityEdit(
+                          eo,
+                          setIsLoadingAccessibility,
+                          setIsEditingAccessibility,
+                          User!.id,
+                          hasAccessTo.filter(
+                            (id) => !User?.has_access_to.includes(id)
+                          ),
+                          User!.has_access_to.filter(
+                            (id) => !hasAccessTo.includes(id)
+                          ),
+                          fetchUser
+                        );
+                      }}
+                    >
+                      {isLoadingAccessibility ? (
+                        <ThreeDots color="#fff" width="50" height="20" />
+                      ) : (
+                        "confirme"
+                      )}
+                    </button>
                   </div>
                 )}
               </div>

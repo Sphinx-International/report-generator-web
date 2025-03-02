@@ -207,7 +207,7 @@ const ModernisationByUser = () => {
                     </div>
 
                     <span className="absolute top-[18px] right-[18px] text-[14px] font-medium text-primary leading-[19.5px] z-0">
-                      {++index}
+                      {modernisation.id}
                     </span>
                   </div>
                 ))}

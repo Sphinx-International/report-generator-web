@@ -25,20 +25,24 @@ const useWebSocketNotification = ({
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleNewNotification = (notification: Notification) => {
+  const handleNewNotification = (notif: Notification) => {
     // Define the URL or path based on the notification
     const path =
-      notification.action >= 100 && notification.action < 200
-        ? `edit-user/${notification.on}`
-        : notification.action >= 200 && notification.action < 300
+      notif.action >= 100 && notif.action < 200
+        ? `edit-user/${notif.on}`
+        : notif.action >= 200 && notif.action < 300
         ? "mails/groups"
-        : `workorders/${notification.on}`;
+        : notif.action >= 300 && notif.action < 500
+        ? `workorders/${notif.on}`
+        : notif.action >= 500 && notif.action < 700
+        ? `modernisation/${notif.on}`
+        : notif.action >= 700 && notif.action < 1000
+        ? `newsites/${notif.on}`
+        : `los/orders/${notif.on}`;
 
     // Display the snackbar with a custom action button
     enqueueSnackbar(
-      `${getActionNotificationDescription(notification.action)} on ${
-        notification.on
-      }`,
+      `${getActionNotificationDescription(notif.action)} on ${notif.on}`,
       {
         variant: "info",
         autoHideDuration: 3000,
@@ -63,7 +67,7 @@ const useWebSocketNotification = ({
     );
 
     // Update the notifications state
-    setNotifications((prev: Notification[]) => [notification, ...prev]);
+    setNotifications((prev: Notification[]) => [notif, ...prev]);
     dispatch(addOneToCount());
   };
 

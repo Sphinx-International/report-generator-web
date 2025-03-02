@@ -5,6 +5,7 @@ import "../styles/CustomDatePicker.css";
 import generatePassword from "../func/generatePassword";
 import { ThreeDots } from "react-loader-spinner";
 import handleChange from "../func/handleChangeFormsInput";
+import { isValidEmail, isValidPassword } from "../func/authValidation";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 interface Userprops {
@@ -15,8 +16,8 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
   // const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>("Select a role");
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [visibleEmailErr, setVisibleEmailErr] = useState<boolean>(false);
-  const [EmailErr, setEmailErr] = useState<string>("");
+  const [visibleErr, setVisibleErr] = useState<boolean>(false);
+  const [Err, setErr] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(true);
 
@@ -26,6 +27,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     email: string;
     password: string;
     role: null | 0 | 1 | 2 | 3;
+    has_access_to: number[];
   };
 
   const [formData, setFormData] = useState<User>({
@@ -34,7 +36,24 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     email: "",
     password: "",
     role: null,
+    has_access_to: [],
   });
+
+  const handleChangeCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setFormData((prev) => ({
+        ...prev,
+        has_access_to: [...prev.has_access_to, Number(e.target.name)],
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        has_access_to: prev.has_access_to.filter(
+          (item) => item !== Number(e.target.name)
+        ),
+      }));
+    }
+  };
 
   const closeDialog = (eo: MouseEvent<HTMLButtonElement> | React.FormEvent) => {
     eo.preventDefault();
@@ -44,8 +63,9 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       email: "",
       password: "",
       role: null,
+      has_access_to: [],
     });
-    setEmailErr("");
+    setErr("");
     setSelectedOption("Select a role");
     if (ref && typeof ref !== "function" && ref.current) {
       ref.current.close();
@@ -69,9 +89,28 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     setIsOpen(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const formValidation = (e: React.FormEvent) => {
     e.preventDefault();
+    setVisibleErr(false);
+    setErr("");
+    if (formData.first_name === "" || formData.last_name === "") {
+      setVisibleErr(true);
+      setErr("Please enter full name");
+    } else if (!isValidEmail(formData.email)) {
+      setVisibleErr(true);
+      setErr("Please enter valid email");
+    } else if (!isValidPassword(formData.password)) {
+      setVisibleErr(true);
+      setErr("Please enter valid password");
+    } else if (formData.role === null) {
+      setVisibleErr(true);
+      setErr("Please select a role");
+    } else {
+      handleSubmit(e);
+    }
+  };
 
+  const handleSubmit = async (e: React.FormEvent) => {
     const token =
       localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
@@ -79,6 +118,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       return;
     }
     setIsLoading(true);
+    console.log(formData);
     try {
       const response = await fetch(`${baseUrl}/account/create-account`, {
         method: "POST",
@@ -90,24 +130,18 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
       });
 
       if (response) {
-        const data = await response.json();
-        console.log("Form submitted successfully", data);
         switch (response.status) {
           case 201:
             props.fetchUsers!();
             closeDialog(e);
             break;
           case 409:
-            setVisibleEmailErr(true);
-            setEmailErr("account with this email already exists.");
+            setVisibleErr(true);
+            setErr("account with this email already exists.");
             break;
           case 400:
-            setVisibleEmailErr(true);
-            setEmailErr("Your are missing information, verify your inputs");
-            break;
-          case 403:
-            setVisibleEmailErr(true);
-            setEmailErr("only admin can create accounts");
+            setVisibleErr(true);
+            setErr("Your are missing information, verify your inputs");
             break;
 
           default:
@@ -130,7 +164,7 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
     <dialog
       ref={ref}
       id="User-popup"
-      className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[40px] px-[20px] sm:pb-[35px] pt-[40px]  flex-col items-start gap-[20px] rounded-[34px] sm:w-[70vw] sm:h-fit w-[88vw] h-[80vh] overflow-visible`}
+      className={`hidden fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] sm:px-[40px] px-[20px] sm:pb-[35px] pt-[40px]  flex-col items-start gap-[20px] rounded-[34px] sm:w-[70vw] sm:h-fit w-[88vw] h-[90vh] overflow-visible`}
     >
       {/*   <div className="flex flex-col items-start gap-[10px]">
         <label
@@ -421,13 +455,87 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
               />
             </div> */}
           </div>
+          <div className="flex items-start flex-col gap-5">
+            <label
+              htmlFor="accessibility"
+              className="text-n700 sm:text-[17px] text-[13px] leading-[20px] font-medium pl-[9px]"
+            >
+              Accessibility
+            </label>
+            <div className="flex items-center justify-center lg:justify-between lg:gap-0 gap-[20px] flex-wrap w-full sm:px-4">
+              <div className="flex items-center gap-2 flex-grow">
+                <input
+                  type="checkbox"
+                  name="0"
+                  id="los"
+                  className="custom-checkbox"
+                  onChange={handleChangeCheckbox}
+                  checked={formData.has_access_to.some((item) => item === 0)}
+                />
+                <label
+                  htmlFor="los"
+                  className="text-n700 sm:text-[17px] text-[14px] cursor-pointer"
+                >
+                  Line Of Sight{" "}
+                </label>
+              </div>
+              <div className="flex items-center gap-2 flex-grow">
+                <input
+                  type="checkbox"
+                  name="1"
+                  id="mod"
+                  className="custom-checkbox"
+                  onChange={handleChangeCheckbox}
+                  checked={formData.has_access_to.some((item) => item === 1)}
+                />
+                <label
+                  htmlFor="mod"
+                  className="text-n700 sm:text-[17px] text-[14px] cursor-pointer"
+                >
+                  Modernisation{" "}
+                </label>
+              </div>
+              <div className="flex items-center gap-2 flex-grow">
+                <input
+                  type="checkbox"
+                  name="2"
+                  id="new-site"
+                  className="custom-checkbox"
+                  onChange={handleChangeCheckbox}
+                  checked={formData.has_access_to.some((item) => item === 2)}
+                />
+                <label
+                  htmlFor="new-site"
+                  className="text-n700 sm:text-[17px] text-[14px] cursor-pointer"
+                >
+                  New Site{" "}
+                </label>
+              </div>
+              <div className="flex items-center gap-2 flex-grow">
+                <input
+                  type="checkbox"
+                  name="3"
+                  id="workorder"
+                  className="custom-checkbox"
+                  onChange={handleChangeCheckbox}
+                  checked={formData.has_access_to.some((item) => item === 3)}
+                />
+                <label
+                  htmlFor="workorder"
+                  className="text-n700 sm:text-[17px] text-[14px] cursor-pointer"
+                >
+                  Workorder{" "}
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="w-full flex sm:flex-row-reverse flex-col-reverse sm:gap-0 gap-[14px] items-center justify-between sm:relative absolute translate-x-[-50%] left-[50%] bottom-0 py-[9px] sm:py-0 rounded-[34px] bg-white z-50">
           <div className="flex items-center gap-[5px] flex-row-reverse">
             <button
               className="bg-primary rounded-[86px] px-[26.5px] py-[8.5px] font-semibold text-[14px] leading-[20px] text-white"
               onClick={(eo) => {
-                handleSubmit(eo);
+                formValidation(eo);
               }}
             >
               {isLoading ? (
@@ -446,9 +554,9 @@ const UserPopUp = forwardRef<HTMLDialogElement, Userprops>((props, ref) => {
             </button>
           </div>
 
-          {visibleEmailErr && (
+          {visibleErr && (
             <span className="ml-[12px] text-[14px] text-[#DB2C2C] leading-[22px]">
-              {EmailErr}
+              {Err}
             </span>
           )}
         </div>

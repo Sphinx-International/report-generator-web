@@ -82,7 +82,9 @@ export const fetchNotifications = async (
       dispatch(setCount(data.count));
 
       // If 'append' is true, append new notifications to the existing state
-      setNotifications((prev) => (append ? [...prev, ...data.data] : data.data));
+      setNotifications((prev) =>
+        append ? [...prev, ...data.data] : data.data
+      );
 
       // Check if there are more notifications to load
       setHasMore(data.current_offset < data.total);
@@ -93,7 +95,6 @@ export const fetchNotifications = async (
     console.error("Error: ", err);
   }
 };
-
 
 export const getActionNotificationTitle = (actionNumber: number): string => {
   const actionTitles: { [key: number]: string } = {
@@ -135,7 +136,24 @@ export const getActionNotificationTitle = (actionNumber: number): string => {
     706: "New site reported",
     707: "New site certificate uploaded",
     708: "New site accepted",
-    709: "New site update requested"
+    709: "New site update requested",
+    1000: "LOS created",
+    1001: "LOS updated",
+    1002: "LOS assigned",
+    1003: "LOS drop assign",
+    1004: "LOS launched",
+    1005: "LOS result added",
+    1006: "LOS no access to near end",
+    1007: "LOS near end access granted",
+    1008: "LOS no access to alternatives",
+    1009: "LOS far end access granted",
+    1010: "LOS site accessible",
+    1011: "LOS alternative executed",
+    1012: "LOS report executed",
+    1013: "LOS report generated",
+    1014: "LOS certificate rejected",
+    1015: "LOS approved",
+    1016: "LOS update closed",
   };
 
   return actionTitles[actionNumber] || "Unknown action";
@@ -182,7 +200,24 @@ export const getActionNotificationDescription = (
     706: "New site has been validated",
     707: "New site certificate has been uploaded",
     708: "New site has been accepted",
-    709: "New site ask to update report"
+    709: "New site ask to update report",
+    1000: "LOS has been created",
+    1001: "LOS has been updated",
+    1002: "LOS has been assigned",
+    1003: "LOS assignment has been dropped",
+    1004: "LOS has been launched",
+    1005: "LOS result has been added",
+    1006: "LOS has no access to near end",
+    1007: "LOS has near end access granted",
+    1008: "LOS has no access to alternatives",
+    1009: "LOS has far end access granted",
+    1010: "LOS has site accessible",
+    1011: "LOS alternative has been executed",
+    1012: "LOS report has been executed",
+    1013: "LOS report has been generated",
+    1014: "LOS certificate has been rejected",
+    1015: "LOS has been approved",
+    1016: "LOS has been update closed",
   };
   return (
     actionDescriptions[actionNumber] ||
