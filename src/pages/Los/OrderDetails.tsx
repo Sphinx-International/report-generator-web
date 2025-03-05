@@ -634,25 +634,42 @@ const OrderDetails = () => {
                                     <div
                                       key={index}
                                       className="flex items-center gap-[5px] cursor-pointer w-full hover:bg-n300"
-                                      /* onClick={() => {
-                              handle_Assignment_and_execute(
-                                modernisation.line_of_sight.id,
-                                "reassign-modernisation",
-                                "PATCH",
-                                "modernisation",
-                                setIsLoading,
-                                undefined,
-                                user.id
-                              );
-                              setModernisation((prevState) => ({
-                                ...prevState!,
-                                modernisation: {
-                                  ...prevState!.modernisation,
-                                  assigned_to: user,
-                                },
-                              }));
-                              setVisibleEngPopup(false);
-                            }}  */
+                                      onClick={async () => {
+                                        const token =
+                                          localStorage.getItem("token") || sessionStorage.getItem("token");
+                                        if (!token) {
+                                          console.error("No token found");
+                                          return;
+                                        }
+                                        const response = await fetch(`${baseUrl}/line-of-sight/reassign-line-of-sight`,
+                                          {
+                                            method: "PATCH",
+                                            headers: {
+                                              "Content-Type": "application/json",
+                                              Authorization: `Token ${token}`,
+                                            },
+                                            body: JSON.stringify({
+                                              "id": basicDataOrder.id,
+                                              "assign_to": user.id
+                                            })
+                                          }
+                                        );
+                                        if (response) {
+                                          console.log(response.status);
+                                          switch (response.status) {
+                                            case 200:
+                                              fetchOneLOS();
+                                              setVisibleEngPopup(false);
+                                              break;
+                                            case 400:
+                                              console.log("verify your data");
+                                              break;
+                                            default:
+                                              console.log("error");
+                                              break;
+                                          }
+                                        }
+                                      }}
                                     >
                                       <img
                                         src="/avatar.png"
