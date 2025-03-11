@@ -1178,12 +1178,22 @@ export const generateReport = async (
     if (response) {
       switch (response.status) {
         case 200: {
+          // Extract filename from the Content-Disposition header
+          const contentDisposition = response.headers.get("Content-Disposition");
+          let filename = `report_${losId}.pdf`; // Default name
+
+          if (contentDisposition) {
+            const match = contentDisposition.match(/filename="?([^"]+)"?/);
+            if (match && match[1]) {
+              filename = match[1]; // Use the filename from the backend
+            }
+          }
           // Handle PDF download
           const blob = await response.blob(); // Get the response as a Blob
           const url = window.URL.createObjectURL(blob); // Create a URL for the Blob
           const link = document.createElement("a"); // Create an anchor element
           link.href = url;
-          link.download = `report_${losId}.pdf`; // Set the filename
+          link.download = filename; // Set the filename
           document.body.appendChild(link);
           link.click(); // Trigger the download
           document.body.removeChild(link); // Remove the anchor element
