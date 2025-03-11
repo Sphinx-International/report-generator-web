@@ -69,6 +69,7 @@ export const losOrdersTabHeader: TabHeader[] = [
 ];
 
 export const LosSuggestionTitle = [
+  "",
   "Zoom 0%",
   "Zoom 25%",
   "Zoom 50%",
