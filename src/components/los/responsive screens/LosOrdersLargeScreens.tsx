@@ -337,7 +337,7 @@ const LosOrdersLargeScreens: React.FC<LosOrdersLargeScreensProps> = ({
                         latitude: alt.site_location.latitude,
                         longitude: alt.site_location.longitude,
                       }
-                    ).azimuthNEToFE
+                    )
                   }
                   °
                 </span>
@@ -367,7 +367,7 @@ const LosOrdersLargeScreens: React.FC<LosOrdersLargeScreensProps> = ({
                         longitude:
                           order.line_of_sight.near_end_location.longitude,
                       }
-                    ).azimuthFEToNE
+                    )
                   }
                   °
                 </span>
