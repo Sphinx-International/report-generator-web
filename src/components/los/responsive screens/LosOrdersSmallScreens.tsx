@@ -204,7 +204,7 @@ const LosOrdersSmallScreens: React.FC<LosOrdersSmallScreensProps> = ({
                           latitude: alt.site_location.latitude,
                           longitude: alt.site_location.longitude,
                         }
-                      ).azimuthNEToFE
+                      )
                     }
                     °
                   </span>
@@ -235,12 +235,12 @@ const LosOrdersSmallScreens: React.FC<LosOrdersSmallScreensProps> = ({
                           longitude: alt.site_location.longitude,
                         },
                         {
-                          latitude:
-                            order.line_of_sight.near_end_location.latitude,
-                          longitude:
-                            order.line_of_sight.near_end_location.longitude,
+                            latitude:
+                              order.line_of_sight.near_end_location.latitude,
+                            longitude:
+                              order.line_of_sight.near_end_location.longitude,
                         }
-                      ).azimuthFEToNE
+                      )
                     }
                     °
                   </span>

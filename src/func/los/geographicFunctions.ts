@@ -17,6 +17,8 @@ const calculateAzimuth = (
   lat2: number,
   long2: number
 ): number => {
+  console.log('input: ' + lat1 + ' ' + long1 + ' ' + lat2 + ' ' + long2);
+  
   const toRadians = (degrees: number): number => degrees * (Math.PI / 180);
   const toDegrees = (radians: number): number => radians * (180 / Math.PI);
 
@@ -41,6 +43,8 @@ const calculateAzimuth = (
   // Ensure azimuth is in the range [0, 360]
   azimuthDeg = (azimuthDeg + 360) % 360;
 
+  console.log('output: ' + azimuthDeg);
+
   return azimuthDeg;
 };
 
@@ -57,12 +61,8 @@ export const calculateAzimuths = (ne: Coordinates, fe: Coordinates) => {
     fe.latitude,
     fe.longitude
   );
-  const azimuthFEToNE = (azimuthNEToFE + 180) % 360; // Reverse direction azimuth
 
-  return {
-    azimuthNEToFE: azimuthNEToFE.toFixed(2),
-    azimuthFEToNE: azimuthFEToNE.toFixed(2),
-  };
+  return azimuthNEToFE.toFixed(1);
 };
 
 
