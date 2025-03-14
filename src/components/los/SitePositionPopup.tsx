@@ -108,7 +108,7 @@ const SitePositionPopup = forwardRef<HTMLDialogElement, SitePositionPopupProps>(
       <>
         <div className="flex flex-col items-start gap-[24px] w-full">
           <h3 className="text-[19px] text-primary font-medium">
-            Site Position NE
+            Site Position
           </h3>
           {isLoadingDownload ? (
             <div className="w-full flex items-center justify-center">
