@@ -148,7 +148,7 @@ const SiteAdditionalPicsPopup = forwardRef<
           setFile(undefined);
           setFourthFormValues({
             site_result: null,
-            title: "",
+            title: `From ${siteInfo.preSite} to ${siteInfo.secSite}`,
             image: null,
             comment: null,
           });
